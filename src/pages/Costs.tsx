@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import {
   Card, Typography, Row, Col, Statistic, Table, Tag, Space, DatePicker,
-  Progress, InputNumber, Button, App, Select,
+  Progress, InputNumber, Button, App, Select, Descriptions,
 } from 'antd';
 import {
   DollarOutlined, ThunderboltOutlined, AlertOutlined,
