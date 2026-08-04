@@ -13,8 +13,9 @@ export default defineConfig({
     port: 3001,
     proxy: {
       '/api': {
-        target: 'http://localhost:8000',
+        target: 'https://ai-platform-api-production-19cb.up.railway.app',
         changeOrigin: true,
+        secure: true,
       },
     },
   },

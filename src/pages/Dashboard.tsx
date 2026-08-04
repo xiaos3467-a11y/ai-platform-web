@@ -37,7 +37,7 @@ const Dashboard: React.FC = () => {
     const fetchData = async () => {
       try {
         const [healthResp, costResp, dailyResp] = await Promise.allSettled([
-          api.get<HealthStatus>('../health'),
+          api.get<HealthStatus>('../../health'),
           api.get<CostSummary>('/costs/summary'),
           api.get<DailyCost[]>('/costs/daily?days=14'),
         ]);
