@@ -2,8 +2,8 @@
 
 import React, { useEffect, useState } from 'react';
 import {
-  Table, Button, Modal, Form, Input, Upload, Tag, Space, Card, Typography,
-  App, Descriptions, Empty, Skeleton,
+  Table, Button, Modal, Form, Input, Upload, Space, Card, Typography,
+  App, Skeleton,
 } from 'antd';
 import {
   PlusOutlined, UploadOutlined, DeleteOutlined, FileTextOutlined,

@@ -2,8 +2,8 @@
 
 import React, { useEffect, useState } from 'react';
 import {
-  Table, Button, Modal, Form, Input, InputNumber, Select, Tag, Space,
-  Card, Typography, App, Drawer, Skeleton, Empty,
+  Table, Button, Modal, Form, Input, InputNumber, Select, Space,
+  Card, Typography, App, Drawer, Skeleton,
 } from 'antd';
 import {
   PlusOutlined, DeleteOutlined, PlayCircleOutlined, RobotOutlined,
@@ -16,7 +16,7 @@ const { Title, Text } = Typography;
 const { TextArea } = Input;
 
 /* ─── Chat bubble (dark iMessage style) ───────────────────────────── */
-const ChatBubble: React.FC<{ role: string; content: string; agentName?: string }> = ({ role, content, agentName }) => {
+const ChatBubble: React.FC<{ role: string; content: string; agentName?: string }> = ({ role, content }) => {
   const isUser = role === 'user';
   return (
     <div style={{ display: 'flex', justifyContent: isUser ? 'flex-end' : 'flex-start', marginBottom: 12 }}>

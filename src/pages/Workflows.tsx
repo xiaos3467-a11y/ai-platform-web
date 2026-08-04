@@ -2,14 +2,13 @@
 
 import React, { useEffect, useState } from 'react';
 import {
-  Table, Button, Modal, Form, Input, Tag, Space, Card, Typography,
-  App, Drawer, Descriptions, Skeleton, Empty,
+  Table, Button, Modal, Form, Input, Space, Card, Typography,
+  App, Drawer, Skeleton,
 } from 'antd';
 import {
   PlusOutlined, PlayCircleOutlined, BranchesOutlined,
   CheckCircleOutlined, CloseCircleOutlined, ClockCircleOutlined, SyncOutlined,
-  CodeOutlined,
-} from '@ant-design/icons';
+  } from '@ant-design/icons';
 import { api } from '@/api/client';
 import type { Workflow, WorkflowExecution } from '@/types';
 

@@ -2,13 +2,12 @@
 
 import React, { useEffect, useState } from 'react';
 import {
-  Table, Button, Modal, Form, Input, Tag, Space, Card, Typography,
+  Table, Button, Modal, Form, Input, Space, Card, Typography,
   App, Checkbox, Divider, Skeleton,
 } from 'antd';
 import {
   PlusOutlined, DeleteOutlined, EditOutlined, SafetyOutlined,
-  TeamOutlined,
-} from '@ant-design/icons';
+  } from '@ant-design/icons';
 import { api } from '@/api/client';
 
 const { Title, Text } = Typography;
@@ -127,7 +126,6 @@ const Roles: React.FC = () => {
     )},
   ];
 
-  const matrixBg = 'rgba(255,255,255,0.02)';
   const matrixBorder = 'rgba(255,255,255,0.06)';
 
   const renderPermissionMatrix = () => (

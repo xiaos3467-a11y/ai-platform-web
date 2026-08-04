@@ -2,10 +2,10 @@
 
 import React, { useState } from 'react';
 import {
-  Card, Typography, Button, Form, Input, Select, Table, Tag,
-  App, Descriptions, Row, Col, Skeleton,
+  Card, Typography, Button, Form, Input, Select, Table,
+  App, Row, Col,
 } from 'antd';
-import { ExperimentOutlined, PlayCircleOutlined, CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
+import { ExperimentOutlined, PlayCircleOutlined } from '@ant-design/icons';
 import { api } from '@/api/client';
 import type { EvalRunResult, EvalSampleResult } from '@/types';
 

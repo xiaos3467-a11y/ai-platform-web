@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import {
-  Card, Typography, Tag, Space, Row, Col, Button, App, Alert, Skeleton,
+  Card, Typography, Space, Row, Col, Button, App, Alert, Skeleton,
 } from 'antd';
 import {
   CheckCircleOutlined, CloseCircleOutlined, ReloadOutlined,

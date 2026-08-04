@@ -2,12 +2,12 @@
 
 import React, { useEffect, useState } from 'react';
 import {
-  Table, Button, Modal, Form, Input, Tag, Space, Card, Typography,
+  Table, Button, Modal, Form, Input, Space, Card, Typography,
   App, Drawer, Skeleton,
 } from 'antd';
 import {
   PlusOutlined, HistoryOutlined, CodeOutlined, SwapOutlined,
-  FileTextOutlined, EditOutlined,
+  FileTextOutlined,
 } from '@ant-design/icons';
 import { api } from '@/api/client';
 import type { PromptTemplate, PromptVersion } from '@/types';
