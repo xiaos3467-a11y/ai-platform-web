@@ -41,7 +41,10 @@ const Dashboard: React.FC = () => {
           api.get<CostSummary>('/costs/summary'),
           api.get<DailyCost[]>('/costs/daily?days=14'),
         ]);
-        if (healthResp.status === 'fulfilled') setHealth(healthResp.value.data);
+        if (healthResp.status === 'fulfilled') {
+          const raw = healthResp.value as any;
+          setHealth(raw?.data ?? raw);
+        }
         if (costResp.status === 'fulfilled') setCostSummary(costResp.value.data);
         if (dailyResp.status === 'fulfilled') setDailyCosts(dailyResp.value.data || []);
 

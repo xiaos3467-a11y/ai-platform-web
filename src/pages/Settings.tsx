@@ -22,7 +22,11 @@ const Settings: React.FC = () => {
 
   const fetchHealth = async () => {
     setLoading(true);
-    try { const resp = await api.get<HealthStatus>('../../health'); setHealth(resp.data); } catch { message.error('无法获取系统状态'); } finally { setLoading(false); }
+    try {
+      const resp = await api.get<HealthStatus>('../../health');
+      const raw = resp as any;
+      setHealth(raw?.data ?? raw);
+    } catch { message.error('无法获取系统状态'); } finally { setLoading(false); }
   };
 
   useEffect(() => { fetchHealth(); }, []);
