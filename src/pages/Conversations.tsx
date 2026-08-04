@@ -44,10 +44,10 @@ const MessageBubble: React.FC<{ message: Message; index: number }> = ({
           style={{
             padding: '6px 14px',
             borderRadius: 8,
-            background: 'rgba(255, 255, 255, 0.04)',
-            border: '0.5px solid rgba(255, 255, 255, 0.06)',
+            background: 'var(--bg-card)',
+            border: '0.5px solid var(--border-divider)',
             fontSize: 12,
-            color: 'rgba(255, 255, 255, 0.35)',
+            color: 'var(--text-muted)',
             fontWeight: 500,
             maxWidth: '80%',
             textAlign: 'center',
@@ -124,7 +124,7 @@ const MessageBubble: React.FC<{ message: Message; index: number }> = ({
               border: isUser
                 ? 'none'
                 : '0.5px solid rgba(255, 255, 255, 0.08)',
-              color: '#f5f5f7',
+              color: 'var(--text-primary)',
               fontSize: 14,
               lineHeight: 1.6,
               wordBreak: 'break-word' as const,
@@ -151,7 +151,7 @@ const MessageBubble: React.FC<{ message: Message; index: number }> = ({
               <span
                 style={{
                   fontSize: 11,
-                  color: 'rgba(255, 255, 255, 0.25)',
+                  color: 'var(--text-tertiary)',
                   fontWeight: 500,
                 }}
               >
@@ -218,7 +218,7 @@ const ConversationItem: React.FC<{
         style={{
           fontSize: 14,
           fontWeight: 600,
-          color: '#f5f5f7',
+          color: 'var(--text-primary)',
           letterSpacing: '-0.01em',
           overflow: 'hidden',
           textOverflow: 'ellipsis',
@@ -264,7 +264,7 @@ const ConversationItem: React.FC<{
         alignItems: 'center',
         gap: 12,
         fontSize: 12,
-        color: 'rgba(255, 255, 255, 0.3)',
+        color: 'var(--text-subtle)',
       }}
     >
       <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
@@ -276,7 +276,7 @@ const ConversationItem: React.FC<{
           style={{
             padding: '1px 6px',
             borderRadius: 4,
-            background: 'rgba(255, 255, 255, 0.06)',
+            background: 'var(--bg-elevated)',
             fontSize: 11,
             fontWeight: 500,
           }}
@@ -372,7 +372,7 @@ const Conversations: React.FC = () => {
             fontWeight: 700,
             fontSize: 34,
             letterSpacing: '-0.04em',
-            color: '#f5f5f7',
+            color: 'var(--text-primary)',
           }}
         >
           对话记录
@@ -380,7 +380,7 @@ const Conversations: React.FC = () => {
         <Text
           style={{
             fontSize: 17,
-            color: 'rgba(255, 255, 255, 0.4)',
+            color: 'var(--text-secondary)',
             marginTop: 6,
             display: 'block',
           }}
@@ -414,7 +414,7 @@ const Conversations: React.FC = () => {
           <div
             style={{
               padding: '16px 20px',
-              borderBottom: '0.5px solid rgba(255, 255, 255, 0.06)',
+              borderBottom: '0.5px solid var(--border-divider)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
@@ -424,7 +424,7 @@ const Conversations: React.FC = () => {
               style={{
                 fontSize: 14,
                 fontWeight: 600,
-                color: 'rgba(255, 255, 255, 0.7)',
+                color: 'var(--text-label)',
               }}
             >
               全部对话
@@ -432,8 +432,8 @@ const Conversations: React.FC = () => {
             <Badge
               count={conversations.length}
               style={{
-                background: 'rgba(255, 255, 255, 0.08)',
-                color: 'rgba(255, 255, 255, 0.5)',
+                background: 'var(--bg-elevated-2)',
+                color: 'var(--text-soft)',
                 fontSize: 11,
                 fontWeight: 600,
                 boxShadow: 'none',
@@ -451,7 +451,7 @@ const Conversations: React.FC = () => {
               <Empty
                 image={Empty.PRESENTED_IMAGE_SIMPLE}
                 description={
-                  <span style={{ color: 'rgba(255, 255, 255, 0.3)' }}>
+                  <span style={{ color: 'var(--text-subtle)' }}>
                     暂无对话
                   </span>
                 }
@@ -492,7 +492,7 @@ const Conversations: React.FC = () => {
               <div
                 style={{
                   padding: '14px 24px',
-                  borderBottom: '0.5px solid rgba(255, 255, 255, 0.06)',
+                  borderBottom: '0.5px solid var(--border-divider)',
                   display: 'flex',
                   alignItems: 'center',
                   gap: 14,
@@ -520,7 +520,7 @@ const Conversations: React.FC = () => {
                     style={{
                       fontSize: 15,
                       fontWeight: 600,
-                      color: '#f5f5f7',
+                      color: 'var(--text-primary)',
                       display: 'block',
                       letterSpacing: '-0.01em',
                     }}
@@ -532,7 +532,7 @@ const Conversations: React.FC = () => {
                       display: 'flex',
                       gap: 10,
                       fontSize: 12,
-                      color: 'rgba(255, 255, 255, 0.3)',
+                      color: 'var(--text-subtle)',
                       marginTop: 2,
                     }}
                   >
@@ -584,7 +584,7 @@ const Conversations: React.FC = () => {
                         color: 'rgba(255, 255, 255, 0.1)',
                       }}
                     />
-                    <Text style={{ color: 'rgba(255, 255, 255, 0.3)' }}>
+                    <Text style={{ color: 'var(--text-subtle)' }}>
                       暂无消息
                     </Text>
                   </div>
@@ -615,13 +615,13 @@ const Conversations: React.FC = () => {
                   width: 64,
                   height: 64,
                   borderRadius: 20,
-                  background: 'rgba(255, 255, 255, 0.04)',
-                  border: '0.5px solid rgba(255, 255, 255, 0.08)',
+                  background: 'var(--bg-card)',
+                  border: '0.5px solid var(--border-subtle)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   fontSize: 28,
-                  color: 'rgba(255, 255, 255, 0.15)',
+                  color: 'var(--text-faint)',
                 }}
               >
                 <MessageOutlined />
@@ -629,7 +629,7 @@ const Conversations: React.FC = () => {
               <Text
                 style={{
                   fontSize: 15,
-                  color: 'rgba(255, 255, 255, 0.3)',
+                  color: 'var(--text-subtle)',
                   fontWeight: 500,
                 }}
               >
@@ -638,7 +638,7 @@ const Conversations: React.FC = () => {
               <Text
                 style={{
                   fontSize: 13,
-                  color: 'rgba(255, 255, 255, 0.15)',
+                  color: 'var(--text-faint)',
                 }}
               >
                 从左侧列表点击任意对话开始浏览

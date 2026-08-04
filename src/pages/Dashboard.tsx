@@ -95,7 +95,7 @@ const Dashboard: React.FC = () => {
             fontWeight: 700,
             fontSize: 34,
             letterSpacing: '-0.04em',
-            color: '#f5f5f7',
+            color: 'var(--text-primary)',
           }}
         >
           仪表盘
@@ -103,7 +103,7 @@ const Dashboard: React.FC = () => {
         <Text
           style={{
             fontSize: 17,
-            color: 'rgba(255, 255, 255, 0.4)',
+            color: 'var(--text-secondary)',
             marginTop: 6,
             display: 'block',
             fontWeight: 400,
@@ -181,7 +181,7 @@ const Dashboard: React.FC = () => {
                 <HealthPill key={name} name={name} status={status} />
               ))
             ) : (
-              <Text style={{ color: 'rgba(255, 255, 255, 0.3)', fontSize: 14 }}>
+              <Text style={{ color: 'var(--text-subtle)', fontSize: 14 }}>
                 暂无组件数据
               </Text>
             )}
@@ -213,17 +213,17 @@ const Dashboard: React.FC = () => {
                   </defs>
                   <CartesianGrid
                     strokeDasharray="3 3"
-                    stroke="rgba(255, 255, 255, 0.04)"
+                    stroke="var(--border-divider)"
                     vertical={false}
                   />
                   <XAxis
                     dataKey="date"
-                    tick={{ fontSize: 11, fill: 'rgba(255, 255, 255, 0.3)' }}
+                    tick={{ fontSize: 11, fill: 'var(--text-subtle)' }}
                     axisLine={false}
                     tickLine={false}
                   />
                   <YAxis
-                    tick={{ fontSize: 11, fill: 'rgba(255, 255, 255, 0.3)' }}
+                    tick={{ fontSize: 11, fill: 'var(--text-subtle)' }}
                     axisLine={false}
                     tickLine={false}
                     width={50}
@@ -232,14 +232,14 @@ const Dashboard: React.FC = () => {
                   <Tooltip
                     contentStyle={{
                       borderRadius: 12,
-                      border: '0.5px solid rgba(255, 255, 255, 0.1)',
-                      background: 'rgba(28, 28, 30, 0.95)',
+                      border: '0.5px solid var(--border-subtle)',
+                      background: 'var(--bg-elevated)',
                       backdropFilter: 'blur(20px)',
-                      boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
+                      boxShadow: 'var(--shadow-card)',
                       fontSize: 13,
-                      color: '#f5f5f7',
+                      color: 'var(--text-primary)',
                     }}
-                    labelStyle={{ color: 'rgba(255, 255, 255, 0.5)' }}
+                    labelStyle={{ color: 'var(--text-soft)' }}
                   />
                   <Area
                     type="monotone"
@@ -284,12 +284,12 @@ const Dashboard: React.FC = () => {
                     <Tooltip
                       contentStyle={{
                         borderRadius: 12,
-                        border: '0.5px solid rgba(255, 255, 255, 0.1)',
-                        background: 'rgba(28, 28, 30, 0.95)',
+                        border: '0.5px solid var(--border-subtle)',
+                        background: 'var(--bg-elevated)',
                         backdropFilter: 'blur(20px)',
-                        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
+                        boxShadow: 'var(--shadow-card)',
                         fontSize: 13,
-                        color: '#f5f5f7',
+                        color: 'var(--text-primary)',
                       }}
                       formatter={(v: number) => `$${v.toFixed(4)}`}
                     />
@@ -300,7 +300,7 @@ const Dashboard: React.FC = () => {
                   style={{
                     textAlign: 'center',
                     padding: '60px 0',
-                    color: 'rgba(255, 255, 255, 0.25)',
+                    color: 'var(--text-tertiary)',
                   }}
                 >
                   <ApiOutlined
@@ -324,17 +324,17 @@ const Dashboard: React.FC = () => {
                   </defs>
                   <CartesianGrid
                     strokeDasharray="3 3"
-                    stroke="rgba(255, 255, 255, 0.04)"
+                    stroke="var(--border-divider)"
                     vertical={false}
                   />
                   <XAxis
                     dataKey="date"
-                    tick={{ fontSize: 11, fill: 'rgba(255, 255, 255, 0.3)' }}
+                    tick={{ fontSize: 11, fill: 'var(--text-subtle)' }}
                     axisLine={false}
                     tickLine={false}
                   />
                   <YAxis
-                    tick={{ fontSize: 11, fill: 'rgba(255, 255, 255, 0.3)' }}
+                    tick={{ fontSize: 11, fill: 'var(--text-subtle)' }}
                     axisLine={false}
                     tickLine={false}
                     width={50}
@@ -342,14 +342,14 @@ const Dashboard: React.FC = () => {
                   <Tooltip
                     contentStyle={{
                       borderRadius: 12,
-                      border: '0.5px solid rgba(255, 255, 255, 0.1)',
-                      background: 'rgba(28, 28, 30, 0.95)',
+                      border: '0.5px solid var(--border-subtle)',
+                      background: 'var(--bg-elevated)',
                       backdropFilter: 'blur(20px)',
-                      boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
+                      boxShadow: 'var(--shadow-card)',
                       fontSize: 13,
-                      color: '#f5f5f7',
+                      color: 'var(--text-primary)',
                     }}
-                    labelStyle={{ color: 'rgba(255, 255, 255, 0.5)' }}
+                    labelStyle={{ color: 'var(--text-soft)' }}
                   />
                   <Bar
                     dataKey="requests"

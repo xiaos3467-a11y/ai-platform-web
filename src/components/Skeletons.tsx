@@ -15,8 +15,8 @@ import { Card, Skeleton } from 'antd';
 
 const glassCardBase: React.CSSProperties = {
   borderRadius: 16,
-  border: '0.5px solid rgba(255, 255, 255, 0.08)',
-  background: 'rgba(255, 255, 255, 0.04)',
+  border: '0.5px solid var(--border-subtle)',
+  background: 'var(--bg-card)',
 };
 
 export const CardSkeleton: React.FC = () => (

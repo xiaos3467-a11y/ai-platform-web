@@ -38,7 +38,7 @@ const ChatBubble: React.FC<{ role: string; content: string; agentName?: string }
             borderRadius: isUser ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
             background: isUser ? 'linear-gradient(135deg, #0a84ff, #0066d6)' : 'rgba(255,255,255,0.07)',
             border: isUser ? 'none' : '0.5px solid rgba(255,255,255,0.08)',
-            color: '#f5f5f7',
+            color: 'var(--text-primary)',
             fontSize: 13,
             lineHeight: 1.6,
             whiteSpace: 'pre-wrap' as const,
@@ -120,7 +120,7 @@ const Agents: React.FC = () => {
 
   const columns = [
     { title: '名称', dataIndex: 'name', render: (name: string) => (
-      <span style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 500, color: '#f5f5f7' }}>
+      <span style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 500, color: 'var(--text-primary)' }}>
         <div style={{
           width: 28, height: 28, borderRadius: 9,
           background: 'linear-gradient(135deg, #0a84ff, #5e5ce6)',
@@ -136,9 +136,9 @@ const Agents: React.FC = () => {
       <span style={{ padding: '2px 8px', borderRadius: 6, background: 'rgba(10,132,255,0.1)', border: '0.5px solid rgba(10,132,255,0.2)', fontSize: 12, color: '#0a84ff', fontWeight: 500 }}>{v}</span>
     )},
     { title: '工具', dataIndex: 'tools', render: (t: string[]) => (
-      <span style={{ color: '#a1a1a6', fontSize: 13 }}>{t?.length || 0} 个</span>
+      <span style={{ color: 'var(--text-muted)', fontSize: 13 }}>{t?.length || 0} 个</span>
     )},
-    { title: '最大步数', dataIndex: 'max_steps', width: 100, render: (v: number) => <span style={{ color: '#a1a1a6' }}>{v}</span> },
+    { title: '最大步数', dataIndex: 'max_steps', width: 100, render: (v: number) => <span style={{ color: 'var(--text-muted)' }}>{v}</span> },
     { title: '状态', dataIndex: 'status', render: (v: string) => (
       <span style={{
         display: 'inline-flex', alignItems: 'center', gap: 6, padding: '3px 10px', borderRadius: 8,
@@ -150,7 +150,7 @@ const Agents: React.FC = () => {
         {v}
       </span>
     )},
-    { title: '创建时间', dataIndex: 'created_at', render: (v: string) => <span style={{ color: 'rgba(255,255,255,0.35)', fontSize: 13 }}>{new Date(v).toLocaleString()}</span> },
+    { title: '创建时间', dataIndex: 'created_at', render: (v: string) => <span style={{ color: 'var(--text-muted)', fontSize: 13 }}>{new Date(v).toLocaleString()}</span> },
     { title: '', width: 100, render: (_: unknown, record: Agent) => (
       <Space>
         <div
@@ -174,10 +174,10 @@ const Agents: React.FC = () => {
       {/* Page title */}
       <div className="animate-fade-in-up" style={{ marginBottom: 32, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
         <div>
-          <Title level={2} style={{ margin: 0, fontWeight: 700, fontSize: 34, letterSpacing: '-0.04em', color: '#f5f5f7' }}>
+          <Title level={2} style={{ margin: 0, fontWeight: 700, fontSize: 34, letterSpacing: '-0.04em', color: 'var(--text-primary)' }}>
             Agent 管理
           </Title>
-          <Text style={{ fontSize: 17, color: 'rgba(255,255,255,0.4)', marginTop: 6, display: 'block' }}>
+          <Text style={{ fontSize: 17, color: 'var(--text-secondary)', marginTop: 6, display: 'block' }}>
             创建可调用工具的智能助手
           </Text>
         </div>
@@ -249,7 +249,7 @@ const Agents: React.FC = () => {
             }}>
               <RobotOutlined />
             </div>
-            <span style={{ fontSize: 15, fontWeight: 600, color: '#f5f5f7' }}>
+            <span style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)' }}>
               {selectedAgent?.name || 'Agent 对话'}
             </span>
           </div>
@@ -263,7 +263,7 @@ const Agents: React.FC = () => {
             {chatMessages.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '60px 0' }}>
                 <MessageOutlined style={{ fontSize: 36, color: 'rgba(255,255,255,0.1)', marginBottom: 12 }} />
-                <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.3)' }}>发送消息开始对话</div>
+                <div style={{ fontSize: 14, color: 'var(--text-subtle)' }}>发送消息开始对话</div>
               </div>
             ) : (
               chatMessages.map((msg, i) => (
@@ -271,7 +271,7 @@ const Agents: React.FC = () => {
               ))
             )}
             {chatLoading && (
-              <div style={{ padding: '8px 14px', fontSize: 13, color: 'rgba(255,255,255,0.3)', fontStyle: 'italic' }}>
+              <div style={{ padding: '8px 14px', fontSize: 13, color: 'var(--text-subtle)', fontStyle: 'italic' }}>
                 思考中...
               </div>
             )}

@@ -85,7 +85,7 @@ const Evaluations: React.FC = () => {
   };
 
   const metricColumns = [
-    { title: '指标', dataIndex: 'metric', render: (v: string) => <span style={{ fontWeight: 500, color: '#f5f5f7' }}>{metricLabels[v] || v}</span> },
+    { title: '指标', dataIndex: 'metric', render: (v: string) => <span style={{ fontWeight: 500, color: 'var(--text-primary)' }}>{metricLabels[v] || v}</span> },
     { title: '分数', dataIndex: 'score', width: 100, render: (v: number) => (
       <span style={{ fontWeight: 600, color: scoreColor(v) }}>{(v * 100).toFixed(1)}%</span>
     )},
@@ -93,9 +93,9 @@ const Evaluations: React.FC = () => {
   ];
 
   const sampleColumns = [
-    { title: '#', dataIndex: 'sample_index', width: 50, render: (v: number) => <span style={{ color: '#a1a1a6' }}>{v + 1}</span> },
+    { title: '#', dataIndex: 'sample_index', width: 50, render: (v: number) => <span style={{ color: 'var(--text-muted)' }}>{v + 1}</span> },
     { title: '问题', dataIndex: 'question', ellipsis: true },
-    { title: '生成答案', dataIndex: 'generated_answer', ellipsis: true, render: (v: string) => <span style={{ color: 'rgba(255,255,255,0.6)' }}>{v}</span> },
+    { title: '生成答案', dataIndex: 'generated_answer', ellipsis: true, render: (v: string) => <span style={{ color: 'var(--text-dim)' }}>{v}</span> },
     { title: '评分', dataIndex: 'overall_score', width: 80, render: (v: number) => (
       <span style={{ fontWeight: 600, color: scoreColor(v) }}>{(v * 100).toFixed(1)}%</span>
     )},
@@ -105,8 +105,8 @@ const Evaluations: React.FC = () => {
     <div>
       {/* Page title */}
       <div className="animate-fade-in-up" style={{ marginBottom: 32 }}>
-        <Title level={2} style={{ margin: 0, fontWeight: 700, fontSize: 34, letterSpacing: '-0.04em', color: '#f5f5f7' }}>评测中心</Title>
-        <Text style={{ fontSize: 17, color: 'rgba(255,255,255,0.4)', marginTop: 6, display: 'block' }}>RAG 与 LLM 输出质量评估</Text>
+        <Title level={2} style={{ margin: 0, fontWeight: 700, fontSize: 34, letterSpacing: '-0.04em', color: 'var(--text-primary)' }}>评测中心</Title>
+        <Text style={{ fontSize: 17, color: 'var(--text-secondary)', marginTop: 6, display: 'block' }}>RAG 与 LLM 输出质量评估</Text>
       </div>
 
       <Row gutter={20}>
@@ -159,7 +159,7 @@ const Evaluations: React.FC = () => {
             <>
               {/* Score overview */}
               <SectionCard title="评测结果总览" style={{ marginBottom: 20 }}>
-                <div style={{ display: 'flex', gap: 20, marginBottom: 20, padding: '12px 16px', borderRadius: 10, background: 'rgba(255,255,255,0.03)', border: '0.5px solid rgba(255,255,255,0.06)' }}>
+                <div style={{ display: 'flex', gap: 20, marginBottom: 20, padding: '12px 16px', borderRadius: 10, background: 'var(--bg-subtle)', border: '0.5px solid var(--border-divider)' }}>
                   {[
                     { label: '数据集', value: result.dataset_name },
                     { label: '模型', value: result.model },
@@ -167,8 +167,8 @@ const Evaluations: React.FC = () => {
                     { label: '耗时', value: `${result.duration_seconds}s` },
                   ].map((item) => (
                     <div key={item.label} style={{ flex: 1 }}>
-                      <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', marginBottom: 4 }}>{item.label}</div>
-                      <div style={{ fontSize: 14, fontWeight: 500, color: '#f5f5f7' }}>{item.value}</div>
+                      <div style={{ fontSize: 11, color: 'var(--text-subtle)', marginBottom: 4 }}>{item.label}</div>
+                      <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-primary)' }}>{item.value}</div>
                     </div>
                   ))}
                 </div>

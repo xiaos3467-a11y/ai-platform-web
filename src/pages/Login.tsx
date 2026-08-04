@@ -49,7 +49,7 @@ const LoginPage: React.FC = () => {
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        background: '#000',
+        background: 'var(--bg-body)',
         padding: 24,
         position: 'relative',
         overflow: 'hidden',
@@ -161,7 +161,7 @@ const LoginPage: React.FC = () => {
               fontWeight: 700,
               fontSize: 44,
               letterSpacing: '-0.04em',
-              color: '#f5f5f7',
+              color: 'var(--text-primary)',
               lineHeight: 1.1,
             }}
           >
@@ -186,12 +186,12 @@ const LoginPage: React.FC = () => {
           style={{
             width: '100%',
             maxWidth: 420,
-            background: 'rgba(255, 255, 255, 0.04)',
+            background: 'var(--bg-card)',
             backdropFilter: 'saturate(180%) blur(24px)',
             WebkitBackdropFilter: 'saturate(180%) blur(24px)',
             borderRadius: 24,
             padding: '44px 40px',
-            border: '0.5px solid rgba(255, 255, 255, 0.08)',
+            border: '0.5px solid var(--border-subtle)',
             boxShadow: '0 24px 64px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255,255,255,0.04) inset',
           }}
         >
@@ -202,7 +202,7 @@ const LoginPage: React.FC = () => {
                 <span
                   style={{
                     fontWeight: 500,
-                    color: 'rgba(255, 255, 255, 0.7)',
+                    color: 'var(--text-label)',
                     fontSize: 14,
                   }}
                 >
@@ -218,9 +218,9 @@ const LoginPage: React.FC = () => {
                   height: 48,
                   borderRadius: 12,
                   fontSize: 15,
-                  background: 'rgba(255, 255, 255, 0.06)',
-                  borderColor: 'rgba(255, 255, 255, 0.08)',
-                  color: '#f5f5f7',
+                  background: 'var(--bg-elevated)',
+                  borderColor: 'var(--border-subtle)',
+                  color: 'var(--text-primary)',
                 }}
               />
             </Form.Item>
@@ -230,7 +230,7 @@ const LoginPage: React.FC = () => {
                 <span
                   style={{
                     fontWeight: 500,
-                    color: 'rgba(255, 255, 255, 0.7)',
+                    color: 'var(--text-label)',
                     fontSize: 14,
                   }}
                 >
@@ -246,9 +246,9 @@ const LoginPage: React.FC = () => {
                   height: 48,
                   borderRadius: 12,
                   fontSize: 15,
-                  background: 'rgba(255, 255, 255, 0.06)',
-                  borderColor: 'rgba(255, 255, 255, 0.08)',
-                  color: '#f5f5f7',
+                  background: 'var(--bg-elevated)',
+                  borderColor: 'var(--border-subtle)',
+                  color: 'var(--text-primary)',
                 }}
               />
             </Form.Item>

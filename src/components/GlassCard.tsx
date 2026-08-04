@@ -40,8 +40,8 @@ const GlassCard: React.FC<GlassCardProps> = ({
       className={cls}
       style={{
         borderRadius: 16,
-        border: '0.5px solid rgba(255, 255, 255, 0.08)',
-        background: 'rgba(255, 255, 255, 0.04)',
+        border: '0.5px solid var(--border-subtle)',
+        background: 'var(--bg-card)',
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
         ...style,

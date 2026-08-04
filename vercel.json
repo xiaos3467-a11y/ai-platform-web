@@ -6,6 +6,9 @@
   "framework": "vite",
   "rewrites": [
     { "source": "/api/(.*)", "destination": "https://ai-platform-api-production-19cb.up.railway.app/api/$1" },
+    { "source": "/health", "destination": "https://ai-platform-api-production-19cb.up.railway.app/health" },
+    { "source": "/live", "destination": "https://ai-platform-api-production-19cb.up.railway.app/live" },
+    { "source": "/metrics", "destination": "https://ai-platform-api-production-19cb.up.railway.app/metrics" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }

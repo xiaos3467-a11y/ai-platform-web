@@ -35,7 +35,7 @@ const VersionItem: React.FC<{ v: PromptVersion; isCurrent: boolean }> = ({ v, is
       }}>
         v{v.version}
       </span>
-      <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)' }}>
+      <span style={{ fontSize: 12, color: 'var(--text-subtle)' }}>
         {new Date(v.created_at).toLocaleString()}
       </span>
       {isCurrent && (
@@ -43,14 +43,14 @@ const VersionItem: React.FC<{ v: PromptVersion; isCurrent: boolean }> = ({ v, is
       )}
     </div>
     {v.change_note && (
-      <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', marginBottom: 6 }}>{v.change_note}</div>
+      <div style={{ fontSize: 13, color: 'var(--text-soft)', marginBottom: 6 }}>{v.change_note}</div>
     )}
     <pre style={{
       fontSize: 11, fontFamily: 'monospace',
-      background: 'rgba(255,255,255,0.04)',
-      border: '0.5px solid rgba(255,255,255,0.06)',
+      background: 'var(--bg-card)',
+      border: '0.5px solid var(--border-divider)',
       padding: 8, borderRadius: 6, maxHeight: 100, overflow: 'auto',
-      color: '#a1a1a6', margin: 0,
+      color: 'var(--text-muted)', margin: 0,
     }}>
       {v.content.slice(0, 200)}{v.content.length > 200 ? '...' : ''}
     </pre>
@@ -127,7 +127,7 @@ const Prompts: React.FC = () => {
 
   const columns = [
     { title: '名称', dataIndex: 'name', render: (name: string) => (
-      <span style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 500, color: '#f5f5f7' }}>
+      <span style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 500, color: 'var(--text-primary)' }}>
         <div style={{
           width: 28, height: 28, borderRadius: 9,
           background: 'linear-gradient(135deg, #ff9f0a, #ffd60a)',
@@ -139,11 +139,11 @@ const Prompts: React.FC = () => {
         {name}
       </span>
     )},
-    { title: '描述', dataIndex: 'description', render: (v: string) => <span style={{ color: '#a1a1a6', fontSize: 13 }}>{v || '-'}</span> },
+    { title: '描述', dataIndex: 'description', render: (v: string) => <span style={{ color: 'var(--text-muted)', fontSize: 13 }}>{v || '-'}</span> },
     { title: '版本', dataIndex: 'current_version', render: (v: number) => (
       <span style={{ padding: '2px 8px', borderRadius: 6, background: 'rgba(10,132,255,0.1)', border: '0.5px solid rgba(10,132,255,0.2)', fontSize: 12, color: '#0a84ff', fontWeight: 500 }}>v{v}</span>
     )},
-    { title: '创建时间', dataIndex: 'created_at', render: (v: string) => <span style={{ color: 'rgba(255,255,255,0.35)', fontSize: 13 }}>{new Date(v).toLocaleString()}</span> },
+    { title: '创建时间', dataIndex: 'created_at', render: (v: string) => <span style={{ color: 'var(--text-muted)', fontSize: 13 }}>{new Date(v).toLocaleString()}</span> },
     { title: '', width: 160, render: (_: unknown, record: PromptTemplate) => (
       <Space>
         <Button size="small" icon={<CodeOutlined />} onClick={() => { setSelectedPrompt(record); setRenderOpen(true); setRendered(''); }} style={{ borderRadius: 8, fontSize: 12 }}>
@@ -161,8 +161,8 @@ const Prompts: React.FC = () => {
       {/* Page title */}
       <div className="animate-fade-in-up" style={{ marginBottom: 32, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
         <div>
-          <Title level={2} style={{ margin: 0, fontWeight: 700, fontSize: 34, letterSpacing: '-0.04em', color: '#f5f5f7' }}>Prompt 管理</Title>
-          <Text style={{ fontSize: 17, color: 'rgba(255,255,255,0.4)', marginTop: 6, display: 'block' }}>模板化提示词，版本化管理</Text>
+          <Title level={2} style={{ margin: 0, fontWeight: 700, fontSize: 34, letterSpacing: '-0.04em', color: 'var(--text-primary)' }}>Prompt 管理</Title>
+          <Text style={{ fontSize: 17, color: 'var(--text-secondary)', marginTop: 6, display: 'block' }}>模板化提示词，版本化管理</Text>
         </div>
         <Button type="primary" icon={<PlusOutlined />} onClick={() => setCreateOpen(true)} style={{ height: 44, paddingInline: 20, borderRadius: 12, fontWeight: 500 }}>
           创建模板
@@ -204,7 +204,7 @@ const Prompts: React.FC = () => {
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <HistoryOutlined style={{ fontSize: 16, color: '#0a84ff' }} />
-            <span style={{ fontSize: 15, fontWeight: 600, color: '#f5f5f7' }}>{selectedPrompt?.name} — 版本历史</span>
+            <span style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)' }}>{selectedPrompt?.name} — 版本历史</span>
           </div>
         }
         open={versionsOpen}
@@ -217,7 +217,7 @@ const Prompts: React.FC = () => {
           </Button>
         </div>
         {versions.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '40px 0', color: 'rgba(255,255,255,0.3)' }}>暂无版本记录</div>
+          <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-subtle)' }}>暂无版本记录</div>
         ) : (
           versions.map((v) => <VersionItem key={v.version} v={v} isCurrent={v.version === selectedPrompt?.current_version} />)
         )}
@@ -248,7 +248,7 @@ const Prompts: React.FC = () => {
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <SwapOutlined style={{ fontSize: 16, color: '#0a84ff' }} />
-            <span style={{ fontSize: 15, fontWeight: 600, color: '#f5f5f7' }}>渲染 {selectedPrompt?.name}</span>
+            <span style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)' }}>渲染 {selectedPrompt?.name}</span>
           </div>
         }
         open={renderOpen}
@@ -257,7 +257,7 @@ const Prompts: React.FC = () => {
       >
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           <div>
-            <div style={{ fontSize: 13, fontWeight: 500, color: 'rgba(255,255,255,0.5)', marginBottom: 8 }}>变量 (JSON)</div>
+            <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-soft)', marginBottom: 8 }}>变量 (JSON)</div>
             <TextArea
               value={renderVars}
               onChange={(e) => setRenderVars(e.target.value)}
@@ -270,12 +270,12 @@ const Prompts: React.FC = () => {
             渲染
           </Button>
           <div>
-            <div style={{ fontSize: 13, fontWeight: 500, color: 'rgba(255,255,255,0.5)', marginBottom: 8 }}>渲染结果</div>
+            <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-soft)', marginBottom: 8 }}>渲染结果</div>
             <pre style={{
-              background: 'rgba(255,255,255,0.04)',
-              border: '0.5px solid rgba(255,255,255,0.08)',
+              background: 'var(--bg-card)',
+              border: '0.5px solid var(--border-subtle)',
               padding: 16, borderRadius: 10, whiteSpace: 'pre-wrap',
-              minHeight: 100, fontSize: 13, color: '#f5f5f7', margin: 0,
+              minHeight: 100, fontSize: 13, color: 'var(--text-primary)', margin: 0,
             }}>
               {rendered || '（点击渲染查看结果）'}
             </pre>

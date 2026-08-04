@@ -42,7 +42,7 @@ const NotFound: React.FC = () => {
 
       <Title
         level={3}
-        style={{ margin: 0, fontWeight: 600, color: '#f5f5f7', letterSpacing: '-0.02em' }}
+        style={{ margin: 0, fontWeight: 600, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}
       >
         页面未找到
       </Title>
@@ -50,7 +50,7 @@ const NotFound: React.FC = () => {
       <Text
         style={{
           fontSize: 17,
-          color: 'rgba(255, 255, 255, 0.4)',
+          color: 'var(--text-secondary)',
           marginTop: 8,
           marginBottom: 40,
           display: 'block',

@@ -164,7 +164,7 @@ export const HealthPill: React.FC<HealthPillProps> = ({ name, status }) => {
         style={{
           fontSize: 13,
           fontWeight: 500,
-          color: 'rgba(255, 255, 255, 0.72)',
+          color: 'var(--text-secondary-light)',
         }}
       >
         {name}

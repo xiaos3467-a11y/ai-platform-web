@@ -31,13 +31,13 @@ const EmptyState: React.FC<EmptyStateProps> = ({
         height: 64,
         borderRadius: 20,
         margin: '0 auto 16px',
-        background: 'rgba(255, 255, 255, 0.04)',
-        border: '0.5px solid rgba(255, 255, 255, 0.08)',
+        background: 'var(--bg-card)',
+        border: '0.5px solid var(--border-subtle)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         fontSize: 28,
-        color: 'rgba(255, 255, 255, 0.15)',
+        color: 'var(--text-faint)',
       }}
     >
       {icon}
@@ -45,7 +45,7 @@ const EmptyState: React.FC<EmptyStateProps> = ({
     <div
       style={{
         fontSize: 15,
-        color: 'rgba(255, 255, 255, 0.3)',
+        color: 'var(--text-subtle)',
         fontWeight: 500,
         marginBottom: 8,
       }}
@@ -56,7 +56,7 @@ const EmptyState: React.FC<EmptyStateProps> = ({
       <div
         style={{
           fontSize: 13,
-          color: 'rgba(255, 255, 255, 0.15)',
+          color: 'var(--text-faint)',
           marginBottom: 24,
         }}
       >

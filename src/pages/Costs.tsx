@@ -60,20 +60,20 @@ const Costs: React.FC = () => {
 
   const tooltipStyle = {
     borderRadius: 12,
-    border: '0.5px solid rgba(255,255,255,0.1)',
-    background: 'rgba(28,28,30,0.95)',
+    border: '0.5px solid var(--border-subtle)',
+    background: 'var(--bg-elevated)',
     backdropFilter: 'blur(20px)',
-    boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
+    boxShadow: 'var(--shadow-card)',
     fontSize: 13,
-    color: '#f5f5f7',
+    color: 'var(--text-primary)',
   };
 
   return (
     <div>
       {/* Page title */}
       <div className="animate-fade-in-up" style={{ marginBottom: 32 }}>
-        <Title level={2} style={{ margin: 0, fontWeight: 700, fontSize: 34, letterSpacing: '-0.04em', color: '#f5f5f7' }}>成本分析</Title>
-        <Text style={{ fontSize: 17, color: 'rgba(255,255,255,0.4)', marginTop: 6, display: 'block' }}>Token 消耗与费用追踪</Text>
+        <Title level={2} style={{ margin: 0, fontWeight: 700, fontSize: 34, letterSpacing: '-0.04em', color: 'var(--text-primary)' }}>成本分析</Title>
+        <Text style={{ fontSize: 17, color: 'var(--text-secondary)', marginTop: 6, display: 'block' }}>Token 消耗与费用追踪</Text>
       </div>
 
       {/* Summary Cards */}
@@ -117,7 +117,7 @@ const Costs: React.FC = () => {
                   <XAxis dataKey="date" tick={{ fontSize: 11, fill: 'rgba(255,255,255,0.3)' }} axisLine={false} tickLine={false} />
                   <YAxis yAxisId="left" tick={{ fontSize: 11, fill: 'rgba(255,255,255,0.3)' }} axisLine={false} tickLine={false} width={50} tickFormatter={(v) => `$${v.toFixed(2)}`} />
                   <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 11, fill: 'rgba(255,255,255,0.3)' }} axisLine={false} tickLine={false} width={40} />
-                  <Tooltip contentStyle={tooltipStyle} labelStyle={{ color: 'rgba(255,255,255,0.5)' }} />
+                  <Tooltip contentStyle={tooltipStyle} labelStyle={{ color: 'var(--text-soft)' }} />
                   <Area yAxisId="left" type="monotone" dataKey="estimated_cost_usd" name="成本 (USD)" stroke="#0a84ff" strokeWidth={2} fill="url(#costGrad)" dot={false} activeDot={{ r: 5, fill: '#0a84ff' }} />
                   <Area yAxisId="right" type="monotone" dataKey="requests" name="请求数" stroke="#30d158" strokeWidth={2} fill="transparent" dot={false} />
                 </AreaChart>
@@ -142,7 +142,7 @@ const Costs: React.FC = () => {
               ) : (
                 <div style={{ textAlign: 'center', padding: '60px 0' }}>
                   <ApiOutlined style={{ fontSize: 36, color: 'rgba(255,255,255,0.1)', marginBottom: 12 }} />
-                  <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.25)' }}>暂无数据</div>
+                  <div style={{ fontSize: 14, color: 'var(--text-tertiary)' }}>暂无数据</div>
                 </div>
               )}
             </SectionCard>
@@ -168,7 +168,7 @@ const Costs: React.FC = () => {
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
                   <XAxis dataKey="date" tick={{ fontSize: 11, fill: 'rgba(255,255,255,0.3)' }} axisLine={false} tickLine={false} />
                   <YAxis tick={{ fontSize: 11, fill: 'rgba(255,255,255,0.3)' }} axisLine={false} tickLine={false} width={60} tickFormatter={(v) => v > 1000 ? `${(v/1000).toFixed(0)}K` : v} />
-                  <Tooltip contentStyle={tooltipStyle} labelStyle={{ color: 'rgba(255,255,255,0.5)' }} />
+                  <Tooltip contentStyle={tooltipStyle} labelStyle={{ color: 'var(--text-soft)' }} />
                   <Bar dataKey="input_tokens" name="输入 Token" fill="url(#barGrad1)" stackId="a" radius={[0, 0, 0, 0]} />
                   <Bar dataKey="output_tokens" name="输出 Token" fill="url(#barGrad2)" stackId="a" radius={[6, 6, 0, 0]} />
                 </BarChart>
@@ -183,7 +183,7 @@ const Costs: React.FC = () => {
             <SectionCard title="预算检查">
               <div style={{ display: 'flex', alignItems: 'flex-end', gap: 12, marginBottom: 20 }}>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 13, fontWeight: 500, color: 'rgba(255,255,255,0.5)', marginBottom: 8 }}>月度预算 (USD)</div>
+                  <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-soft)', marginBottom: 8 }}>月度预算 (USD)</div>
                   <InputNumber value={budget} onChange={(v) => setBudget(v || 0)} min={1} style={{ width: '100%', borderRadius: 10 }} />
                 </div>
                 <Button type="primary" onClick={checkBudget} icon={<AlertOutlined />} style={{ borderRadius: 10, height: 40, fontWeight: 500 }}>
@@ -196,10 +196,10 @@ const Costs: React.FC = () => {
                   {/* Progress bar */}
                   <div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8, fontSize: 13 }}>
-                      <span style={{ color: 'rgba(255,255,255,0.4)' }}>已使用</span>
+                      <span style={{ color: 'var(--text-secondary)' }}>已使用</span>
                       <span style={{ color: budgetResult.usage_percentage >= 80 ? '#ff453a' : '#0a84ff', fontWeight: 600 }}>{budgetResult.usage_percentage.toFixed(1)}%</span>
                     </div>
-                    <div style={{ height: 6, borderRadius: 3, background: 'rgba(255,255,255,0.06)', overflow: 'hidden' }}>
+                    <div style={{ height: 6, borderRadius: 3, background: 'var(--bg-elevated)', overflow: 'hidden' }}>
                       <div style={{
                         height: '100%', borderRadius: 3,
                         width: `${Math.min(budgetResult.usage_percentage, 100)}%`,
@@ -211,12 +211,12 @@ const Costs: React.FC = () => {
 
                   <div style={{ display: 'flex', gap: 16 }}>
                     {[
-                      { label: '预算', value: `$${budgetResult.monthly_budget_usd}`, color: '#a1a1a6' },
+                      { label: '预算', value: `$${budgetResult.monthly_budget_usd}`, color: 'var(--text-muted)' },
                       { label: '已花费', value: `$${budgetResult.spent_usd}`, color: '#ffd60a' },
                       { label: '剩余', value: `$${budgetResult.remaining_usd}`, color: budgetResult.remaining_usd > 0 ? '#30d158' : '#ff453a' },
                     ].map((item) => (
-                      <div key={item.label} style={{ flex: 1, padding: '10px 14px', borderRadius: 10, background: 'rgba(255,255,255,0.04)', border: '0.5px solid rgba(255,255,255,0.06)' }}>
-                        <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', marginBottom: 4 }}>{item.label}</div>
+                      <div key={item.label} style={{ flex: 1, padding: '10px 14px', borderRadius: 10, background: 'var(--bg-card)', border: '0.5px solid var(--border-divider)' }}>
+                        <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>{item.label}</div>
                         <div style={{ fontSize: 18, fontWeight: 600, color: item.color, letterSpacing: '-0.02em' }}>{item.value}</div>
                       </div>
                     ))}
@@ -242,23 +242,23 @@ const Costs: React.FC = () => {
           {loading ? <CardSkeleton /> : (
             <SectionCard title="模型成本明细">
               {modelData.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '40px 0', color: 'rgba(255,255,255,0.25)' }}>暂无数据</div>
+                <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-tertiary)' }}>暂无数据</div>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   {modelData.map((m) => {
                     const pct = ((m.cost_usd || 0) / (summary?.total_cost_usd || 1) * 100);
                     return (
-                      <div key={m.name} style={{ padding: '10px 14px', borderRadius: 10, background: 'rgba(255,255,255,0.03)', border: '0.5px solid rgba(255,255,255,0.06)' }}>
+                      <div key={m.name} style={{ padding: '10px 14px', borderRadius: 10, background: 'var(--bg-subtle)', border: '0.5px solid var(--border-divider)' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-                          <span style={{ fontSize: 13, fontWeight: 500, color: '#f5f5f7' }}>{m.name}</span>
+                          <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>{m.name}</span>
                           <span style={{ fontSize: 14, fontWeight: 600, color: '#0a84ff' }}>${m.cost_usd?.toFixed(4)}</span>
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: 12, color: 'rgba(255,255,255,0.35)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: 12, color: 'var(--text-muted)' }}>
                           <span>{m.requests?.toLocaleString()} 请求</span>
                           <span>{((m.input_tokens || 0) + (m.output_tokens || 0)).toLocaleString()} tokens</span>
                           <span style={{ marginLeft: 'auto' }}>{pct.toFixed(1)}%</span>
                         </div>
-                        <div style={{ height: 3, borderRadius: 2, background: 'rgba(255,255,255,0.06)', marginTop: 6, overflow: 'hidden' }}>
+                        <div style={{ height: 3, borderRadius: 2, background: 'var(--bg-elevated)', marginTop: 6, overflow: 'hidden' }}>
                           <div style={{ height: '100%', borderRadius: 2, width: `${pct}%`, background: 'linear-gradient(90deg, #0a84ff, #5e5ce6)' }} />
                         </div>
                       </div>

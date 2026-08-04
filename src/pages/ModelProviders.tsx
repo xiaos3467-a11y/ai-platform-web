@@ -69,7 +69,7 @@ const ModelProviders: React.FC = () => {
     { title: '提供商', dataIndex: 'provider_name', render: (name: string) => {
       const meta = PROVIDER_META[name] || { label: name, gradient: 'linear-gradient(135deg, #6e6e73, #a1a1a6)' };
       return (
-        <span style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 500, color: '#f5f5f7' }}>
+        <span style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 500, color: 'var(--text-primary)' }}>
           <div style={{
             width: 28, height: 28, borderRadius: 9, background: meta.gradient,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -81,16 +81,16 @@ const ModelProviders: React.FC = () => {
         </span>
       );
     }},
-    { title: '显示名称', dataIndex: 'display_name', render: (v: string) => <span style={{ color: '#a1a1a6' }}>{v || '-'}</span> },
+    { title: '显示名称', dataIndex: 'display_name', render: (v: string) => <span style={{ color: 'var(--text-muted)' }}>{v || '-'}</span> },
     { title: 'API 地址', dataIndex: 'api_base_url', render: (v: string) => (
-      <span style={{ fontSize: 12, fontFamily: 'monospace', color: 'rgba(255,255,255,0.35)' }}>{v || '-'}</span>
+      <span style={{ fontSize: 12, fontFamily: 'monospace', color: 'var(--text-muted)' }}>{v || '-'}</span>
     )},
     { title: 'API Key', dataIndex: 'api_key_display', render: (key: string, record: Provider) => {
       if (!key) return <span style={{ color: 'rgba(255,255,255,0.2)' }}>-</span>;
       const visible = showKeys[record.id];
       return (
         <Space>
-          <code style={{ fontSize: 12, color: '#a1a1a6', fontFamily: 'monospace', padding: '2px 6px', borderRadius: 4, background: 'rgba(255,255,255,0.04)' }}>
+          <code style={{ fontSize: 12, color: 'var(--text-muted)', fontFamily: 'monospace', padding: '2px 6px', borderRadius: 4, background: 'var(--bg-card)' }}>
             {visible ? key : key.replace(/[^.…]/g, '•')}
           </code>
           <Tooltip title={visible ? '隐藏' : '显示'}>
@@ -99,16 +99,16 @@ const ModelProviders: React.FC = () => {
               size="small"
               icon={visible ? <EyeInvisibleOutlined /> : <EyeOutlined />}
               onClick={() => setShowKeys({ ...showKeys, [record.id]: !visible })}
-              style={{ color: 'rgba(255,255,255,0.3)' }}
+              style={{ color: 'var(--text-subtle)' }}
             />
           </Tooltip>
         </Space>
       );
     }},
     { title: '模型', dataIndex: 'models', render: (models: { name: string }[]) => (
-      <span style={{ color: '#a1a1a6', fontSize: 13 }}>{models?.length || 0} 个</span>
+      <span style={{ color: 'var(--text-muted)', fontSize: 13 }}>{models?.length || 0} 个</span>
     )},
-    { title: '优先级', dataIndex: 'priority', width: 80, render: (v: number) => <span style={{ color: '#a1a1a6' }}>{v}</span> },
+    { title: '优先级', dataIndex: 'priority', width: 80, render: (v: number) => <span style={{ color: 'var(--text-muted)' }}>{v}</span> },
     { title: '状态', dataIndex: 'is_enabled', width: 80, render: (enabled: boolean, record: Provider) => (
       <Switch checked={enabled} onChange={(v) => handleToggle(record.id, v)} size="small" />
     )},
@@ -127,8 +127,8 @@ const ModelProviders: React.FC = () => {
       {/* Page title */}
       <div className="animate-fade-in-up" style={{ marginBottom: 32, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
         <div>
-          <Title level={2} style={{ margin: 0, fontWeight: 700, fontSize: 34, letterSpacing: '-0.04em', color: '#f5f5f7' }}>模型提供商</Title>
-          <Text style={{ fontSize: 17, color: 'rgba(255,255,255,0.4)', marginTop: 6, display: 'block' }}>配置 LLM API 接入</Text>
+          <Title level={2} style={{ margin: 0, fontWeight: 700, fontSize: 34, letterSpacing: '-0.04em', color: 'var(--text-primary)' }}>模型提供商</Title>
+          <Text style={{ fontSize: 17, color: 'var(--text-secondary)', marginTop: 6, display: 'block' }}>配置 LLM API 接入</Text>
         </div>
         <Space>
           <Button icon={<ReloadOutlined />} onClick={fetchProviders} style={{ borderRadius: 10 }}>刷新</Button>

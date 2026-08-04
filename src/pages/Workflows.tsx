@@ -71,7 +71,7 @@ const Workflows: React.FC = () => {
 
   const columns = [
     { title: '名称', dataIndex: 'name', render: (name: string) => (
-      <span style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 500, color: '#f5f5f7' }}>
+      <span style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 500, color: 'var(--text-primary)' }}>
         <div style={{
           width: 28, height: 28, borderRadius: 9,
           background: 'linear-gradient(135deg, #5e5ce6, #bf5af2)',
@@ -83,13 +83,13 @@ const Workflows: React.FC = () => {
         {name}
       </span>
     )},
-    { title: '描述', dataIndex: 'description', render: (v: string) => <span style={{ color: '#a1a1a6', fontSize: 13 }}>{v || '-'}</span> },
+    { title: '描述', dataIndex: 'description', render: (v: string) => <span style={{ color: 'var(--text-muted)', fontSize: 13 }}>{v || '-'}</span> },
     { title: '版本', dataIndex: 'version', render: (v: number) => (
-      <span style={{ padding: '2px 8px', borderRadius: 6, background: 'rgba(255,255,255,0.06)', fontSize: 12, color: '#a1a1a6', fontWeight: 500 }}>v{v}</span>
+      <span style={{ padding: '2px 8px', borderRadius: 6, background: 'var(--bg-elevated)', fontSize: 12, color: 'var(--text-muted)', fontWeight: 500 }}>v{v}</span>
     )},
-    { title: '节点', dataIndex: 'node_count', render: (v: number) => <span style={{ color: '#a1a1a6' }}>{v}</span> },
+    { title: '节点', dataIndex: 'node_count', render: (v: number) => <span style={{ color: 'var(--text-muted)' }}>{v}</span> },
     { title: '状态', dataIndex: 'status', render: (v: string) => <StatusPill status={v} /> },
-    { title: '创建时间', dataIndex: 'created_at', render: (v: string) => <span style={{ color: 'rgba(255,255,255,0.35)', fontSize: 13 }}>{new Date(v).toLocaleString()}</span> },
+    { title: '创建时间', dataIndex: 'created_at', render: (v: string) => <span style={{ color: 'var(--text-muted)', fontSize: 13 }}>{new Date(v).toLocaleString()}</span> },
     { title: '', width: 160, render: (_: unknown, record: Workflow) => (
       <Space>
         {record.status === 'draft' && (
@@ -114,10 +114,10 @@ const Workflows: React.FC = () => {
       {/* Page title */}
       <div className="animate-fade-in-up" style={{ marginBottom: 32, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
         <div>
-          <Title level={2} style={{ margin: 0, fontWeight: 700, fontSize: 34, letterSpacing: '-0.04em', color: '#f5f5f7' }}>
+          <Title level={2} style={{ margin: 0, fontWeight: 700, fontSize: 34, letterSpacing: '-0.04em', color: 'var(--text-primary)' }}>
             工作流
           </Title>
-          <Text style={{ fontSize: 17, color: 'rgba(255,255,255,0.4)', marginTop: 6, display: 'block' }}>
+          <Text style={{ fontSize: 17, color: 'var(--text-secondary)', marginTop: 6, display: 'block' }}>
             编排多步骤任务流程
           </Text>
         </div>
@@ -165,7 +165,7 @@ const Workflows: React.FC = () => {
             }}>
               <PlayCircleOutlined />
             </div>
-            <span style={{ fontSize: 15, fontWeight: 600, color: '#f5f5f7' }}>执行 {selectedWf?.name}</span>
+            <span style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)' }}>执行 {selectedWf?.name}</span>
           </div>
         }
         open={execOpen}
@@ -174,7 +174,7 @@ const Workflows: React.FC = () => {
       >
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           <div>
-            <div style={{ fontSize: 13, fontWeight: 500, color: 'rgba(255,255,255,0.5)', marginBottom: 8 }}>输入参数 (JSON)</div>
+            <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-soft)', marginBottom: 8 }}>输入参数 (JSON)</div>
             <Input.TextArea
               value={execInput}
               onChange={(e) => setExecInput(e.target.value)}
@@ -192,19 +192,19 @@ const Workflows: React.FC = () => {
               style={{ borderRadius: 12 }}
               styles={{ body: { padding: 16 } }}
             >
-              <div style={{ fontSize: 13, fontWeight: 600, color: '#f5f5f7', marginBottom: 12 }}>执行结果</div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 12 }}>执行结果</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
-                  <span style={{ color: 'rgba(255,255,255,0.4)' }}>状态</span>
+                  <span style={{ color: 'var(--text-secondary)' }}>状态</span>
                   <StatusPill status={execResult.status} />
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
-                  <span style={{ color: 'rgba(255,255,255,0.4)' }}>开始时间</span>
-                  <span style={{ color: '#f5f5f7' }}>{execResult.started_at ? new Date(execResult.started_at).toLocaleString() : '-'}</span>
+                  <span style={{ color: 'var(--text-secondary)' }}>开始时间</span>
+                  <span style={{ color: 'var(--text-primary)' }}>{execResult.started_at ? new Date(execResult.started_at).toLocaleString() : '-'}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
-                  <span style={{ color: 'rgba(255,255,255,0.4)' }}>完成时间</span>
-                  <span style={{ color: '#f5f5f7' }}>{execResult.completed_at ? new Date(execResult.completed_at).toLocaleString() : '-'}</span>
+                  <span style={{ color: 'var(--text-secondary)' }}>完成时间</span>
+                  <span style={{ color: 'var(--text-primary)' }}>{execResult.completed_at ? new Date(execResult.completed_at).toLocaleString() : '-'}</span>
                 </div>
                 {execResult.error_message && (
                   <div style={{ padding: '8px 12px', borderRadius: 8, background: 'rgba(255,69,58,0.08)', border: '0.5px solid rgba(255,69,58,0.2)', fontSize: 13, color: '#ff453a' }}>
@@ -214,10 +214,10 @@ const Workflows: React.FC = () => {
                 {execResult.outputs && (
                   <pre style={{
                     fontSize: 12, fontFamily: 'monospace',
-                    background: 'rgba(255,255,255,0.04)',
-                    border: '0.5px solid rgba(255,255,255,0.08)',
+                    background: 'var(--bg-card)',
+                    border: '0.5px solid var(--border-subtle)',
                     padding: 12, borderRadius: 8, marginTop: 4,
-                    maxHeight: 300, overflow: 'auto', color: '#a1a1a6',
+                    maxHeight: 300, overflow: 'auto', color: 'var(--text-muted)',
                   }}>
                     {JSON.stringify(execResult.outputs, null, 2)}
                   </pre>

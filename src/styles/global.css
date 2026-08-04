@@ -38,6 +38,53 @@ html.light body {
   color: #1d1d1f;
 }
 
+/* ─── Theme tokens — CSS custom properties ───────────────────────── */
+/* Components & pages reference these via `var(--token)`. The default
+   (root) values target dark mode; html.light overrides flip them. */
+:root {
+  --text-primary: #f5f5f7;
+  --text-secondary: rgba(255, 255, 255, 0.45);
+  --text-tertiary: rgba(255, 255, 255, 0.25);
+  --text-muted: rgba(255, 255, 255, 0.35);
+  --text-soft: rgba(255, 255, 255, 0.5);
+  --text-dim: rgba(255, 255, 255, 0.6);
+  --text-faint: rgba(255, 255, 255, 0.15);
+  --text-subtle: rgba(255, 255, 255, 0.3);
+  --text-label: rgba(255, 255, 255, 0.7);
+  --text-secondary-light: rgba(255, 255, 255, 0.72);
+  --bg-body: #000000;
+  --bg-card: rgba(255, 255, 255, 0.04);
+  --bg-subtle: rgba(255, 255, 255, 0.03);
+  --bg-elevated: rgba(255, 255, 255, 0.06);
+  --bg-elevated-2: rgba(255, 255, 255, 0.08);
+  --bg-chat-user: rgba(255, 255, 255, 0.07);
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-divider: rgba(255, 255, 255, 0.06);
+  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+html.light {
+  --text-primary: #1d1d1f;
+  --text-secondary: rgba(0, 0, 0, 0.45);
+  --text-tertiary: rgba(0, 0, 0, 0.3);
+  --text-muted: rgba(0, 0, 0, 0.35);
+  --text-soft: rgba(0, 0, 0, 0.5);
+  --text-dim: rgba(0, 0, 0, 0.55);
+  --text-faint: rgba(0, 0, 0, 0.2);
+  --text-subtle: rgba(0, 0, 0, 0.35);
+  --text-label: rgba(0, 0, 0, 0.75);
+  --text-secondary-light: rgba(0, 0, 0, 0.72);
+  --bg-body: #f5f5f7;
+  --bg-card: rgba(255, 255, 255, 0.8);
+  --bg-subtle: rgba(0, 0, 0, 0.02);
+  --bg-elevated: rgba(0, 0, 0, 0.03);
+  --bg-elevated-2: rgba(0, 0, 0, 0.05);
+  --bg-chat-user: rgba(0, 0, 0, 0.04);
+  --border-subtle: rgba(0, 0, 0, 0.08);
+  --border-divider: rgba(0, 0, 0, 0.06);
+  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
 #root {
   min-height: 100vh;
 }

@@ -77,20 +77,21 @@ const AppLayout: React.FC = () => {
   const displayInitial = displayName.charAt(0).toUpperCase();
 
   // ─── Theme-aware palette ────────────────────────────────────────
-  // Mirrors the token set so the shell (sidebar/header) follows the
-  // active theme even though those values are applied via inline style.
+  // Uses CSS custom properties so sidebar/header follow the active theme
+  // without needing inline ternaries. Kept for values that still require
+  // JS (transitions, computed values).
   const palette = {
-    canvas: isDark ? '#000' : '#f5f5f7',
+    canvas: 'var(--bg-body)',
     siderBg: isDark ? 'rgba(22, 22, 24, 0.82)' : 'rgba(255, 255, 255, 0.78)',
     headerBg: isDark ? 'rgba(0, 0, 0, 0.72)' : 'rgba(255, 255, 255, 0.72)',
-    border: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)',
-    borderSubtle: isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.04)',
-    textPrimary: isDark ? '#f5f5f7' : '#1d1d1f',
-    textSecondary: isDark ? 'rgba(255, 255, 255, 0.35)' : 'rgba(0, 0, 0, 0.45)',
-    textMuted: isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.35)',
-    textSoft: isDark ? 'rgba(255, 255, 255, 0.45)' : 'rgba(0, 0, 0, 0.5)',
-    hoverBg: isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.04)',
-    userNameColor: isDark ? 'rgba(255, 255, 255, 0.85)' : 'rgba(0, 0, 0, 0.8)',
+    border: 'var(--border-subtle)',
+    borderSubtle: 'var(--border-divider)',
+    textPrimary: 'var(--text-primary)',
+    textSecondary: 'var(--text-secondary)',
+    textMuted: 'var(--text-faint)',
+    textSoft: 'var(--text-secondary)',
+    hoverBg: 'var(--bg-elevated)',
+    userNameColor: 'var(--text-label)',
     hoverBright: isDark ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.85)',
   };
 
@@ -130,7 +131,7 @@ const AppLayout: React.FC = () => {
           background: palette.siderBg,
           backdropFilter: 'saturate(180%) blur(24px)',
           WebkitBackdropFilter: 'saturate(180%) blur(24px)',
-          borderRight: `0.5px solid ${palette.border}`,
+          borderRight: `0.5px solid var(--border-subtle)`,
           overflow: 'auto',
           height: '100vh',
           position: 'fixed',
@@ -150,7 +151,7 @@ const AppLayout: React.FC = () => {
             alignItems: 'center',
             padding: collapsed ? '0 20px' : '0 24px',
             gap: 12,
-            borderBottom: `0.5px solid ${palette.borderSubtle}`,
+            borderBottom: `0.5px solid var(--border-divider)`,
             transition: 'padding 0.35s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.35s ease',
           }}
         >
@@ -275,7 +276,7 @@ const AppLayout: React.FC = () => {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            borderBottom: `0.5px solid ${palette.borderSubtle}`,
+            borderBottom: `0.5px solid var(--border-divider)`,
             height: 56,
             position: 'sticky',
             top: 0,

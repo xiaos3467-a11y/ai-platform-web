@@ -34,7 +34,7 @@ const SectionCard: React.FC<SectionCardProps> = ({
         style={{
           fontSize: 17,
           fontWeight: 600,
-          color: '#f5f5f7',
+          color: 'var(--text-primary)',
           letterSpacing: '-0.02em',
         }}
       >
@@ -44,7 +44,7 @@ const SectionCard: React.FC<SectionCardProps> = ({
         <span
           style={{
             fontSize: 13,
-            color: 'rgba(255, 255, 255, 0.35)',
+            color: 'var(--text-muted)',
             marginLeft: 4,
             fontWeight: 400,
           }}
@@ -61,15 +61,15 @@ const SectionCard: React.FC<SectionCardProps> = ({
       title={titleNode}
       style={{
         borderRadius: 16,
-        border: '0.5px solid rgba(255, 255, 255, 0.08)',
-        background: 'rgba(255, 255, 255, 0.04)',
+        border: '0.5px solid var(--border-subtle)',
+        background: 'var(--bg-card)',
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
         ...style,
       }}
       styles={{
         header: {
-          borderBottom: '0.5px solid rgba(255, 255, 255, 0.06)',
+          borderBottom: '0.5px solid var(--border-divider)',
           padding: '16px 24px',
           minHeight: 'auto',
         },

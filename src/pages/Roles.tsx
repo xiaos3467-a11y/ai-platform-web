@@ -99,16 +99,16 @@ const Roles: React.FC = () => {
         }}>
           <SafetyOutlined />
         </div>
-        <span style={{ fontWeight: 500, color: '#f5f5f7' }}>{name}</span>
+        <span style={{ fontWeight: 500, color: 'var(--text-primary)' }}>{name}</span>
         {record.is_system && <span style={{ padding: '1px 6px', borderRadius: 4, background: 'rgba(255,69,58,0.1)', border: '0.5px solid rgba(255,69,58,0.2)', fontSize: 11, color: '#ff453a', fontWeight: 500 }}>系统</span>}
       </span>
     )},
-    { title: '描述', dataIndex: 'description', render: (v: string) => <span style={{ color: '#a1a1a6', fontSize: 13 }}>{v || '-'}</span> },
+    { title: '描述', dataIndex: 'description', render: (v: string) => <span style={{ color: 'var(--text-muted)', fontSize: 13 }}>{v || '-'}</span> },
     { title: '权限', render: (_: unknown, record: RoleItem) => (
       <span style={{ padding: '2px 8px', borderRadius: 6, background: 'rgba(10,132,255,0.1)', border: '0.5px solid rgba(10,132,255,0.2)', fontSize: 12, color: '#0a84ff', fontWeight: 500 }}>{record.permissions?.length || 0} 项</span>
     )},
-    { title: '用户', dataIndex: 'user_count', render: (v: number) => <span style={{ color: '#a1a1a6' }}>{v} 人</span> },
-    { title: '创建时间', dataIndex: 'created_at', render: (v: string) => <span style={{ color: 'rgba(255,255,255,0.35)', fontSize: 13 }}>{new Date(v).toLocaleString()}</span> },
+    { title: '用户', dataIndex: 'user_count', render: (v: number) => <span style={{ color: 'var(--text-muted)' }}>{v} 人</span> },
+    { title: '创建时间', dataIndex: 'created_at', render: (v: string) => <span style={{ color: 'var(--text-muted)', fontSize: 13 }}>{new Date(v).toLocaleString()}</span> },
     { title: '', width: 100, render: (_: unknown, record: RoleItem) => (
       <Space>
         <div onClick={() => { setEditRole(record); editForm.setFieldsValue(record); setSelectedPermIds(record.permissions.map(p => p.id)); }}
@@ -129,14 +129,14 @@ const Roles: React.FC = () => {
     <div style={{ overflowX: 'auto', borderRadius: 12, border: `0.5px solid ${matrixBorder}` }}>
       <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
         <thead>
-          <tr style={{ background: 'rgba(255,255,255,0.04)' }}>
+          <tr style={{ background: 'var(--bg-card)' }}>
             <th style={{ padding: '10px 14px', textAlign: 'left', borderBottom: `0.5px solid ${matrixBorder}`, minWidth: 120 }}>
               <Checkbox
                 checked={selectedPermIds.length === permissions.length && permissions.length > 0}
                 indeterminate={selectedPermIds.length > 0 && selectedPermIds.length < permissions.length}
                 onChange={e => toggleAll(e.target.checked)}
               />
-              <span style={{ marginLeft: 8, color: 'rgba(255,255,255,0.5)', fontWeight: 500 }}>资源 / 操作</span>
+              <span style={{ marginLeft: 8, color: 'var(--text-soft)', fontWeight: 500 }}>资源 / 操作</span>
             </th>
             {actions.map(action => (
               <th key={action} style={{ padding: '10px 14px', textAlign: 'center', borderBottom: `0.5px solid ${matrixBorder}`, width: 80 }}>
@@ -145,7 +145,7 @@ const Roles: React.FC = () => {
                   indeterminate={permissions.filter(p => p.action === action).some(p => selectedPermIds.includes(p.id)) && !permissions.filter(p => p.action === action).every(p => selectedPermIds.includes(p.id))}
                   onChange={e => toggleAllForAction(action, e.target.checked)}
                 />
-                <div style={{ marginTop: 4, fontWeight: 500, color: 'rgba(255,255,255,0.6)', fontSize: 12 }}>{ACTION_LABELS[action]}</div>
+                <div style={{ marginTop: 4, fontWeight: 500, color: 'var(--text-dim)', fontSize: 12 }}>{ACTION_LABELS[action]}</div>
               </th>
             ))}
           </tr>
@@ -159,7 +159,7 @@ const Roles: React.FC = () => {
                   indeterminate={permissions.filter(p => p.resource === resource).some(p => selectedPermIds.includes(p.id)) && !permissions.filter(p => p.resource === resource).every(p => selectedPermIds.includes(p.id))}
                   onChange={e => toggleAllForResource(resource, e.target.checked)}
                 />
-                <span style={{ marginLeft: 8, fontWeight: 500, color: '#f5f5f7' }}>{RESOURCE_LABELS[resource] || resource}</span>
+                <span style={{ marginLeft: 8, fontWeight: 500, color: 'var(--text-primary)' }}>{RESOURCE_LABELS[resource] || resource}</span>
               </td>
               {actions.map(action => {
                 const permId = getPermId(resource, action);
@@ -169,7 +169,7 @@ const Roles: React.FC = () => {
                       <Checkbox checked={selectedPermIds.includes(permId)} onChange={e => {
                         setSelectedPermIds(prev => e.target.checked ? [...prev, permId] : prev.filter(id => id !== permId));
                       }} />
-                    ) : <span style={{ color: 'rgba(255,255,255,0.15)' }}>—</span>}
+                    ) : <span style={{ color: 'var(--text-faint)' }}>—</span>}
                   </td>
                 );
               })}
@@ -185,8 +185,8 @@ const Roles: React.FC = () => {
       {/* Page title */}
       <div className="animate-fade-in-up" style={{ marginBottom: 32, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
         <div>
-          <Title level={2} style={{ margin: 0, fontWeight: 700, fontSize: 34, letterSpacing: '-0.04em', color: '#f5f5f7' }}>角色权限</Title>
-          <Text style={{ fontSize: 17, color: 'rgba(255,255,255,0.4)', marginTop: 6, display: 'block' }}>管理角色与权限矩阵</Text>
+          <Title level={2} style={{ margin: 0, fontWeight: 700, fontSize: 34, letterSpacing: '-0.04em', color: 'var(--text-primary)' }}>角色权限</Title>
+          <Text style={{ fontSize: 17, color: 'var(--text-secondary)', marginTop: 6, display: 'block' }}>管理角色与权限矩阵</Text>
         </div>
         <Button type="primary" icon={<PlusOutlined />} onClick={() => { setCreateOpen(true); setSelectedPermIds([]); }} style={{ height: 44, paddingInline: 20, borderRadius: 12, fontWeight: 500 }}>
           创建角色
@@ -216,22 +216,22 @@ const Roles: React.FC = () => {
             <div style={{ overflowX: 'auto', borderRadius: 12, border: `0.5px solid ${matrixBorder}` }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
                 <thead>
-                  <tr style={{ background: 'rgba(255,255,255,0.04)' }}>
-                    <th style={{ padding: '8px 12px', textAlign: 'left', borderBottom: `0.5px solid ${matrixBorder}`, color: 'rgba(255,255,255,0.5)', fontWeight: 500 }}>角色</th>
-                    {resources.map(r => <th key={r} style={{ padding: '8px 12px', textAlign: 'center', borderBottom: `0.5px solid ${matrixBorder}`, fontSize: 11, color: 'rgba(255,255,255,0.4)', fontWeight: 500 }}>{RESOURCE_LABELS[r] || r}</th>)}
+                  <tr style={{ background: 'var(--bg-card)' }}>
+                    <th style={{ padding: '8px 12px', textAlign: 'left', borderBottom: `0.5px solid ${matrixBorder}`, color: 'var(--text-soft)', fontWeight: 500 }}>角色</th>
+                    {resources.map(r => <th key={r} style={{ padding: '8px 12px', textAlign: 'center', borderBottom: `0.5px solid ${matrixBorder}`, fontSize: 11, color: 'var(--text-secondary)', fontWeight: 500 }}>{RESOURCE_LABELS[r] || r}</th>)}
                   </tr>
                 </thead>
                 <tbody>
                   {roles.map((role, idx) => (
                     <tr key={role.id} style={{ borderBottom: idx < roles.length - 1 ? `0.5px solid ${matrixBorder}` : 'none' }}>
-                      <td style={{ padding: '8px 12px', fontWeight: 500, color: '#f5f5f7' }}>{role.name}</td>
+                      <td style={{ padding: '8px 12px', fontWeight: 500, color: 'var(--text-primary)' }}>{role.name}</td>
                       {resources.map(r => {
                         const count = role.permissions?.filter(p => p.resource === r).length || 0;
                         return (
                           <td key={r} style={{ padding: '8px 12px', textAlign: 'center' }}>
                             {count > 0 ? (
                               <span style={{ padding: '2px 8px', borderRadius: 6, background: 'rgba(48,209,88,0.1)', border: '0.5px solid rgba(48,209,88,0.2)', fontSize: 11, color: '#30d158', fontWeight: 500 }}>{count}</span>
-                            ) : <span style={{ color: 'rgba(255,255,255,0.15)' }}>—</span>}
+                            ) : <span style={{ color: 'var(--text-faint)' }}>—</span>}
                           </td>
                         );
                       })}
@@ -249,7 +249,7 @@ const Roles: React.FC = () => {
         <Form form={form} layout="vertical" onFinish={handleCreate}>
           <Form.Item name="name" label="角色名称" rules={[{ required: true }]}><Input placeholder="如：数据分析师" /></Form.Item>
           <Form.Item name="description" label="描述"><Input.TextArea rows={2} placeholder="角色描述..." /></Form.Item>
-          <Divider style={{ borderColor: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.3)' }}>权限配置</Divider>
+          <Divider style={{ borderColor: 'var(--border-subtle)', color: 'var(--text-subtle)' }}>权限配置</Divider>
           {renderPermissionMatrix()}
         </Form>
       </Modal>
@@ -259,7 +259,7 @@ const Roles: React.FC = () => {
         <Form form={editForm} layout="vertical" onFinish={handleEdit}>
           <Form.Item name="name" label="角色名称"><Input disabled={editRole?.is_system} /></Form.Item>
           <Form.Item name="description" label="描述"><Input.TextArea rows={2} /></Form.Item>
-          <Divider style={{ borderColor: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.3)' }}>权限配置</Divider>
+          <Divider style={{ borderColor: 'var(--border-subtle)', color: 'var(--text-subtle)' }}>权限配置</Divider>
           {renderPermissionMatrix()}
         </Form>
       </Modal>

@@ -22,8 +22,8 @@ const StatCard: React.FC<StatCardProps> = ({ title, value, icon, gradient, suffi
     className="glass-card card-hover animate-fade-in-up"
     style={{
       borderRadius: 16,
-      border: '0.5px solid rgba(255, 255, 255, 0.08)',
-      background: 'rgba(255, 255, 255, 0.04)',
+      border: '0.5px solid var(--border-subtle)',
+      background: 'var(--bg-card)',
       backdropFilter: 'blur(20px)',
       WebkitBackdropFilter: 'blur(20px)',
     }}
@@ -34,7 +34,7 @@ const StatCard: React.FC<StatCardProps> = ({ title, value, icon, gradient, suffi
         <Text
           style={{
             fontSize: 13,
-            color: 'rgba(255, 255, 255, 0.45)',
+            color: 'var(--text-secondary)',
             fontWeight: 500,
             letterSpacing: '0.02em',
           }}
@@ -46,7 +46,7 @@ const StatCard: React.FC<StatCardProps> = ({ title, value, icon, gradient, suffi
             marginTop: 10,
             fontSize: 36,
             fontWeight: 700,
-            color: '#f5f5f7',
+            color: 'var(--text-primary)',
             letterSpacing: '-0.04em',
             lineHeight: 1,
           }}
@@ -57,7 +57,7 @@ const StatCard: React.FC<StatCardProps> = ({ title, value, icon, gradient, suffi
               style={{
                 fontSize: 16,
                 fontWeight: 500,
-                color: 'rgba(255, 255, 255, 0.35)',
+                color: 'var(--text-muted)',
                 marginLeft: 4,
               }}
             >

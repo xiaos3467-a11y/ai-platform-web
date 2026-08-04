@@ -90,12 +90,12 @@ const Users: React.FC = () => {
           {(record.display_name || name).charAt(0).toUpperCase()}
         </div>
         <span>
-          <a onClick={() => setDetailUser(record)} style={{ fontWeight: 500, color: '#f5f5f7' }}>{record.display_name || name}</a>
+          <a onClick={() => setDetailUser(record)} style={{ fontWeight: 500, color: 'var(--text-primary)' }}>{record.display_name || name}</a>
           {record.is_superadmin && <span style={{ marginLeft: 6, padding: '1px 6px', borderRadius: 4, background: 'rgba(255,69,58,0.1)', border: '0.5px solid rgba(255,69,58,0.2)', fontSize: 11, color: '#ff453a', fontWeight: 500 }}>超管</span>}
         </span>
       </span>
     )},
-    { title: '邮箱', dataIndex: 'email', render: (v: string) => <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: 13 }}>{v}</span> },
+    { title: '邮箱', dataIndex: 'email', render: (v: string) => <span style={{ color: 'var(--text-soft)', fontSize: 13 }}>{v}</span> },
     { title: '角色', dataIndex: 'roles', render: (roles: { name: string }[]) => (
       <Space wrap size={4}>
         {roles?.map(r => <span key={r.name} style={{ padding: '2px 8px', borderRadius: 6, background: 'rgba(10,132,255,0.1)', border: '0.5px solid rgba(10,132,255,0.2)', fontSize: 12, color: '#0a84ff', fontWeight: 500 }}>{r.name}</span>)}
@@ -104,7 +104,7 @@ const Users: React.FC = () => {
     { title: '状态', dataIndex: 'is_active', width: 80, render: (active: boolean, record: UserItem) => (
       <Switch checked={active} onChange={() => handleToggleActive(record)} size="small" />
     )},
-    { title: '最后登录', dataIndex: 'last_login_at', render: (v: string) => <span style={{ color: 'rgba(255,255,255,0.35)', fontSize: 13 }}>{v ? new Date(v).toLocaleString() : '-'}</span> },
+    { title: '最后登录', dataIndex: 'last_login_at', render: (v: string) => <span style={{ color: 'var(--text-muted)', fontSize: 13 }}>{v ? new Date(v).toLocaleString() : '-'}</span> },
     { title: '操作', width: 120, render: (_: unknown, record: UserItem) => (
       <Space>
         <div onClick={() => { setEditUser(record); editForm.setFieldsValue({ ...record, role_ids: record.roles.map(r => r.id) }); }}
@@ -127,8 +127,8 @@ const Users: React.FC = () => {
       {/* Page title */}
       <div className="animate-fade-in-up" style={{ marginBottom: 32, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
         <div>
-          <Title level={2} style={{ margin: 0, fontWeight: 700, fontSize: 34, letterSpacing: '-0.04em', color: '#f5f5f7' }}>用户管理</Title>
-          <Text style={{ fontSize: 17, color: 'rgba(255,255,255,0.4)', marginTop: 6, display: 'block' }}>管理系统用户与权限分配</Text>
+          <Title level={2} style={{ margin: 0, fontWeight: 700, fontSize: 34, letterSpacing: '-0.04em', color: 'var(--text-primary)' }}>用户管理</Title>
+          <Text style={{ fontSize: 17, color: 'var(--text-secondary)', marginTop: 6, display: 'block' }}>管理系统用户与权限分配</Text>
         </div>
         <Button type="primary" icon={<PlusOutlined />} onClick={() => setCreateOpen(true)} style={{ height: 44, paddingInline: 20, borderRadius: 12, fontWeight: 500 }}>
           添加用户
@@ -197,7 +197,7 @@ const Users: React.FC = () => {
                 {(detailUser.display_name || detailUser.username).charAt(0).toUpperCase()}
               </div>
             )}
-            <span style={{ fontSize: 15, fontWeight: 600, color: '#f5f5f7' }}>用户详情</span>
+            <span style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)' }}>用户详情</span>
           </div>
         }
         open={!!detailUser}
@@ -215,19 +215,19 @@ const Users: React.FC = () => {
               { label: '最后登录', value: detailUser.last_login_at ? new Date(detailUser.last_login_at).toLocaleString() : '-' },
               { label: '创建时间', value: new Date(detailUser.created_at).toLocaleString() },
             ].map((item) => (
-              <div key={item.label} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 14px', borderRadius: 8, background: 'rgba(255,255,255,0.03)', border: '0.5px solid rgba(255,255,255,0.06)' }}>
-                <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)' }}>{item.label}</span>
-                <span style={{ fontSize: 13, fontWeight: 500, color: '#f5f5f7' }}>{item.value}</span>
+              <div key={item.label} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 14px', borderRadius: 8, background: 'var(--bg-subtle)', border: '0.5px solid var(--border-divider)' }}>
+                <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>{item.label}</span>
+                <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>{item.value}</span>
               </div>
             ))}
-            <div style={{ padding: '8px 14px', borderRadius: 8, background: 'rgba(255,255,255,0.03)', border: '0.5px solid rgba(255,255,255,0.06)' }}>
-              <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)', marginBottom: 6 }}>角色</div>
+            <div style={{ padding: '8px 14px', borderRadius: 8, background: 'var(--bg-subtle)', border: '0.5px solid var(--border-divider)' }}>
+              <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 6 }}>角色</div>
               <Space wrap size={4}>
                 {detailUser.roles.map(r => <span key={r.name} style={{ padding: '2px 8px', borderRadius: 6, background: 'rgba(10,132,255,0.1)', border: '0.5px solid rgba(10,132,255,0.2)', fontSize: 12, color: '#0a84ff', fontWeight: 500 }}>{r.name}</span>)}
               </Space>
             </div>
             <div style={{ padding: '8px 14px', borderRadius: 8, background: detailUser.is_active ? 'rgba(48,209,88,0.04)' : 'rgba(255,69,58,0.04)', border: `0.5px solid ${detailUser.is_active ? 'rgba(48,209,88,0.12)' : 'rgba(255,69,58,0.12)'}` }}>
-              <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)', marginBottom: 4 }}>状态</div>
+              <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 4 }}>状态</div>
               <span style={{ fontSize: 14, fontWeight: 500, color: detailUser.is_active ? '#30d158' : '#ff453a' }}>
                 {detailUser.is_active ? '启用' : '禁用'}
               </span>

@@ -38,8 +38,8 @@ const Settings: React.FC = () => {
       {/* Page title */}
       <div className="animate-fade-in-up" style={{ marginBottom: 32, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
         <div>
-          <Title level={2} style={{ margin: 0, fontWeight: 700, fontSize: 34, letterSpacing: '-0.04em', color: '#f5f5f7' }}>系统设置</Title>
-          <Text style={{ fontSize: 17, color: 'rgba(255,255,255,0.4)', marginTop: 6, display: 'block' }}>服务状态与安全配置</Text>
+          <Title level={2} style={{ margin: 0, fontWeight: 700, fontSize: 34, letterSpacing: '-0.04em', color: 'var(--text-primary)' }}>系统设置</Title>
+          <Text style={{ fontSize: 17, color: 'var(--text-secondary)', marginTop: 6, display: 'block' }}>服务状态与安全配置</Text>
         </div>
         <Button icon={<ReloadOutlined />} onClick={fetchHealth} loading={loading} style={{ borderRadius: 10 }}>
           刷新状态
@@ -65,17 +65,17 @@ const Settings: React.FC = () => {
                     { label: '服务名称', value: health?.service },
                     { label: '环境', value: health?.env },
                   ].map((item) => (
-                    <div key={item.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: '0.5px solid rgba(255,255,255,0.06)' }}>
-                      <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)' }}>{item.label}</span>
-                      <span style={{ fontSize: 14, fontWeight: 500, color: '#f5f5f7' }}>{item.value}</span>
+                    <div key={item.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: '0.5px solid var(--border-divider)' }}>
+                      <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>{item.label}</span>
+                      <span style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-primary)' }}>{item.value}</span>
                     </div>
                   ))}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: '0.5px solid rgba(255,255,255,0.06)' }}>
-                    <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)' }}>版本</span>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: '0.5px solid var(--border-divider)' }}>
+                    <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>版本</span>
                     <span style={{ padding: '2px 10px', borderRadius: 6, background: 'rgba(10,132,255,0.1)', border: '0.5px solid rgba(10,132,255,0.2)', fontSize: 13, color: '#0a84ff', fontWeight: 500 }}>{health?.version}</span>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0' }}>
-                    <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)' }}>整体状态</span>
+                    <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>整体状态</span>
                     <span style={{
                       display: 'inline-flex', alignItems: 'center', gap: 6, padding: '3px 10px', borderRadius: 8,
                       background: health?.status === 'ok' ? 'rgba(48,209,88,0.08)' : 'rgba(255,69,58,0.08)',
@@ -108,7 +108,7 @@ const Settings: React.FC = () => {
                       >
                         <Space>
                           <div style={{ width: 6, height: 6, borderRadius: '50%', background: isOk ? '#30d158' : '#ff453a', boxShadow: isOk ? '0 0 6px rgba(48,209,88,0.5)' : '0 0 6px rgba(255,69,58,0.5)' }} />
-                          <span style={{ fontSize: 14, fontWeight: 500, color: '#f5f5f7' }}>{name}</span>
+                          <span style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-primary)' }}>{name}</span>
                         </Space>
                         <span style={{
                           fontSize: 12, fontWeight: 500,
@@ -120,7 +120,7 @@ const Settings: React.FC = () => {
                     );
                   })}
                   {depEntries.length === 0 && (
-                    <div style={{ textAlign: 'center', padding: '20px 0', color: 'rgba(255,255,255,0.25)', fontSize: 14 }}>暂无组件数据</div>
+                    <div style={{ textAlign: 'center', padding: '20px 0', color: 'var(--text-tertiary)', fontSize: 14 }}>暂无组件数据</div>
                   )}
                 </div>
               </SectionCard>
@@ -144,9 +144,9 @@ const Settings: React.FC = () => {
                 { label: '密钥管理', value: '通过 /api/v1/models/providers API 增删改查' },
                 { label: '脱敏显示', value: '列表接口返回 sk-a...z789 格式' },
               ].map((item) => (
-                <div key={item.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 14px', borderRadius: 8, background: 'rgba(255,255,255,0.03)', border: '0.5px solid rgba(255,255,255,0.06)' }}>
-                  <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)' }}>{item.label}</span>
-                  <span style={{ fontSize: 13, fontWeight: 500, color: '#f5f5f7', maxWidth: '60%', textAlign: 'right' }}>{item.value}</span>
+                <div key={item.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 14px', borderRadius: 8, background: 'var(--bg-subtle)', border: '0.5px solid var(--border-divider)' }}>
+                  <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>{item.label}</span>
+                  <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)', maxWidth: '60%', textAlign: 'right' }}>{item.value}</span>
                 </div>
               ))}
             </div>
@@ -169,8 +169,8 @@ const Settings: React.FC = () => {
                     style={{
                       padding: '16px',
                       borderRadius: 12,
-                      background: 'rgba(255,255,255,0.03)',
-                      border: '0.5px solid rgba(255,255,255,0.08)',
+                      background: 'var(--bg-subtle)',
+                      border: '0.5px solid var(--border-subtle)',
                       display: 'flex',
                       alignItems: 'center',
                       gap: 12,
@@ -186,8 +186,8 @@ const Settings: React.FC = () => {
                       {item.icon}
                     </div>
                     <div>
-                      <div style={{ fontSize: 14, fontWeight: 600, color: '#f5f5f7' }}>{item.name}</div>
-                      <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', marginTop: 2 }}>{item.desc}</div>
+                      <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>{item.name}</div>
+                      <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>{item.desc}</div>
                     </div>
                   </div>
                 </Col>
