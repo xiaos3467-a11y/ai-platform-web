@@ -17,6 +17,16 @@ export default defineConfig({
         changeOrigin: true,
         secure: true,
       },
+      '/health': {
+        target: 'https://ai-platform-api-production-19cb.up.railway.app',
+        changeOrigin: true,
+        secure: true,
+      },
+      '/live': {
+        target: 'https://ai-platform-api-production-19cb.up.railway.app',
+        changeOrigin: true,
+        secure: true,
+      },
     },
   },
   build: {
