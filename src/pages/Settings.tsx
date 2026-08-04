@@ -1,19 +1,36 @@
-/** System settings */
+/** System settings — Apple glass aesthetic */
 
 import React, { useEffect, useState } from 'react';
 import {
-  Card, Typography, Descriptions, Tag, Space, Row, Col, Spin,
-  Table, Button, App, Form, Input, Divider, Alert,
+  Card, Typography, Tag, Space, Row, Col, Button, App, Alert, Skeleton,
 } from 'antd';
 import {
   CheckCircleOutlined, CloseCircleOutlined, ReloadOutlined,
-  KeyOutlined, DatabaseOutlined, CloudServerOutlined,
+  KeyOutlined, DatabaseOutlined, CloudServerOutlined, SettingOutlined,
 } from '@ant-design/icons';
 import { api } from '@/api/client';
 import type { HealthStatus } from '@/types';
 
 const { Title, Text } = Typography;
 
+/* ─── Section card ────────────────────────────────────────────────── */
+const SectionCard: React.FC<{ title: string; icon?: React.ReactNode; children: React.ReactNode; style?: React.CSSProperties }> = ({ title, icon, children, style }) => (
+  <Card
+    className="animate-fade-in-up"
+    title={
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        {icon && <span style={{ color: '#0a84ff', fontSize: 16 }}>{icon}</span>}
+        <span style={{ fontSize: 17, fontWeight: 600, color: '#f5f5f7', letterSpacing: '-0.02em' }}>{title}</span>
+      </div>
+    }
+    style={{ borderRadius: 16, border: '0.5px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', ...style }}
+    styles={{ header: { borderBottom: '0.5px solid rgba(255,255,255,0.06)', padding: '16px 24px', minHeight: 'auto' }, body: { padding: 24 } }}
+  >
+    {children}
+  </Card>
+);
+
+/* ─── Main ────────────────────────────────────────────────────────── */
 const Settings: React.FC = () => {
   const [health, setHealth] = useState<HealthStatus | null>(null);
   const [loading, setLoading] = useState(true);
@@ -21,132 +38,178 @@ const Settings: React.FC = () => {
 
   const fetchHealth = async () => {
     setLoading(true);
-    try {
-      const resp = await api.get<HealthStatus>('/health');
-      setHealth(resp.data);
-    } catch {
-      message.error('无法获取系统状态');
-    } finally { setLoading(false); }
+    try { const resp = await api.get<HealthStatus>('/health'); setHealth(resp.data); } catch { message.error('无法获取系统状态'); } finally { setLoading(false); }
   };
 
   useEffect(() => { fetchHealth(); }, []);
 
-  if (loading) {
-    return <div style={{ textAlign: 'center', padding: 100 }}><Spin size="large" /></div>;
-  }
-
   const depEntries = health?.dependencies ? Object.entries(health.dependencies) : [];
-  const allOk = depEntries.every(([, status]) => status === 'ok');
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
-        <Title level={4} style={{ margin: 0 }}>系统设置</Title>
-        <Button icon={<ReloadOutlined />} onClick={fetchHealth}>刷新状态</Button>
+      {/* Page title */}
+      <div className="animate-fade-in-up" style={{ marginBottom: 32, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+        <div>
+          <Title level={2} style={{ margin: 0, fontWeight: 700, fontSize: 34, letterSpacing: '-0.04em', color: '#f5f5f7' }}>系统设置</Title>
+          <Text style={{ fontSize: 17, color: 'rgba(255,255,255,0.4)', marginTop: 6, display: 'block' }}>服务状态与安全配置</Text>
+        </div>
+        <Button icon={<ReloadOutlined />} onClick={fetchHealth} loading={loading} style={{ borderRadius: 10 }}>
+          刷新状态
+        </Button>
       </div>
 
-      {/* System Overview */}
-      <Row gutter={[16, 16]}>
-        <Col xs={24} lg={12}>
-          <Card title="系统信息">
-            <Descriptions column={1}>
-              <Descriptions.Item label="服务名称">{health?.service}</Descriptions.Item>
-              <Descriptions.Item label="版本">
-                <Tag color="blue">{health?.version}</Tag>
-              </Descriptions.Item>
-              <Descriptions.Item label="环境">
-                <Tag color={health?.env === 'production' ? 'red' : 'green'}>{health?.env}</Tag>
-              </Descriptions.Item>
-              <Descriptions.Item label="整体状态">
-                <Tag
-                  color={health?.status === 'ok' ? 'success' : 'error'}
-                  icon={health?.status === 'ok' ? <CheckCircleOutlined /> : <CloseCircleOutlined />}
-                >
-                  {health?.status === 'ok' ? '正常' : '异常'}
-                </Tag>
-              </Descriptions.Item>
-            </Descriptions>
-          </Card>
-        </Col>
-
-        <Col xs={24} lg={12}>
-          <Card title="组件状态">
-            <Space direction="vertical" style={{ width: '100%' }}>
-              {depEntries.map(([name, status]) => (
-                <div
-                  key={name}
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    padding: '8px 12px',
-                    borderRadius: 8,
-                    background: status === 'ok' ? '#f6ffed' : '#fff2f0',
-                    border: `1px solid ${status === 'ok' ? '#b7eb8f' : '#ffa39e'}`,
-                  }}
-                >
-                  <Space>
-                    {status === 'ok' ? (
-                      <CheckCircleOutlined style={{ color: '#52c41a' }} />
-                    ) : (
-                      <CloseCircleOutlined style={{ color: '#ff4d4f' }} />
-                    )}
-                    <Text strong>{name}</Text>
-                  </Space>
-                  <Tag color={status === 'ok' ? 'success' : 'error'}>
-                    {status === 'ok' ? '正常' : '异常'}
-                  </Tag>
-                </div>
-              ))}
-            </Space>
-          </Card>
-        </Col>
-      </Row>
-
-      {/* API Keys */}
-      <Card title="API Key 管理" style={{ marginTop: 16 }}>
-        <Alert
-          message="API Key 安全说明"
-          description="所有 API Key 通过后台管理界面添加，使用 AES-256-GCM 加密存储在数据库中。服务端运行时动态解密，密钥从不以明文形式出现在日志、环境变量或配置文件中。"
-          type="info"
-          showIcon
-          icon={<KeyOutlined />}
-          style={{ marginBottom: 16 }}
-        />
-        <Descriptions column={1} size="small">
-          <Descriptions.Item label="认证方式">JWT（用户级）+ API Key（应用级）双模式</Descriptions.Item>
-          <Descriptions.Item label="加密算法">AES-256-GCM（密钥由 APP_SECRET_KEY 派生）</Descriptions.Item>
-          <Descriptions.Item label="密钥管理">通过 /api/v1/models/providers API 增删改查</Descriptions.Item>
-          <Descriptions.Item label="脱敏显示">列表接口返回 sk-a...z789 格式</Descriptions.Item>
-        </Descriptions>
-      </Card>
-
-      {/* Infrastructure */}
-      <Card title="基础设施" style={{ marginTop: 16 }}>
-        <Row gutter={16}>
-          {[
-            { name: 'PostgreSQL', icon: <DatabaseOutlined />, desc: '主数据库（16张表）' },
-            { name: 'Redis', icon: <DatabaseOutlined />, desc: '缓存 / 限流 / 会话' },
-            { name: 'Milvus', icon: <DatabaseOutlined />, desc: '向量数据库（文档 Embedding）' },
-            { name: 'Elasticsearch', icon: <DatabaseOutlined />, desc: 'BM25 关键词检索' },
-            { name: 'LiteLLM', icon: <CloudServerOutlined />, desc: 'AI Gateway（模型代理）' },
-            { name: 'Langfuse', icon: <CloudServerOutlined />, desc: 'LLM 可观测性（Tracing）' },
-          ].map((item) => (
-            <Col xs={12} sm={8} key={item.name} style={{ marginBottom: 12 }}>
-              <Card size="small">
-                <Space>
-                  {item.icon}
-                  <div>
-                    <Text strong>{item.name}</Text>
-                    <br />
-                    <Text type="secondary" style={{ fontSize: 12 }}>{item.desc}</Text>
-                  </div>
-                </Space>
+      {loading ? (
+        <Row gutter={[20, 20]}>
+          {[1, 2].map((i) => (
+            <Col xs={24} lg={12} key={i}>
+              <Card style={{ borderRadius: 16, border: '0.5px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.04)' }} styles={{ body: { padding: 24 } }}>
+                <Skeleton active paragraph={{ rows: 4 }} />
               </Card>
             </Col>
           ))}
         </Row>
-      </Card>
+      ) : (
+        <>
+          {/* System Info + Component Status */}
+          <Row gutter={[20, 20]} style={{ marginBottom: 20 }}>
+            <Col xs={24} lg={12}>
+              <SectionCard title="系统信息" icon={<SettingOutlined />}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  {[
+                    { label: '服务名称', value: health?.service },
+                    { label: '环境', value: health?.env },
+                  ].map((item) => (
+                    <div key={item.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: '0.5px solid rgba(255,255,255,0.06)' }}>
+                      <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)' }}>{item.label}</span>
+                      <span style={{ fontSize: 14, fontWeight: 500, color: '#f5f5f7' }}>{item.value}</span>
+                    </div>
+                  ))}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: '0.5px solid rgba(255,255,255,0.06)' }}>
+                    <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)' }}>版本</span>
+                    <span style={{ padding: '2px 10px', borderRadius: 6, background: 'rgba(10,132,255,0.1)', border: '0.5px solid rgba(10,132,255,0.2)', fontSize: 13, color: '#0a84ff', fontWeight: 500 }}>{health?.version}</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0' }}>
+                    <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)' }}>整体状态</span>
+                    <span style={{
+                      display: 'inline-flex', alignItems: 'center', gap: 6, padding: '3px 10px', borderRadius: 8,
+                      background: health?.status === 'ok' ? 'rgba(48,209,88,0.08)' : 'rgba(255,69,58,0.08)',
+                      border: `0.5px solid ${health?.status === 'ok' ? 'rgba(48,209,88,0.2)' : 'rgba(255,69,58,0.2)'}`,
+                      fontSize: 13, fontWeight: 500, color: health?.status === 'ok' ? '#30d158' : '#ff453a',
+                    }}>
+                      {health?.status === 'ok' ? <CheckCircleOutlined /> : <CloseCircleOutlined />}
+                      {health?.status === 'ok' ? '正常' : '异常'}
+                    </span>
+                  </div>
+                </div>
+              </SectionCard>
+            </Col>
+
+            <Col xs={24} lg={12}>
+              <SectionCard title="组件状态">
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {depEntries.map(([name, status]) => {
+                    const isOk = status === 'ok';
+                    return (
+                      <div
+                        key={name}
+                        className="card-hover"
+                        style={{
+                          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                          padding: '10px 16px', borderRadius: 10,
+                          background: isOk ? 'rgba(48,209,88,0.04)' : 'rgba(255,69,58,0.04)',
+                          border: `0.5px solid ${isOk ? 'rgba(48,209,88,0.12)' : 'rgba(255,69,58,0.12)'}`,
+                        }}
+                      >
+                        <Space>
+                          <div style={{ width: 6, height: 6, borderRadius: '50%', background: isOk ? '#30d158' : '#ff453a', boxShadow: isOk ? '0 0 6px rgba(48,209,88,0.5)' : '0 0 6px rgba(255,69,58,0.5)' }} />
+                          <span style={{ fontSize: 14, fontWeight: 500, color: '#f5f5f7' }}>{name}</span>
+                        </Space>
+                        <span style={{
+                          fontSize: 12, fontWeight: 500,
+                          color: isOk ? '#30d158' : '#ff453a',
+                        }}>
+                          {isOk ? '正常' : '异常'}
+                        </span>
+                      </div>
+                    );
+                  })}
+                  {depEntries.length === 0 && (
+                    <div style={{ textAlign: 'center', padding: '20px 0', color: 'rgba(255,255,255,0.25)', fontSize: 14 }}>暂无组件数据</div>
+                  )}
+                </div>
+              </SectionCard>
+            </Col>
+          </Row>
+
+          {/* API Keys */}
+          <SectionCard title="API Key 管理" icon={<KeyOutlined />} style={{ marginBottom: 20 }}>
+            <Alert
+              message="API Key 安全说明"
+              description="所有 API Key 通过后台管理界面添加，使用 AES-256-GCM 加密存储在数据库中。服务端运行时动态解密，密钥从不以明文形式出现在日志、环境变量或配置文件中。"
+              type="info"
+              showIcon
+              icon={<KeyOutlined />}
+              style={{ marginBottom: 20, borderRadius: 12, background: 'rgba(10,132,255,0.06)', border: '0.5px solid rgba(10,132,255,0.15)' }}
+            />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {[
+                { label: '认证方式', value: 'JWT（用户级）+ API Key（应用级）双模式' },
+                { label: '加密算法', value: 'AES-256-GCM（密钥由 APP_SECRET_KEY 派生）' },
+                { label: '密钥管理', value: '通过 /api/v1/models/providers API 增删改查' },
+                { label: '脱敏显示', value: '列表接口返回 sk-a...z789 格式' },
+              ].map((item) => (
+                <div key={item.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 14px', borderRadius: 8, background: 'rgba(255,255,255,0.03)', border: '0.5px solid rgba(255,255,255,0.06)' }}>
+                  <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)' }}>{item.label}</span>
+                  <span style={{ fontSize: 13, fontWeight: 500, color: '#f5f5f7', maxWidth: '60%', textAlign: 'right' }}>{item.value}</span>
+                </div>
+              ))}
+            </div>
+          </SectionCard>
+
+          {/* Infrastructure */}
+          <SectionCard title="基础设施" icon={<CloudServerOutlined />}>
+            <Row gutter={[12, 12]}>
+              {[
+                { name: 'PostgreSQL', icon: <DatabaseOutlined />, desc: '主数据库（16张表）', gradient: 'linear-gradient(135deg, #0a84ff, #5e5ce6)' },
+                { name: 'Redis', icon: <DatabaseOutlined />, desc: '缓存 / 限流 / 会话', gradient: 'linear-gradient(135deg, #ff453a, #ff6961)' },
+                { name: 'Milvus', icon: <DatabaseOutlined />, desc: '向量数据库（文档 Embedding）', gradient: 'linear-gradient(135deg, #30d158, #34c759)' },
+                { name: 'Elasticsearch', icon: <DatabaseOutlined />, desc: 'BM25 关键词检索', gradient: 'linear-gradient(135deg, #ffd60a, #ff9f0a)' },
+                { name: 'LiteLLM', icon: <CloudServerOutlined />, desc: 'AI Gateway（模型代理）', gradient: 'linear-gradient(135deg, #5e5ce6, #bf5af2)' },
+                { name: 'Langfuse', icon: <CloudServerOutlined />, desc: 'LLM 可观测性（Tracing）', gradient: 'linear-gradient(135deg, #64d2ff, #0a84ff)' },
+              ].map((item) => (
+                <Col xs={12} sm={8} key={item.name}>
+                  <div
+                    className="card-hover"
+                    style={{
+                      padding: '16px',
+                      borderRadius: 12,
+                      background: 'rgba(255,255,255,0.03)',
+                      border: '0.5px solid rgba(255,255,255,0.08)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 12,
+                      height: '100%',
+                    }}
+                  >
+                    <div style={{
+                      width: 36, height: 36, borderRadius: 10,
+                      background: item.gradient,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      color: '#fff', fontSize: 16, flexShrink: 0,
+                    }}>
+                      {item.icon}
+                    </div>
+                    <div>
+                      <div style={{ fontSize: 14, fontWeight: 600, color: '#f5f5f7' }}>{item.name}</div>
+                      <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', marginTop: 2 }}>{item.desc}</div>
+                    </div>
+                  </div>
+                </Col>
+              ))}
+            </Row>
+          </SectionCard>
+        </>
+      )}
     </div>
   );
 };

@@ -1,4 +1,7 @@
-/** Main layout — Apple-inspired: minimal, airy, frosted glass header */
+/**
+ * Main layout — Dark Apple aesthetic
+ * — Frosted glass sidebar, gradient accent, smooth collapse animation
+ */
 
 import React, { useState } from 'react';
 import { Layout, Menu, Avatar, Dropdown, Typography } from 'antd';
@@ -23,6 +26,7 @@ import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { useAuthStore } from '@/contexts/auth';
 
 const { Header, Sider, Content } = Layout;
+const { Text } = Typography;
 
 const menuItems = [
   { key: '/', icon: <DashboardOutlined />, label: '仪表盘' },
@@ -64,11 +68,19 @@ const AppLayout: React.FC = () => {
   const [collapsed, setCollapsed] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const logout = useAuthStore((s) => s.logout);
+  const { logout, user } = useAuthStore((s) => ({ logout: s.logout, user: s.user }));
+
+  const displayName = user?.username || '管理员';
+  const displayInitial = displayName.charAt(0).toUpperCase();
 
   const userMenu = {
     items: [
-      { key: 'settings', icon: <SettingOutlined />, label: '个人设置' },
+      {
+        key: 'settings',
+        icon: <SettingOutlined />,
+        label: '个人设置',
+        onClick: () => navigate('/settings'),
+      },
       { type: 'divider' as const },
       {
         key: 'logout',
@@ -77,15 +89,15 @@ const AppLayout: React.FC = () => {
         danger: true,
         onClick: () => {
           logout();
-          navigate('/login');
+          navigate('/login', { replace: true });
         },
       },
     ],
   };
 
   return (
-    <Layout style={{ minHeight: '100vh', background: '#f5f5f7' }}>
-      {/* Sidebar */}
+    <Layout style={{ minHeight: '100vh', background: '#000' }}>
+      {/* ─── Sidebar ──────────────────────────────────────────────── */}
       <Sider
         collapsible
         collapsed={collapsed}
@@ -94,8 +106,10 @@ const AppLayout: React.FC = () => {
         width={260}
         collapsedWidth={72}
         style={{
-          background: '#ffffff',
-          borderRight: '1px solid #e8e8ed',
+          background: 'rgba(22, 22, 24, 0.82)',
+          backdropFilter: 'saturate(180%) blur(24px)',
+          WebkitBackdropFilter: 'saturate(180%) blur(24px)',
+          borderRight: '0.5px solid rgba(255, 255, 255, 0.08)',
           overflow: 'auto',
           height: '100vh',
           position: 'fixed',
@@ -103,6 +117,7 @@ const AppLayout: React.FC = () => {
           top: 0,
           bottom: 0,
           zIndex: 20,
+          transition: 'width 0.35s cubic-bezier(0.4, 0, 0.2, 1)',
         }}
       >
         {/* Logo */}
@@ -113,37 +128,63 @@ const AppLayout: React.FC = () => {
             alignItems: 'center',
             padding: collapsed ? '0 20px' : '0 24px',
             gap: 12,
-            borderBottom: '1px solid #f0f0f2',
+            borderBottom: '0.5px solid rgba(255, 255, 255, 0.06)',
+            transition: 'padding 0.35s cubic-bezier(0.4, 0, 0.2, 1)',
           }}
         >
+          {/* Logo mark — gradient with subtle glow */}
           <div
             style={{
-              width: 32,
-              height: 32,
-              borderRadius: 8,
-              background: 'linear-gradient(135deg, #0071e3, #5856d6)',
+              width: 34,
+              height: 34,
+              borderRadius: 10,
+              background: 'linear-gradient(135deg, #0a84ff 0%, #5e5ce6 50%, #bf5af2 100%)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               color: '#fff',
-              fontSize: 16,
+              fontSize: 14,
               fontWeight: 700,
               flexShrink: 0,
+              boxShadow: '0 2px 12px rgba(10, 132, 255, 0.3)',
+              letterSpacing: '-0.02em',
             }}
           >
             AI
           </div>
           {!collapsed && (
-            <span
+            <div
               style={{
-                fontSize: 16,
-                fontWeight: 600,
-                color: '#1d1d1f',
-                letterSpacing: '-0.02em',
+                display: 'flex',
+                flexDirection: 'column',
+                overflow: 'hidden',
               }}
             >
-              AI 中台
-            </span>
+              <span
+                style={{
+                  fontSize: 15,
+                  fontWeight: 600,
+                  color: '#f5f5f7',
+                  letterSpacing: '-0.03em',
+                  lineHeight: 1.2,
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                AI 中台
+              </span>
+              <span
+                style={{
+                  fontSize: 11,
+                  color: 'rgba(255, 255, 255, 0.35)',
+                  fontWeight: 500,
+                  letterSpacing: '0.02em',
+                  textTransform: 'uppercase' as const,
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                Enterprise
+              </span>
+            </div>
           )}
         </div>
 
@@ -154,7 +195,9 @@ const AppLayout: React.FC = () => {
             selectedKeys={[location.pathname]}
             defaultOpenKeys={['ai', 'platform', 'admin']}
             items={menuItems}
-            onClick={({ key }) => navigate(key)}
+            onClick={({ key }) => {
+              if (key.startsWith('/')) navigate(key);
+            }}
             style={{
               borderRight: 'none',
               background: 'transparent',
@@ -162,41 +205,82 @@ const AppLayout: React.FC = () => {
             }}
           />
         </div>
+
+        {/* Version tag at bottom */}
+        {!collapsed && (
+          <div
+            style={{
+              position: 'absolute',
+              bottom: 20,
+              left: 0,
+              right: 0,
+              textAlign: 'center',
+              padding: '0 24px',
+            }}
+          >
+            <Text
+              style={{
+                fontSize: 11,
+                color: 'rgba(255, 255, 255, 0.2)',
+                fontWeight: 500,
+                letterSpacing: '0.02em',
+              }}
+            >
+              v0.1.0
+            </Text>
+          </div>
+        )}
       </Sider>
 
-      {/* Main area */}
+      {/* ─── Main area ────────────────────────────────────────────── */}
       <Layout
         style={{
           marginLeft: collapsed ? 72 : 260,
-          transition: 'margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          transition: 'margin-left 0.35s cubic-bezier(0.4, 0, 0.2, 1)',
+          background: '#000',
         }}
       >
-        {/* Frosted glass header */}
+        {/* ─── Header — frosted glass bar ─────────────────────────── */}
         <Header
           style={{
-            background: 'rgba(255, 255, 255, 0.72)',
+            background: 'rgba(0, 0, 0, 0.72)',
             backdropFilter: 'saturate(180%) blur(20px)',
             WebkitBackdropFilter: 'saturate(180%) blur(20px)',
             padding: '0 32px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            borderBottom: '0.5px solid rgba(0, 0, 0, 0.08)',
+            borderBottom: '0.5px solid rgba(255, 255, 255, 0.06)',
             height: 56,
             position: 'sticky',
             top: 0,
             zIndex: 10,
           }}
         >
+          {/* Collapse toggle */}
           <div
-            style={{ cursor: 'pointer', fontSize: 16, color: '#86868b', transition: 'color 0.2s' }}
+            style={{
+              cursor: 'pointer',
+              fontSize: 16,
+              color: 'rgba(255, 255, 255, 0.45)',
+              transition: 'color 0.2s ease, transform 0.2s ease',
+              padding: '6px',
+              borderRadius: 8,
+            }}
             onClick={() => setCollapsed(!collapsed)}
-            onMouseEnter={(e) => (e.currentTarget.style.color = '#1d1d1f')}
-            onMouseLeave={(e) => (e.currentTarget.style.color = '#86868b')}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = 'rgba(255, 255, 255, 0.9)';
+              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.06)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = 'rgba(255, 255, 255, 0.45)';
+              e.currentTarget.style.background = 'transparent';
+            }}
           >
             {collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
           </div>
 
+          {/* User area */}
           <Dropdown menu={userMenu} placement="bottomRight" trigger={['click']}>
             <div
               style={{
@@ -204,35 +288,44 @@ const AppLayout: React.FC = () => {
                 display: 'flex',
                 alignItems: 'center',
                 gap: 10,
-                padding: '4px 8px',
+                padding: '4px 10px',
                 borderRadius: 10,
-                transition: 'background 0.2s',
+                transition: 'background 0.2s ease',
               }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(0,0,0,0.04)')}
+              onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(255, 255, 255, 0.06)')}
               onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
             >
               <Avatar
                 size={30}
                 style={{
-                  background: 'linear-gradient(135deg, #0071e3, #5856d6)',
+                  background: 'linear-gradient(135deg, #0a84ff, #5e5ce6)',
                   fontSize: 13,
                   fontWeight: 600,
+                  color: '#fff',
+                  boxShadow: '0 1px 4px rgba(10, 132, 255, 0.25)',
                 }}
               >
-                A
+                {displayInitial}
               </Avatar>
-              <span style={{ fontSize: 14, fontWeight: 500, color: '#1d1d1f' }}>
-                管理员
+              <span
+                style={{
+                  fontSize: 14,
+                  fontWeight: 500,
+                  color: 'rgba(255, 255, 255, 0.85)',
+                }}
+              >
+                {displayName}
               </span>
             </div>
           </Dropdown>
         </Header>
 
-        {/* Content */}
+        {/* ─── Content ────────────────────────────────────────────── */}
         <Content
           style={{
-            margin: 24,
-            minHeight: 'calc(100vh - 56px - 48px)',
+            margin: 28,
+            minHeight: 'calc(100vh - 56px - 56px)',
+            animation: 'fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards',
           }}
         >
           <Outlet />

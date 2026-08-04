@@ -1,25 +1,28 @@
-/** Model Providers management — CRUD table */
+/** Model Providers — Apple glass aesthetic */
 
 import React, { useEffect, useState } from 'react';
 import {
   Table, Button, Modal, Form, Input, InputNumber, Select, Tag, Space,
-  Card, Typography, Switch, Popconfirm, App, Tooltip,
+  Card, Typography, Switch, App, Tooltip, Skeleton,
 } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined, ReloadOutlined, EyeOutlined, EyeInvisibleOutlined } from '@ant-design/icons';
+import {
+  PlusOutlined, DeleteOutlined, ReloadOutlined,
+  EyeOutlined, EyeInvisibleOutlined, ApiOutlined,
+} from '@ant-design/icons';
 import { api } from '@/api/client';
 import type { Provider, ProviderCreateRequest } from '@/types';
 
-const { Title } = Typography;
+const { Title, Text } = Typography;
 const { Option } = Select;
 
-const PROVIDER_OPTIONS = [
-  { value: 'openai', label: 'OpenAI', color: 'green' },
-  { value: 'anthropic', label: 'Anthropic (Claude)', color: 'purple' },
-  { value: 'qwen', label: '通义千问 (Qwen)', color: 'blue' },
-  { value: 'deepseek', label: 'DeepSeek', color: 'cyan' },
-  { value: 'ollama', label: 'Ollama (本地)', color: 'orange' },
-  { value: 'vllm', label: 'vLLM (私有部署)', color: 'volcano' },
-];
+const PROVIDER_META: Record<string, { label: string; gradient: string }> = {
+  openai: { label: 'OpenAI', gradient: 'linear-gradient(135deg, #30d158, #34c759)' },
+  anthropic: { label: 'Anthropic', gradient: 'linear-gradient(135deg, #bf5af2, #5e5ce6)' },
+  qwen: { label: 'Qwen', gradient: 'linear-gradient(135deg, #0a84ff, #5e5ce6)' },
+  deepseek: { label: 'DeepSeek', gradient: 'linear-gradient(135deg, #64d2ff, #0a84ff)' },
+  ollama: { label: 'Ollama', gradient: 'linear-gradient(135deg, #ff9f0a, #ffd60a)' },
+  vllm: { label: 'vLLM', gradient: 'linear-gradient(135deg, #ff453a, #ff6961)' },
+};
 
 const ModelProviders: React.FC = () => {
   const [providers, setProviders] = useState<Provider[]>([]);
@@ -27,16 +30,11 @@ const ModelProviders: React.FC = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [showKeys, setShowKeys] = useState<Record<string, boolean>>({});
   const [form] = Form.useForm();
-  const { message } = App.useApp();
+  const { message, modal } = App.useApp();
 
   const fetchProviders = async () => {
     setLoading(true);
-    try {
-      const resp = await api.get<Provider[]>('/models/providers');
-      setProviders(resp.data || []);
-    } finally {
-      setLoading(false);
-    }
+    try { const resp = await api.get<Provider[]>('/models/providers'); setProviders(resp.data || []); } finally { setLoading(false); }
   };
 
   useEffect(() => { fetchProviders(); }, []);
@@ -48,120 +46,145 @@ const ModelProviders: React.FC = () => {
       setModalOpen(false);
       form.resetFields();
       fetchProviders();
-    } catch {
-      // error handled by interceptor
-    }
+    } catch { /* handled */ }
   };
 
   const handleToggle = async (id: string, enabled: boolean) => {
-    await api.put(`/models/providers/${id}/toggle?enabled=${enabled}`);
-    message.success(enabled ? '已启用' : '已禁用');
-    fetchProviders();
+    try { await api.put(`/models/providers/${id}/toggle?enabled=${enabled}`); message.success(enabled ? '已启用' : '已禁用'); fetchProviders(); } catch { /* */ }
   };
 
-  const handleDelete = async (id: string) => {
-    await api.delete(`/models/providers/${id}`);
-    message.success('已删除');
-    fetchProviders();
+  const handleDelete = (id: string) => {
+    modal.confirm({
+      title: '删除 Provider',
+      content: '确认删除此提供商？所有相关模型配置将一并移除。',
+      okText: '删除',
+      okButtonProps: { danger: true },
+      cancelText: '取消',
+      onOk: async () => { await api.delete(`/models/providers/${id}`); message.success('已删除'); fetchProviders(); },
+    });
   };
 
   const columns = [
-    {
-      title: '提供商',
-      dataIndex: 'provider_name',
-      render: (name: string) => {
-        const opt = PROVIDER_OPTIONS.find((p) => p.value === name);
-        return <Tag color={opt?.color}>{opt?.label || name}</Tag>;
-      },
-    },
-    { title: '显示名称', dataIndex: 'display_name' },
-    { title: 'API 地址', dataIndex: 'api_base_url', render: (v: string) => v || '-' },
-    {
-      title: 'API Key',
-      dataIndex: 'api_key_display',
-      render: (key: string, record: Provider) => {
-        if (!key) return '-';
-        const visible = showKeys[record.id];
-        return (
-          <Space>
-            <code>{visible ? key : key.replace(/[^.…]/g, '•')}</code>
-            <Tooltip title={visible ? '隐藏' : '显示'}>
-              <Button
-                type="text"
-                size="small"
-                icon={visible ? <EyeInvisibleOutlined /> : <EyeOutlined />}
-                onClick={() => setShowKeys({ ...showKeys, [record.id]: !visible })}
-              />
-            </Tooltip>
-          </Space>
-        );
-      },
-    },
-    {
-      title: '模型',
-      dataIndex: 'models',
-      render: (models: { name: string }[]) => (
-        <Space wrap>
-          {models?.map((m) => (
-            <Tag key={m.name}>{m.name}</Tag>
-          ))}
+    { title: '提供商', dataIndex: 'provider_name', render: (name: string) => {
+      const meta = PROVIDER_META[name] || { label: name, gradient: 'linear-gradient(135deg, #6e6e73, #a1a1a6)' };
+      return (
+        <span style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 500, color: '#f5f5f7' }}>
+          <div style={{
+            width: 28, height: 28, borderRadius: 9, background: meta.gradient,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            color: '#fff', fontSize: 12,
+          }}>
+            <ApiOutlined />
+          </div>
+          {meta.label}
+        </span>
+      );
+    }},
+    { title: '显示名称', dataIndex: 'display_name', render: (v: string) => <span style={{ color: '#a1a1a6' }}>{v || '-'}</span> },
+    { title: 'API 地址', dataIndex: 'api_base_url', render: (v: string) => (
+      <span style={{ fontSize: 12, fontFamily: 'monospace', color: 'rgba(255,255,255,0.35)' }}>{v || '-'}</span>
+    )},
+    { title: 'API Key', dataIndex: 'api_key_display', render: (key: string, record: Provider) => {
+      if (!key) return <span style={{ color: 'rgba(255,255,255,0.2)' }}>-</span>;
+      const visible = showKeys[record.id];
+      return (
+        <Space>
+          <code style={{ fontSize: 12, color: '#a1a1a6', fontFamily: 'monospace', padding: '2px 6px', borderRadius: 4, background: 'rgba(255,255,255,0.04)' }}>
+            {visible ? key : key.replace(/[^.…]/g, '•')}
+          </code>
+          <Tooltip title={visible ? '隐藏' : '显示'}>
+            <Button
+              type="text"
+              size="small"
+              icon={visible ? <EyeInvisibleOutlined /> : <EyeOutlined />}
+              onClick={() => setShowKeys({ ...showKeys, [record.id]: !visible })}
+              style={{ color: 'rgba(255,255,255,0.3)' }}
+            />
+          </Tooltip>
         </Space>
-      ),
-    },
-    { title: '优先级', dataIndex: 'priority', width: 80 },
-    {
-      title: '状态',
-      dataIndex: 'is_enabled',
-      width: 100,
-      render: (enabled: boolean, record: Provider) => (
-        <Switch checked={enabled} onChange={(v) => handleToggle(record.id, v)} />
-      ),
-    },
-    {
-      title: '操作',
-      width: 80,
-      render: (_: unknown, record: Provider) => (
-        <Popconfirm title="确认删除？" onConfirm={() => handleDelete(record.id)}>
-          <Button type="text" danger icon={<DeleteOutlined />} size="small" />
-        </Popconfirm>
-      ),
-    },
+      );
+    }},
+    { title: '模型', dataIndex: 'models', render: (models: { name: string }[]) => (
+      <span style={{ color: '#a1a1a6', fontSize: 13 }}>{models?.length || 0} 个</span>
+    )},
+    { title: '优先级', dataIndex: 'priority', width: 80, render: (v: number) => <span style={{ color: '#a1a1a6' }}>{v}</span> },
+    { title: '状态', dataIndex: 'is_enabled', width: 80, render: (enabled: boolean, record: Provider) => (
+      <Switch checked={enabled} onChange={(v) => handleToggle(record.id, v)} size="small" />
+    )},
+    { title: '', width: 50, render: (_: unknown, record: Provider) => (
+      <div
+        onClick={() => handleDelete(record.id)}
+        style={{ cursor: 'pointer', fontSize: 14, color: 'rgba(255,255,255,0.2)', padding: 4, borderRadius: 6, transition: 'all 0.2s' }}
+        onMouseEnter={(e) => { e.currentTarget.style.color = '#ff453a'; e.currentTarget.style.background = 'rgba(255,69,58,0.1)'; }}
+        onMouseLeave={(e) => { e.currentTarget.style.color = 'rgba(255,255,255,0.2)'; e.currentTarget.style.background = 'transparent'; }}
+      >
+        <DeleteOutlined />
+      </div>
+    )},
   ];
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
-        <Title level={4} style={{ margin: 0 }}>模型提供商</Title>
+      {/* Page title */}
+      <div className="animate-fade-in-up" style={{ marginBottom: 32, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+        <div>
+          <Title level={2} style={{ margin: 0, fontWeight: 700, fontSize: 34, letterSpacing: '-0.04em', color: '#f5f5f7' }}>模型提供商</Title>
+          <Text style={{ fontSize: 17, color: 'rgba(255,255,255,0.4)', marginTop: 6, display: 'block' }}>配置 LLM API 接入</Text>
+        </div>
         <Space>
-          <Button icon={<ReloadOutlined />} onClick={fetchProviders}>刷新</Button>
-          <Button type="primary" icon={<PlusOutlined />} onClick={() => setModalOpen(true)}>
+          <Button icon={<ReloadOutlined />} onClick={fetchProviders} style={{ borderRadius: 10 }}>刷新</Button>
+          <Button type="primary" icon={<PlusOutlined />} onClick={() => setModalOpen(true)} style={{ height: 44, paddingInline: 20, borderRadius: 12, fontWeight: 500 }}>
             添加 Provider
           </Button>
         </Space>
       </div>
 
-      <Card>
-        <Table
-          dataSource={providers}
-          columns={columns}
-          rowKey="id"
-          loading={loading}
-          pagination={{ pageSize: 10 }}
-        />
-      </Card>
+      {/* Table */}
+      {loading ? (
+        <Card style={{ borderRadius: 16, border: '0.5px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.04)' }} styles={{ body: { padding: 24 } }}>
+          <Skeleton active paragraph={{ rows: 6 }} />
+        </Card>
+      ) : (
+        <Card
+          className="animate-fade-in-up"
+          style={{ borderRadius: 16, border: '0.5px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}
+          styles={{ body: { padding: 0 } }}
+        >
+          {providers.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '80px 24px' }}>
+              <div style={{
+                width: 64, height: 64, borderRadius: 20, margin: '0 auto 16px',
+                background: 'rgba(255,255,255,0.04)', border: '0.5px solid rgba(255,255,255,0.08)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 28, color: 'rgba(255,255,255,0.15)',
+              }}>
+                <ApiOutlined />
+              </div>
+              <div style={{ fontSize: 15, color: 'rgba(255,255,255,0.3)', fontWeight: 500, marginBottom: 8 }}>还没有配置提供商</div>
+              <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.15)', marginBottom: 24 }}>添加一个 LLM 提供商来开始使用 AI 功能</div>
+              <Button type="primary" icon={<PlusOutlined />} onClick={() => setModalOpen(true)}>添加第一个 Provider</Button>
+            </div>
+          ) : (
+            <Table dataSource={providers} columns={columns} rowKey="id" pagination={{ pageSize: 10 }} />
+          )}
+        </Card>
+      )}
 
+      {/* Create Modal */}
       <Modal
         title="添加模型提供商"
         open={modalOpen}
         onCancel={() => { setModalOpen(false); form.resetFields(); }}
         onOk={() => form.submit()}
         width={600}
+        okText="添加"
+        cancelText="取消"
       >
         <Form form={form} layout="vertical" onFinish={handleCreate}>
           <Form.Item name="provider_name" label="提供商" rules={[{ required: true }]}>
             <Select placeholder="选择提供商">
-              {PROVIDER_OPTIONS.map((p) => (
-                <Option key={p.value} value={p.value}>{p.label}</Option>
+              {Object.entries(PROVIDER_META).map(([value, meta]) => (
+                <Option key={value} value={value}>{meta.label}</Option>
               ))}
             </Select>
           </Form.Item>
@@ -169,13 +192,9 @@ const ModelProviders: React.FC = () => {
             <Input placeholder="如：公司私有 Qwen" />
           </Form.Item>
           <Form.Item name="api_base_url" label="API Base URL">
-            <Input placeholder="留空使用默认地址" />
+            <Input placeholder="留空使用默认地址" style={{ fontFamily: 'monospace' }} />
           </Form.Item>
-          <Form.Item
-            name="api_key"
-            label="API Key"
-            extra="密钥将通过 AES-256-GCM 加密后存储在数据库中"
-          >
+          <Form.Item name="api_key" label="API Key" extra="密钥将通过 AES-256-GCM 加密存储">
             <Input.Password placeholder="sk-..." />
           </Form.Item>
           <Form.Item name="priority" label="优先级" initialValue={0}>

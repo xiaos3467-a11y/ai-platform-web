@@ -1,7 +1,7 @@
 /** App root — routing and auth guard */
 
 import React from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '@/contexts/auth';
 import AppLayout from '@/layouts/AppLayout';
 
@@ -19,10 +19,15 @@ import Costs from '@/pages/Costs';
 import Settings from '@/pages/Settings';
 import Users from '@/pages/Users';
 import Roles from '@/pages/Roles';
+import NotFound from '@/pages/NotFound';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
-  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  const location = useLocation();
+  if (!isAuthenticated) {
+    // Preserve the intended destination so we can redirect back after login
+    return <Navigate to="/login" replace state={{ from: location.pathname }} />;
+  }
   return <>{children}</>;
 };
 
@@ -50,6 +55,7 @@ const App: React.FC = () => {
         <Route path="users" element={<Users />} />
         <Route path="roles" element={<Roles />} />
         <Route path="settings" element={<Settings />} />
+        <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>
   );

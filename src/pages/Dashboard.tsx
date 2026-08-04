@@ -1,7 +1,10 @@
-/** Dashboard — Apple-style: airy cards, large numbers, minimal decoration */
+/**
+ * Dashboard — Apple Numbers aesthetic
+ * — Skeleton loading, gradient stat cards, smooth chart areas
+ */
 
 import React, { useEffect, useState } from 'react';
-import { Row, Col, Card, Typography, Tag, Space, Spin } from 'antd';
+import { Row, Col, Card, Typography, Space, Skeleton, Alert } from 'antd';
 import {
   CheckCircleOutlined,
   WarningOutlined,
@@ -19,43 +22,103 @@ import type { CostSummary, DailyCost, HealthStatus } from '@/types';
 
 const { Title, Text } = Typography;
 
-const COLORS = ['#0071e3', '#34c759', '#ff9f0a', '#ff3b30', '#5856d6', '#00c7be'];
+const COLORS = ['#0a84ff', '#30d158', '#ffd60a', '#ff453a', '#5e5ce6', '#64d2ff'];
 
-/** Apple-style stat card */
+/* ─── Skeleton loader ─────────────────────────────────────────────── */
+const StatCardSkeleton: React.FC = () => (
+  <Card
+    style={{
+      borderRadius: 16,
+      border: '0.5px solid rgba(255, 255, 255, 0.08)',
+      background: 'rgba(255, 255, 255, 0.04)',
+    }}
+    styles={{ body: { padding: '24px 28px' } }}
+  >
+    <Skeleton active paragraph={{ rows: 1 }} title={{ width: 100 }} />
+  </Card>
+);
+
+const SectionCardSkeleton: React.FC = () => (
+  <Card
+    style={{
+      borderRadius: 16,
+      border: '0.5px solid rgba(255, 255, 255, 0.08)',
+      background: 'rgba(255, 255, 255, 0.04)',
+    }}
+    styles={{ body: { padding: 24 } }}
+  >
+    <Skeleton active paragraph={{ rows: 6 }} />
+  </Card>
+);
+
+/* ─── Stat card — gradient accent ─────────────────────────────────── */
 const StatCard: React.FC<{
   title: string;
   value: string | number;
   suffix?: string;
   icon: React.ReactNode;
-  color: string;
-}> = ({ title, value, suffix, icon, color }) => (
+  gradient: string;
+}> = ({ title, value, suffix, icon, gradient }) => (
   <Card
+    className="card-hover animate-fade-in-up"
     style={{
       borderRadius: 16,
-      border: 'none',
-      boxShadow: '0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.04)',
+      border: '0.5px solid rgba(255, 255, 255, 0.08)',
+      background: 'rgba(255, 255, 255, 0.04)',
+      backdropFilter: 'blur(20px)',
+      WebkitBackdropFilter: 'blur(20px)',
     }}
     styles={{ body: { padding: '24px 28px' } }}
   >
     <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
       <div>
-        <Text style={{ fontSize: 13, color: '#86868b', fontWeight: 500 }}>{title}</Text>
-        <div style={{ marginTop: 8, fontSize: 32, fontWeight: 700, color: '#1d1d1f', letterSpacing: '-0.03em' }}>
+        <Text
+          style={{
+            fontSize: 13,
+            color: 'rgba(255, 255, 255, 0.45)',
+            fontWeight: 500,
+            letterSpacing: '0.02em',
+          }}
+        >
+          {title}
+        </Text>
+        <div
+          style={{
+            marginTop: 10,
+            fontSize: 36,
+            fontWeight: 700,
+            color: '#f5f5f7',
+            letterSpacing: '-0.04em',
+            lineHeight: 1,
+          }}
+        >
           {typeof value === 'number' ? value.toLocaleString() : value}
-          {suffix && <span style={{ fontSize: 16, fontWeight: 500, color: '#86868b', marginLeft: 4 }}>{suffix}</span>}
+          {suffix && (
+            <span
+              style={{
+                fontSize: 16,
+                fontWeight: 500,
+                color: 'rgba(255, 255, 255, 0.35)',
+                marginLeft: 4,
+              }}
+            >
+              {suffix}
+            </span>
+          )}
         </div>
       </div>
       <div
         style={{
-          width: 40,
-          height: 40,
-          borderRadius: 12,
-          background: `${color}12`,
+          width: 44,
+          height: 44,
+          borderRadius: 14,
+          background: gradient,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          color,
-          fontSize: 18,
+          color: '#fff',
+          fontSize: 20,
+          boxShadow: '0 4px 16px rgba(0, 0, 0, 0.3)',
         }}
       >
         {icon}
@@ -64,24 +127,55 @@ const StatCard: React.FC<{
   </Card>
 );
 
-/** Apple-style section card */
+/* ─── Section card — clean container ──────────────────────────────── */
 const SectionCard: React.FC<{
   title: string;
+  subtitle?: string;
   children: React.ReactNode;
   style?: React.CSSProperties;
-}> = ({ title, children, style }) => (
+}> = ({ title, subtitle, children, style }) => (
   <Card
+    className="animate-fade-in-up"
     title={
-      <span style={{ fontSize: 17, fontWeight: 600, color: '#1d1d1f' }}>{title}</span>
+      <div>
+        <span
+          style={{
+            fontSize: 17,
+            fontWeight: 600,
+            color: '#f5f5f7',
+            letterSpacing: '-0.02em',
+          }}
+        >
+          {title}
+        </span>
+        {subtitle && (
+          <span
+            style={{
+              fontSize: 13,
+              color: 'rgba(255, 255, 255, 0.35)',
+              marginLeft: 12,
+              fontWeight: 400,
+            }}
+          >
+            {subtitle}
+          </span>
+        )}
+      </div>
     }
     style={{
       borderRadius: 16,
-      border: 'none',
-      boxShadow: '0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.04)',
+      border: '0.5px solid rgba(255, 255, 255, 0.08)',
+      background: 'rgba(255, 255, 255, 0.04)',
+      backdropFilter: 'blur(20px)',
+      WebkitBackdropFilter: 'blur(20px)',
       ...style,
     }}
     styles={{
-      header: { borderBottom: '0.5px solid #f0f0f2', padding: '16px 24px', minHeight: 'auto' },
+      header: {
+        borderBottom: '0.5px solid rgba(255, 255, 255, 0.06)',
+        padding: '16px 24px',
+        minHeight: 'auto',
+      },
       body: { padding: 24 },
     }}
   >
@@ -89,11 +183,53 @@ const SectionCard: React.FC<{
   </Card>
 );
 
+/* ─── Health pill ─────────────────────────────────────────────────── */
+const HealthPill: React.FC<{ name: string; status: string }> = ({ name, status }) => {
+  const isOk = status === 'ok';
+  return (
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 8,
+        padding: '8px 16px',
+        borderRadius: 10,
+        background: isOk ? 'rgba(48, 209, 88, 0.08)' : 'rgba(255, 69, 58, 0.08)',
+        border: `0.5px solid ${isOk ? 'rgba(48, 209, 88, 0.2)' : 'rgba(255, 69, 58, 0.2)'}`,
+        transition: 'transform 0.2s ease',
+      }}
+      onMouseEnter={(e) => (e.currentTarget.style.transform = 'translateY(-1px)')}
+      onMouseLeave={(e) => (e.currentTarget.style.transform = 'translateY(0)')}
+    >
+      <div
+        style={{
+          width: 6,
+          height: 6,
+          borderRadius: '50%',
+          background: isOk ? '#30d158' : '#ff453a',
+          boxShadow: isOk ? '0 0 6px rgba(48, 209, 88, 0.5)' : '0 0 6px rgba(255, 69, 58, 0.5)',
+        }}
+      />
+      <span
+        style={{
+          fontSize: 13,
+          fontWeight: 500,
+          color: 'rgba(255, 255, 255, 0.72)',
+        }}
+      >
+        {name}
+      </span>
+    </div>
+  );
+};
+
+/* ─── Dashboard ───────────────────────────────────────────────────── */
 const Dashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [health, setHealth] = useState<HealthStatus | null>(null);
   const [costSummary, setCostSummary] = useState<CostSummary | null>(null);
   const [dailyCosts, setDailyCosts] = useState<DailyCost[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -106,18 +242,15 @@ const Dashboard: React.FC = () => {
         if (healthResp.status === 'fulfilled') setHealth(healthResp.value.data);
         if (costResp.status === 'fulfilled') setCostSummary(costResp.value.data);
         if (dailyResp.status === 'fulfilled') setDailyCosts(dailyResp.value.data || []);
-      } finally { setLoading(false); }
+
+        const allFailed = [healthResp, costResp, dailyResp].every((r) => r.status === 'rejected');
+        if (allFailed) setError('无法连接到后端服务，请检查网络或联系管理员');
+      } finally {
+        setLoading(false);
+      }
     };
     fetchData();
   }, []);
-
-  if (loading) {
-    return (
-      <div style={{ textAlign: 'center', padding: 120 }}>
-        <Spin size="large" />
-      </div>
-    );
-  }
 
   const modelData = costSummary
     ? Object.entries(costSummary.by_model).map(([name, data]) => ({
@@ -130,179 +263,301 @@ const Dashboard: React.FC = () => {
 
   return (
     <div>
+      {error && (
+        <Alert
+          message="数据加载异常"
+          description={error}
+          type="warning"
+          showIcon
+          style={{
+            marginBottom: 20,
+            borderRadius: 12,
+            background: 'rgba(255, 214, 10, 0.06)',
+            border: '0.5px solid rgba(255, 214, 10, 0.15)',
+          }}
+        />
+      )}
+
       {/* Page title */}
-      <div style={{ marginBottom: 28 }}>
-        <Title level={3} style={{ margin: 0, fontWeight: 700, letterSpacing: '-0.02em', color: '#1d1d1f' }}>
+      <div
+        className="animate-fade-in-up"
+        style={{ marginBottom: 32 }}
+      >
+        <Title
+          level={2}
+          style={{
+            margin: 0,
+            fontWeight: 700,
+            fontSize: 34,
+            letterSpacing: '-0.04em',
+            color: '#f5f5f7',
+          }}
+        >
           仪表盘
         </Title>
-        <Text style={{ fontSize: 15, color: '#86868b', marginTop: 4, display: 'block' }}>
+        <Text
+          style={{
+            fontSize: 17,
+            color: 'rgba(255, 255, 255, 0.4)',
+            marginTop: 6,
+            display: 'block',
+            fontWeight: 400,
+          }}
+        >
           平台运行概览
         </Text>
       </div>
 
-      {/* Stat cards */}
-      <Row gutter={[20, 20]} style={{ marginBottom: 24 }}>
-        <Col xs={24} sm={12} lg={6}>
-          <StatCard
-            title="本月请求"
-            value={costSummary?.total_requests ?? 0}
-            icon={<ThunderboltOutlined />}
-            color="#0071e3"
-          />
-        </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <StatCard
-            title="Token 消耗"
-            value={totalTokens > 1000000 ? `${(totalTokens / 1000000).toFixed(1)}M` : totalTokens > 1000 ? `${(totalTokens / 1000).toFixed(0)}K` : totalTokens}
-            icon={<MessageOutlined />}
-            color="#34c759"
-          />
-        </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <StatCard
-            title="本月成本"
-            value={`$${(costSummary?.total_cost_usd ?? 0).toFixed(2)}`}
-            icon={<DollarOutlined />}
-            color="#ff9f0a"
-          />
-        </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <StatCard
-            title="系统状态"
-            value={health?.status === 'ok' ? '正常' : '异常'}
-            icon={health?.status === 'ok' ? <CheckCircleOutlined /> : <WarningOutlined />}
-            color={health?.status === 'ok' ? '#34c759' : '#ff3b30'}
-          />
-        </Col>
-      </Row>
+      {/* ─── Stat cards ─────────────────────────────────────────── */}
+      {loading ? (
+        <Row gutter={[20, 20]} style={{ marginBottom: 24 }}>
+          {[1, 2, 3, 4].map((i) => (
+            <Col xs={24} sm={12} lg={6} key={i}>
+              <StatCardSkeleton />
+            </Col>
+          ))}
+        </Row>
+      ) : (
+        <Row gutter={[20, 20]} style={{ marginBottom: 24 }}>
+          <Col xs={24} sm={12} lg={6}>
+            <StatCard
+              title="本月请求"
+              value={costSummary?.total_requests ?? 0}
+              icon={<ThunderboltOutlined />}
+              gradient="linear-gradient(135deg, #0a84ff, #5e5ce6)"
+            />
+          </Col>
+          <Col xs={24} sm={12} lg={6}>
+            <StatCard
+              title="Token 消耗"
+              value={
+                totalTokens > 1000000
+                  ? `${(totalTokens / 1000000).toFixed(1)}M`
+                  : totalTokens > 1000
+                  ? `${(totalTokens / 1000).toFixed(0)}K`
+                  : totalTokens
+              }
+              icon={<MessageOutlined />}
+              gradient="linear-gradient(135deg, #30d158, #34c759)"
+            />
+          </Col>
+          <Col xs={24} sm={12} lg={6}>
+            <StatCard
+              title="本月成本"
+              value={`$${(costSummary?.total_cost_usd ?? 0).toFixed(2)}`}
+              icon={<DollarOutlined />}
+              gradient="linear-gradient(135deg, #ffd60a, #ff9f0a)"
+            />
+          </Col>
+          <Col xs={24} sm={12} lg={6}>
+            <StatCard
+              title="系统状态"
+              value={health?.status === 'ok' ? '正常' : '异常'}
+              icon={health?.status === 'ok' ? <CheckCircleOutlined /> : <WarningOutlined />}
+              gradient={
+                health?.status === 'ok'
+                  ? 'linear-gradient(135deg, #30d158, #34c759)'
+                  : 'linear-gradient(135deg, #ff453a, #ff6961)'
+              }
+            />
+          </Col>
+        </Row>
+      )}
 
-      {/* Health + Components */}
-      <SectionCard title="组件状态" style={{ marginBottom: 24 }}>
-        <Space size={12} wrap>
-          {health?.dependencies &&
-            Object.entries(health.dependencies).map(([name, status]) => (
-              <div
-                key={name}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 8,
-                  padding: '8px 16px',
-                  borderRadius: 10,
-                  background: status === 'ok' ? '#f0faf4' : '#fff5f5',
-                  border: `1px solid ${status === 'ok' ? '#d4edda' : '#fde2e2'}`,
-                }}
-              >
-                {status === 'ok' ? (
-                  <CheckCircleOutlined style={{ color: '#34c759', fontSize: 14 }} />
-                ) : (
-                  <WarningOutlined style={{ color: '#ff3b30', fontSize: 14 }} />
-                )}
-                <span style={{ fontSize: 13, fontWeight: 500, color: '#1d1d1f' }}>{name}</span>
-              </div>
-            ))}
-        </Space>
-      </SectionCard>
+      {/* ─── Health + Components ────────────────────────────────── */}
+      {loading ? (
+        <SectionCardSkeleton />
+      ) : (
+        <SectionCard title="组件状态" style={{ marginBottom: 24 }}>
+          <Space size={10} wrap>
+            {health?.dependencies &&
+            Object.entries(health.dependencies).length > 0 ? (
+              Object.entries(health.dependencies).map(([name, status]) => (
+                <HealthPill key={name} name={name} status={status} />
+              ))
+            ) : (
+              <Text style={{ color: 'rgba(255, 255, 255, 0.3)', fontSize: 14 }}>
+                暂无组件数据
+              </Text>
+            )}
+          </Space>
+        </SectionCard>
+      )}
 
-      {/* Charts */}
-      <Row gutter={[20, 20]}>
-        <Col xs={24} lg={16}>
-          <SectionCard title="每日成本趋势">
-            <ResponsiveContainer width="100%" height={280}>
-              <AreaChart data={dailyCosts}>
-                <defs>
-                  <linearGradient id="costGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#0071e3" stopOpacity={0.15} />
-                    <stop offset="100%" stopColor="#0071e3" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f2" vertical={false} />
-                <XAxis dataKey="date" tick={{ fontSize: 12, fill: '#86868b' }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize: 12, fill: '#86868b' }} axisLine={false} tickLine={false} />
-                <Tooltip
-                  contentStyle={{
-                    borderRadius: 12,
-                    border: 'none',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                    fontSize: 13,
-                  }}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="estimated_cost_usd"
-                  stroke="#0071e3"
-                  strokeWidth={2}
-                  fill="url(#costGradient)"
-                  name="成本 (USD)"
-                  dot={false}
-                  activeDot={{ r: 4, fill: '#0071e3' }}
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          </SectionCard>
-        </Col>
-
-        <Col xs={24} lg={8}>
-          <SectionCard title="模型成本分布">
-            {modelData.length > 0 ? (
+      {/* ─── Charts ─────────────────────────────────────────────── */}
+      {loading ? (
+        <Row gutter={[20, 20]}>
+          <Col xs={24} lg={16}>
+            <SectionCardSkeleton />
+          </Col>
+          <Col xs={24} lg={8}>
+            <SectionCardSkeleton />
+          </Col>
+        </Row>
+      ) : (
+        <Row gutter={[20, 20]}>
+          <Col xs={24} lg={16}>
+            <SectionCard title="每日成本趋势" subtitle="近 14 天">
               <ResponsiveContainer width="100%" height={280}>
-                <PieChart>
-                  <Pie
-                    data={modelData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={95}
-                    dataKey="cost"
-                    nameKey="name"
-                    paddingAngle={3}
-                    strokeWidth={0}
-                  >
-                    {modelData.map((_, i) => (
-                      <Cell key={i} fill={COLORS[i % COLORS.length]} />
-                    ))}
-                  </Pie>
+                <AreaChart data={dailyCosts}>
+                  <defs>
+                    <linearGradient id="costGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#0a84ff" stopOpacity={0.25} />
+                      <stop offset="100%" stopColor="#0a84ff" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    stroke="rgba(255, 255, 255, 0.04)"
+                    vertical={false}
+                  />
+                  <XAxis
+                    dataKey="date"
+                    tick={{ fontSize: 11, fill: 'rgba(255, 255, 255, 0.3)' }}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <YAxis
+                    tick={{ fontSize: 11, fill: 'rgba(255, 255, 255, 0.3)' }}
+                    axisLine={false}
+                    tickLine={false}
+                    width={50}
+                    tickFormatter={(v) => `$${v.toFixed(2)}`}
+                  />
                   <Tooltip
                     contentStyle={{
                       borderRadius: 12,
-                      border: 'none',
-                      boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                      border: '0.5px solid rgba(255, 255, 255, 0.1)',
+                      background: 'rgba(28, 28, 30, 0.95)',
+                      backdropFilter: 'blur(20px)',
+                      boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
                       fontSize: 13,
+                      color: '#f5f5f7',
                     }}
-                    formatter={(v: number) => `$${v.toFixed(4)}`}
+                    labelStyle={{ color: 'rgba(255, 255, 255, 0.5)' }}
                   />
-                </PieChart>
+                  <Area
+                    type="monotone"
+                    dataKey="estimated_cost_usd"
+                    stroke="#0a84ff"
+                    strokeWidth={2}
+                    fill="url(#costGradient)"
+                    name="成本 (USD)"
+                    dot={false}
+                    activeDot={{
+                      r: 5,
+                      fill: '#0a84ff',
+                      stroke: 'rgba(0, 0, 0, 0.3)',
+                      strokeWidth: 2,
+                    }}
+                  />
+                </AreaChart>
               </ResponsiveContainer>
-            ) : (
-              <div style={{ textAlign: 'center', padding: '60px 0', color: '#86868b' }}>
-                <ApiOutlined style={{ fontSize: 32, marginBottom: 12, opacity: 0.4 }} />
-                <div>暂无数据</div>
-              </div>
-            )}
-          </SectionCard>
-        </Col>
+            </SectionCard>
+          </Col>
 
-        <Col xs={24}>
-          <SectionCard title="每日请求量">
-            <ResponsiveContainer width="100%" height={240}>
-              <BarChart data={dailyCosts}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f2" vertical={false} />
-                <XAxis dataKey="date" tick={{ fontSize: 12, fill: '#86868b' }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize: 12, fill: '#86868b' }} axisLine={false} tickLine={false} />
-                <Tooltip
-                  contentStyle={{
-                    borderRadius: 12,
-                    border: 'none',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                    fontSize: 13,
+          <Col xs={24} lg={8}>
+            <SectionCard title="模型成本分布">
+              {modelData.length > 0 ? (
+                <ResponsiveContainer width="100%" height={280}>
+                  <PieChart>
+                    <Pie
+                      data={modelData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={64}
+                      outerRadius={100}
+                      dataKey="cost"
+                      nameKey="name"
+                      paddingAngle={3}
+                      strokeWidth={0}
+                    >
+                      {modelData.map((_, i) => (
+                        <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      contentStyle={{
+                        borderRadius: 12,
+                        border: '0.5px solid rgba(255, 255, 255, 0.1)',
+                        background: 'rgba(28, 28, 30, 0.95)',
+                        backdropFilter: 'blur(20px)',
+                        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
+                        fontSize: 13,
+                        color: '#f5f5f7',
+                      }}
+                      formatter={(v: number) => `$${v.toFixed(4)}`}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              ) : (
+                <div
+                  style={{
+                    textAlign: 'center',
+                    padding: '60px 0',
+                    color: 'rgba(255, 255, 255, 0.25)',
                   }}
-                />
-                <Bar dataKey="requests" fill="#0071e3" radius={[6, 6, 0, 0]} name="请求数" opacity={0.85} />
-              </BarChart>
-            </ResponsiveContainer>
-          </SectionCard>
-        </Col>
-      </Row>
+                >
+                  <ApiOutlined
+                    style={{ fontSize: 36, marginBottom: 12, opacity: 0.4 }}
+                  />
+                  <div style={{ fontSize: 14 }}>暂无数据</div>
+                </div>
+              )}
+            </SectionCard>
+          </Col>
+
+          <Col xs={24}>
+            <SectionCard title="每日请求量" subtitle="近 14 天">
+              <ResponsiveContainer width="100%" height={240}>
+                <BarChart data={dailyCosts}>
+                  <defs>
+                    <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#0a84ff" stopOpacity={0.9} />
+                      <stop offset="100%" stopColor="#5e5ce6" stopOpacity={0.6} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    stroke="rgba(255, 255, 255, 0.04)"
+                    vertical={false}
+                  />
+                  <XAxis
+                    dataKey="date"
+                    tick={{ fontSize: 11, fill: 'rgba(255, 255, 255, 0.3)' }}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <YAxis
+                    tick={{ fontSize: 11, fill: 'rgba(255, 255, 255, 0.3)' }}
+                    axisLine={false}
+                    tickLine={false}
+                    width={50}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      borderRadius: 12,
+                      border: '0.5px solid rgba(255, 255, 255, 0.1)',
+                      background: 'rgba(28, 28, 30, 0.95)',
+                      backdropFilter: 'blur(20px)',
+                      boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
+                      fontSize: 13,
+                      color: '#f5f5f7',
+                    }}
+                    labelStyle={{ color: 'rgba(255, 255, 255, 0.5)' }}
+                  />
+                  <Bar
+                    dataKey="requests"
+                    fill="url(#barGradient)"
+                    radius={[6, 6, 0, 0]}
+                    name="请求数"
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            </SectionCard>
+          </Col>
+        </Row>
+      )}
     </div>
   );
 };

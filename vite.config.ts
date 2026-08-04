@@ -21,5 +21,15 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     sourcemap: false,
+    // Split vendor chunks for better long-term caching
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+          'vendor-antd': ['antd', '@ant-design/icons'],
+          'vendor-utils': ['axios', 'zustand', 'dayjs'],
+        },
+      },
+    },
   },
 });

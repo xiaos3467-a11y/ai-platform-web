@@ -19,9 +19,18 @@ export interface LoginRequest {
   password: string;
 }
 
+/** Raw user shape returned by /auth/login — may include roles array */
+export interface LoginUserPayload {
+  id: string;
+  username: string;
+  tenant_id: string;
+  roles?: { id: string; name: string }[];
+  role?: string;
+}
+
 export interface LoginResponse {
   token: string;
-  user: UserInfo;
+  user: LoginUserPayload;
 }
 
 export interface UserInfo {
