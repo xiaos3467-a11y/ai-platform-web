@@ -4,7 +4,7 @@
  */
 
 import React, { useEffect, useState, useRef } from 'react';
-import { Card, Typography, Spin, Empty, App, Badge } from 'antd';
+import { Typography, Spin, Empty, App, Badge } from 'antd';
 import {
   DeleteOutlined,
   MessageOutlined,
@@ -15,6 +15,7 @@ import {
 } from '@ant-design/icons';
 import { api } from '@/api/client';
 import type { Conversation, Message } from '@/types';
+import { GlassCard } from '@/components';
 
 const { Title, Text } = Typography;
 
@@ -399,15 +400,10 @@ const Conversations: React.FC = () => {
         className="animate-fade-in-up"
       >
         {/* ─── Left panel: Conversation list ──────────────────────── */}
-        <Card
+        <GlassCard
           style={{
             width: 360,
             flexShrink: 0,
-            borderRadius: 16,
-            border: '0.5px solid rgba(255, 255, 255, 0.08)',
-            background: 'rgba(255, 255, 255, 0.03)',
-            backdropFilter: 'blur(20px)',
-            WebkitBackdropFilter: 'blur(20px)',
             overflow: 'hidden',
             display: 'flex',
             flexDirection: 'column',
@@ -478,17 +474,12 @@ const Conversations: React.FC = () => {
               </div>
             )}
           </div>
-        </Card>
+        </GlassCard>
 
         {/* ─── Right panel: Message view ──────────────────────────── */}
-        <Card
+        <GlassCard
           style={{
             flex: 1,
-            borderRadius: 16,
-            border: '0.5px solid rgba(255, 255, 255, 0.08)',
-            background: 'rgba(255, 255, 255, 0.02)',
-            backdropFilter: 'blur(20px)',
-            WebkitBackdropFilter: 'blur(20px)',
             overflow: 'hidden',
             display: 'flex',
             flexDirection: 'column',
@@ -654,7 +645,7 @@ const Conversations: React.FC = () => {
               </Text>
             </div>
           )}
-        </Card>
+        </GlassCard>
       </div>
     </div>
   );

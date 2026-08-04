@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import {
-  Card, Typography, Space, Row, Col, Button, App, Alert, Skeleton,
+  Typography, Space, Row, Col, Button, App, Alert,
 } from 'antd';
 import {
   CheckCircleOutlined, CloseCircleOutlined, ReloadOutlined,
@@ -10,25 +10,9 @@ import {
 } from '@ant-design/icons';
 import { api } from '@/api/client';
 import type { HealthStatus } from '@/types';
+import { SectionCard, SectionCardSkeleton } from '@/components';
 
 const { Title, Text } = Typography;
-
-/* ─── Section card ────────────────────────────────────────────────── */
-const SectionCard: React.FC<{ title: string; icon?: React.ReactNode; children: React.ReactNode; style?: React.CSSProperties }> = ({ title, icon, children, style }) => (
-  <Card
-    className="animate-fade-in-up"
-    title={
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-        {icon && <span style={{ color: '#0a84ff', fontSize: 16 }}>{icon}</span>}
-        <span style={{ fontSize: 17, fontWeight: 600, color: '#f5f5f7', letterSpacing: '-0.02em' }}>{title}</span>
-      </div>
-    }
-    style={{ borderRadius: 16, border: '0.5px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', ...style }}
-    styles={{ header: { borderBottom: '0.5px solid rgba(255,255,255,0.06)', padding: '16px 24px', minHeight: 'auto' }, body: { padding: 24 } }}
-  >
-    {children}
-  </Card>
-);
 
 /* ─── Main ────────────────────────────────────────────────────────── */
 const Settings: React.FC = () => {
@@ -38,7 +22,7 @@ const Settings: React.FC = () => {
 
   const fetchHealth = async () => {
     setLoading(true);
-    try { const resp = await api.get<HealthStatus>('/health'); setHealth(resp.data); } catch { message.error('无法获取系统状态'); } finally { setLoading(false); }
+    try { const resp = await api.get<HealthStatus>('../health'); setHealth(resp.data); } catch { message.error('无法获取系统状态'); } finally { setLoading(false); }
   };
 
   useEffect(() => { fetchHealth(); }, []);
@@ -62,9 +46,7 @@ const Settings: React.FC = () => {
         <Row gutter={[20, 20]}>
           {[1, 2].map((i) => (
             <Col xs={24} lg={12} key={i}>
-              <Card style={{ borderRadius: 16, border: '0.5px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.04)' }} styles={{ body: { padding: 24 } }}>
-                <Skeleton active paragraph={{ rows: 4 }} />
-              </Card>
+              <SectionCardSkeleton />
             </Col>
           ))}
         </Row>

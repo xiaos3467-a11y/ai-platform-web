@@ -2,8 +2,8 @@
 
 import React, { useEffect, useState } from 'react';
 import {
-  Table, Button, Modal, Form, Input, Space, Card, Typography,
-  App, Drawer, Skeleton,
+  Table, Button, Modal, Form, Input, Space, Typography,
+  App, Drawer,
 } from 'antd';
 import {
   PlusOutlined, HistoryOutlined, CodeOutlined, SwapOutlined,
@@ -11,6 +11,7 @@ import {
 } from '@ant-design/icons';
 import { api } from '@/api/client';
 import type { PromptTemplate, PromptVersion } from '@/types';
+import { GlassCard, EmptyState, TableSkeleton } from '@/components';
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
@@ -170,33 +171,21 @@ const Prompts: React.FC = () => {
 
       {/* Table */}
       {loading ? (
-        <Card style={{ borderRadius: 16, border: '0.5px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.04)' }} styles={{ body: { padding: 24 } }}>
-          <Skeleton active paragraph={{ rows: 6 }} />
-        </Card>
+        <TableSkeleton />
       ) : (
-        <Card
-          className="animate-fade-in-up"
-          style={{ borderRadius: 16, border: '0.5px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}
-          styles={{ body: { padding: 0 } }}
-        >
+        <GlassCard animate styles={{ body: { padding: 0 } }}>
           {prompts.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '80px 24px' }}>
-              <div style={{
-                width: 64, height: 64, borderRadius: 20, margin: '0 auto 16px',
-                background: 'rgba(255,255,255,0.04)', border: '0.5px solid rgba(255,255,255,0.08)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: 28, color: 'rgba(255,255,255,0.15)',
-              }}>
-                <FileTextOutlined />
-              </div>
-              <div style={{ fontSize: 15, color: 'rgba(255,255,255,0.3)', fontWeight: 500, marginBottom: 8 }}>还没有 Prompt 模板</div>
-              <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.15)', marginBottom: 24 }}>创建模板来复用提示词，支持变量替换</div>
-              <Button type="primary" icon={<PlusOutlined />} onClick={() => setCreateOpen(true)}>创建第一个模板</Button>
-            </div>
+            <EmptyState
+              icon={<FileTextOutlined />}
+              title="还没有 Prompt 模板"
+              description="创建模板来复用提示词，支持变量替换"
+              actionText="创建第一个模板"
+              onAction={() => setCreateOpen(true)}
+            />
           ) : (
             <Table dataSource={prompts} columns={columns} rowKey="id" />
           )}
-        </Card>
+        </GlassCard>
       )}
 
       {/* Create Modal */}

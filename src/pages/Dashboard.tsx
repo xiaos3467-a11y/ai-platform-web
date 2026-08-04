@@ -4,7 +4,7 @@
  */
 
 import React, { useEffect, useState } from 'react';
-import { Row, Col, Card, Typography, Space, Skeleton, Alert } from 'antd';
+import { Row, Col, Typography, Space, Alert } from 'antd';
 import {
   CheckCircleOutlined,
   WarningOutlined,
@@ -19,209 +19,11 @@ import {
 } from 'recharts';
 import { api } from '@/api/client';
 import type { CostSummary, DailyCost, HealthStatus } from '@/types';
+import { StatCard, SectionCard, HealthPill, StatCardSkeleton, SectionCardSkeleton } from '@/components';
 
 const { Title, Text } = Typography;
 
 const COLORS = ['#0a84ff', '#30d158', '#ffd60a', '#ff453a', '#5e5ce6', '#64d2ff'];
-
-/* ─── Skeleton loader ─────────────────────────────────────────────── */
-const StatCardSkeleton: React.FC = () => (
-  <Card
-    style={{
-      borderRadius: 16,
-      border: '0.5px solid rgba(255, 255, 255, 0.08)',
-      background: 'rgba(255, 255, 255, 0.04)',
-    }}
-    styles={{ body: { padding: '24px 28px' } }}
-  >
-    <Skeleton active paragraph={{ rows: 1 }} title={{ width: 100 }} />
-  </Card>
-);
-
-const SectionCardSkeleton: React.FC = () => (
-  <Card
-    style={{
-      borderRadius: 16,
-      border: '0.5px solid rgba(255, 255, 255, 0.08)',
-      background: 'rgba(255, 255, 255, 0.04)',
-    }}
-    styles={{ body: { padding: 24 } }}
-  >
-    <Skeleton active paragraph={{ rows: 6 }} />
-  </Card>
-);
-
-/* ─── Stat card — gradient accent ─────────────────────────────────── */
-const StatCard: React.FC<{
-  title: string;
-  value: string | number;
-  suffix?: string;
-  icon: React.ReactNode;
-  gradient: string;
-}> = ({ title, value, suffix, icon, gradient }) => (
-  <Card
-    className="card-hover animate-fade-in-up"
-    style={{
-      borderRadius: 16,
-      border: '0.5px solid rgba(255, 255, 255, 0.08)',
-      background: 'rgba(255, 255, 255, 0.04)',
-      backdropFilter: 'blur(20px)',
-      WebkitBackdropFilter: 'blur(20px)',
-    }}
-    styles={{ body: { padding: '24px 28px' } }}
-  >
-    <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-      <div>
-        <Text
-          style={{
-            fontSize: 13,
-            color: 'rgba(255, 255, 255, 0.45)',
-            fontWeight: 500,
-            letterSpacing: '0.02em',
-          }}
-        >
-          {title}
-        </Text>
-        <div
-          style={{
-            marginTop: 10,
-            fontSize: 36,
-            fontWeight: 700,
-            color: '#f5f5f7',
-            letterSpacing: '-0.04em',
-            lineHeight: 1,
-          }}
-        >
-          {typeof value === 'number' ? value.toLocaleString() : value}
-          {suffix && (
-            <span
-              style={{
-                fontSize: 16,
-                fontWeight: 500,
-                color: 'rgba(255, 255, 255, 0.35)',
-                marginLeft: 4,
-              }}
-            >
-              {suffix}
-            </span>
-          )}
-        </div>
-      </div>
-      <div
-        style={{
-          width: 44,
-          height: 44,
-          borderRadius: 14,
-          background: gradient,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: '#fff',
-          fontSize: 20,
-          boxShadow: '0 4px 16px rgba(0, 0, 0, 0.3)',
-        }}
-      >
-        {icon}
-      </div>
-    </div>
-  </Card>
-);
-
-/* ─── Section card — clean container ──────────────────────────────── */
-const SectionCard: React.FC<{
-  title: string;
-  subtitle?: string;
-  children: React.ReactNode;
-  style?: React.CSSProperties;
-}> = ({ title, subtitle, children, style }) => (
-  <Card
-    className="animate-fade-in-up"
-    title={
-      <div>
-        <span
-          style={{
-            fontSize: 17,
-            fontWeight: 600,
-            color: '#f5f5f7',
-            letterSpacing: '-0.02em',
-          }}
-        >
-          {title}
-        </span>
-        {subtitle && (
-          <span
-            style={{
-              fontSize: 13,
-              color: 'rgba(255, 255, 255, 0.35)',
-              marginLeft: 12,
-              fontWeight: 400,
-            }}
-          >
-            {subtitle}
-          </span>
-        )}
-      </div>
-    }
-    style={{
-      borderRadius: 16,
-      border: '0.5px solid rgba(255, 255, 255, 0.08)',
-      background: 'rgba(255, 255, 255, 0.04)',
-      backdropFilter: 'blur(20px)',
-      WebkitBackdropFilter: 'blur(20px)',
-      ...style,
-    }}
-    styles={{
-      header: {
-        borderBottom: '0.5px solid rgba(255, 255, 255, 0.06)',
-        padding: '16px 24px',
-        minHeight: 'auto',
-      },
-      body: { padding: 24 },
-    }}
-  >
-    {children}
-  </Card>
-);
-
-/* ─── Health pill ─────────────────────────────────────────────────── */
-const HealthPill: React.FC<{ name: string; status: string }> = ({ name, status }) => {
-  const isOk = status === 'ok';
-  return (
-    <div
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: 8,
-        padding: '8px 16px',
-        borderRadius: 10,
-        background: isOk ? 'rgba(48, 209, 88, 0.08)' : 'rgba(255, 69, 58, 0.08)',
-        border: `0.5px solid ${isOk ? 'rgba(48, 209, 88, 0.2)' : 'rgba(255, 69, 58, 0.2)'}`,
-        transition: 'transform 0.2s ease',
-      }}
-      onMouseEnter={(e) => (e.currentTarget.style.transform = 'translateY(-1px)')}
-      onMouseLeave={(e) => (e.currentTarget.style.transform = 'translateY(0)')}
-    >
-      <div
-        style={{
-          width: 6,
-          height: 6,
-          borderRadius: '50%',
-          background: isOk ? '#30d158' : '#ff453a',
-          boxShadow: isOk ? '0 0 6px rgba(48, 209, 88, 0.5)' : '0 0 6px rgba(255, 69, 58, 0.5)',
-        }}
-      />
-      <span
-        style={{
-          fontSize: 13,
-          fontWeight: 500,
-          color: 'rgba(255, 255, 255, 0.72)',
-        }}
-      >
-        {name}
-      </span>
-    </div>
-  );
-};
 
 /* ─── Dashboard ───────────────────────────────────────────────────── */
 const Dashboard: React.FC = () => {
@@ -235,7 +37,7 @@ const Dashboard: React.FC = () => {
     const fetchData = async () => {
       try {
         const [healthResp, costResp, dailyResp] = await Promise.allSettled([
-          api.get<HealthStatus>('/health'),
+          api.get<HealthStatus>('../health'),
           api.get<CostSummary>('/costs/summary'),
           api.get<DailyCost[]>('/costs/daily?days=14'),
         ]);

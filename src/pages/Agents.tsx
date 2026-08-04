@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import {
   Table, Button, Modal, Form, Input, InputNumber, Select, Space,
-  Card, Typography, App, Drawer, Skeleton,
+  Typography, App, Drawer,
 } from 'antd';
 import {
   PlusOutlined, DeleteOutlined, PlayCircleOutlined, RobotOutlined,
@@ -11,6 +11,7 @@ import {
 } from '@ant-design/icons';
 import { api } from '@/api/client';
 import type { Agent, AgentCreateRequest, Tool } from '@/types';
+import { GlassCard, EmptyState, TableSkeleton } from '@/components';
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
@@ -154,17 +155,13 @@ const Agents: React.FC = () => {
       <Space>
         <div
           onClick={() => { setSelectedAgent(record); setChatOpen(true); setChatMessages([]); }}
-          style={{ cursor: 'pointer', fontSize: 14, color: 'rgba(255,255,255,0.3)', padding: 4, borderRadius: 6, transition: 'all 0.2s' }}
-          onMouseEnter={(e) => { e.currentTarget.style.color = '#0a84ff'; e.currentTarget.style.background = 'rgba(10,132,255,0.1)'; }}
-          onMouseLeave={(e) => { e.currentTarget.style.color = 'rgba(255,255,255,0.3)'; e.currentTarget.style.background = 'transparent'; }}
+          className="icon-action icon-action--default icon-action--blue"
         >
           <PlayCircleOutlined />
         </div>
         <div
           onClick={() => handleDelete(record.id)}
-          style={{ cursor: 'pointer', fontSize: 14, color: 'rgba(255,255,255,0.2)', padding: 4, borderRadius: 6, transition: 'all 0.2s' }}
-          onMouseEnter={(e) => { e.currentTarget.style.color = '#ff453a'; e.currentTarget.style.background = 'rgba(255,69,58,0.1)'; }}
-          onMouseLeave={(e) => { e.currentTarget.style.color = 'rgba(255,255,255,0.2)'; e.currentTarget.style.background = 'transparent'; }}
+          className="icon-action icon-action--muted icon-action--red"
         >
           <DeleteOutlined />
         </div>
@@ -196,33 +193,21 @@ const Agents: React.FC = () => {
 
       {/* Table */}
       {loading ? (
-        <Card style={{ borderRadius: 16, border: '0.5px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.04)' }} styles={{ body: { padding: 24 } }}>
-          <Skeleton active paragraph={{ rows: 6 }} />
-        </Card>
+        <TableSkeleton />
       ) : (
-        <Card
-          className="animate-fade-in-up"
-          style={{ borderRadius: 16, border: '0.5px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}
-          styles={{ body: { padding: 0 } }}
-        >
+        <GlassCard animate styles={{ body: { padding: 0 } }}>
           {agents.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '80px 24px' }}>
-              <div style={{
-                width: 64, height: 64, borderRadius: 20, margin: '0 auto 16px',
-                background: 'rgba(255,255,255,0.04)', border: '0.5px solid rgba(255,255,255,0.08)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: 28, color: 'rgba(255,255,255,0.15)',
-              }}>
-                <RobotOutlined />
-              </div>
-              <div style={{ fontSize: 15, color: 'rgba(255,255,255,0.3)', fontWeight: 500, marginBottom: 8 }}>还没有 Agent</div>
-              <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.15)', marginBottom: 24 }}>创建 Agent 来执行复杂的多步骤任务</div>
-              <Button type="primary" icon={<PlusOutlined />} onClick={() => setCreateOpen(true)}>创建第一个 Agent</Button>
-            </div>
+            <EmptyState
+              icon={<RobotOutlined />}
+              title="还没有 Agent"
+              description="创建 Agent 来执行复杂的多步骤任务"
+              actionText="创建第一个 Agent"
+              onAction={() => setCreateOpen(true)}
+            />
           ) : (
             <Table dataSource={agents} columns={columns} rowKey="id" pagination={{ pageSize: 10 }} />
           )}
-        </Card>
+        </GlassCard>
       )}
 
       {/* Create Modal */}

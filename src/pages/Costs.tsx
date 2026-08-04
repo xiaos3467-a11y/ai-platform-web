@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import {
-  Card, Typography, Row, Col, Skeleton, InputNumber, Button, App,
+  Typography, Row, Col, InputNumber, Button, App,
 } from 'antd';
 import {
   DollarOutlined, ThunderboltOutlined, AlertOutlined, MessageOutlined, ApiOutlined,
@@ -13,55 +13,11 @@ import {
 } from 'recharts';
 import { api } from '@/api/client';
 import type { CostSummary, DailyCost } from '@/types';
+import { StatCard, SectionCard, CardSkeleton } from '@/components';
 
 const { Title, Text } = Typography;
 
 const COLORS = ['#0a84ff', '#30d158', '#ffd60a', '#ff453a', '#5e5ce6', '#64d2ff', '#bf5af2'];
-
-/* ─── Skeleton ────────────────────────────────────────────────────── */
-const CardSkeleton: React.FC = () => (
-  <Card style={{ borderRadius: 16, border: '0.5px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.04)' }} styles={{ body: { padding: 24 } }}>
-    <Skeleton active paragraph={{ rows: 6 }} />
-  </Card>
-);
-
-/* ─── Stat card ───────────────────────────────────────────────────── */
-const StatCard: React.FC<{ title: string; value: string | number; icon: React.ReactNode; gradient: string; suffix?: string }> = ({ title, value, icon, gradient, suffix }) => (
-  <Card
-    className="card-hover animate-fade-in-up"
-    style={{ borderRadius: 16, border: '0.5px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}
-    styles={{ body: { padding: '24px 28px' } }}
-  >
-    <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-      <div>
-        <Text style={{ fontSize: 13, color: 'rgba(255,255,255,0.45)', fontWeight: 500, letterSpacing: '0.02em' }}>{title}</Text>
-        <div style={{ marginTop: 10, fontSize: 36, fontWeight: 700, color: '#f5f5f7', letterSpacing: '-0.04em', lineHeight: 1 }}>
-          {value}
-          {suffix && <span style={{ fontSize: 16, fontWeight: 500, color: 'rgba(255,255,255,0.35)', marginLeft: 4 }}>{suffix}</span>}
-        </div>
-      </div>
-      <div style={{
-        width: 44, height: 44, borderRadius: 14, background: gradient,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        color: '#fff', fontSize: 20, boxShadow: '0 4px 16px rgba(0,0,0,0.3)',
-      }}>
-        {icon}
-      </div>
-    </div>
-  </Card>
-);
-
-/* ─── Section card ────────────────────────────────────────────────── */
-const SectionCard: React.FC<{ title: string; subtitle?: string; children: React.ReactNode; style?: React.CSSProperties }> = ({ title, subtitle, children, style }) => (
-  <Card
-    className="animate-fade-in-up"
-    title={<span style={{ fontSize: 17, fontWeight: 600, color: '#f5f5f7', letterSpacing: '-0.02em' }}>{title}{subtitle && <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.35)', marginLeft: 12, fontWeight: 400 }}>{subtitle}</span>}</span>}
-    style={{ borderRadius: 16, border: '0.5px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', ...style }}
-    styles={{ header: { borderBottom: '0.5px solid rgba(255,255,255,0.06)', padding: '16px 24px', minHeight: 'auto' }, body: { padding: 24 } }}
-  >
-    {children}
-  </Card>
-);
 
 /* ─── Main ────────────────────────────────────────────────────────── */
 const Costs: React.FC = () => {

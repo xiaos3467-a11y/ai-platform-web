@@ -2,13 +2,14 @@
 
 import React, { useEffect, useState } from 'react';
 import {
-  Table, Button, Modal, Form, Input, Space, Card, Typography,
-  App, Checkbox, Divider, Skeleton,
+  Table, Button, Modal, Form, Input, Space, Typography,
+  App, Checkbox, Divider,
 } from 'antd';
 import {
   PlusOutlined, DeleteOutlined, EditOutlined, SafetyOutlined,
-  } from '@ant-design/icons';
+} from '@ant-design/icons';
 import { api } from '@/api/client';
+import { GlassCard, SectionCard, EmptyState, TableSkeleton } from '@/components';
 
 const { Title, Text } = Typography;
 
@@ -111,15 +112,11 @@ const Roles: React.FC = () => {
     { title: '', width: 100, render: (_: unknown, record: RoleItem) => (
       <Space>
         <div onClick={() => { setEditRole(record); editForm.setFieldsValue(record); setSelectedPermIds(record.permissions.map(p => p.id)); }}
-          style={{ cursor: 'pointer', fontSize: 14, color: 'rgba(255,255,255,0.3)', padding: 4, borderRadius: 6, transition: 'all 0.2s' }}
-          onMouseEnter={(e) => { e.currentTarget.style.color = '#0a84ff'; e.currentTarget.style.background = 'rgba(10,132,255,0.1)'; }}
-          onMouseLeave={(e) => { e.currentTarget.style.color = 'rgba(255,255,255,0.3)'; e.currentTarget.style.background = 'transparent'; }}
+          className="icon-action icon-action--default icon-action--blue"
         ><EditOutlined /></div>
         {!record.is_system && (
           <div onClick={() => handleDelete(record.id)}
-            style={{ cursor: 'pointer', fontSize: 14, color: 'rgba(255,255,255,0.2)', padding: 4, borderRadius: 6, transition: 'all 0.2s' }}
-            onMouseEnter={(e) => { e.currentTarget.style.color = '#ff453a'; e.currentTarget.style.background = 'rgba(255,69,58,0.1)'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.color = 'rgba(255,255,255,0.2)'; e.currentTarget.style.background = 'transparent'; }}
+            className="icon-action icon-action--muted icon-action--red"
           ><DeleteOutlined /></div>
         )}
       </Space>
@@ -198,36 +195,24 @@ const Roles: React.FC = () => {
 
       {/* Table */}
       {loading ? (
-        <Card style={{ borderRadius: 16, border: '0.5px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.04)' }} styles={{ body: { padding: 24 } }}>
-          <Skeleton active paragraph={{ rows: 6 }} />
-        </Card>
+        <TableSkeleton />
       ) : (
         <>
-          <Card
-            className="animate-fade-in-up"
-            style={{ borderRadius: 16, border: '0.5px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', marginBottom: 20 }}
-            styles={{ body: { padding: 0 } }}
-          >
+          <GlassCard animate style={{ marginBottom: 20 }} styles={{ body: { padding: 0 } }}>
             {roles.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '80px 24px' }}>
-                <div style={{ width: 64, height: 64, borderRadius: 20, margin: '0 auto 16px', background: 'rgba(255,255,255,0.04)', border: '0.5px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28, color: 'rgba(255,255,255,0.15)' }}>
-                  <SafetyOutlined />
-                </div>
-                <div style={{ fontSize: 15, color: 'rgba(255,255,255,0.3)', fontWeight: 500, marginBottom: 8 }}>还没有角色</div>
-                <Button type="primary" icon={<PlusOutlined />} onClick={() => { setCreateOpen(true); setSelectedPermIds([]); }}>创建第一个角色</Button>
-              </div>
+              <EmptyState
+                icon={<SafetyOutlined />}
+                title="还没有角色"
+                actionText="创建第一个角色"
+                onAction={() => { setCreateOpen(true); setSelectedPermIds([]); }}
+              />
             ) : (
               <Table dataSource={roles} columns={columns} rowKey="id" pagination={false} />
             )}
-          </Card>
+          </GlassCard>
 
           {/* Permission Matrix Preview */}
-          <Card
-            className="animate-fade-in-up"
-            title={<span style={{ fontSize: 17, fontWeight: 600, color: '#f5f5f7' }}>权限矩阵总览</span>}
-            style={{ borderRadius: 16, border: '0.5px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}
-            styles={{ header: { borderBottom: '0.5px solid rgba(255,255,255,0.06)', padding: '16px 24px', minHeight: 'auto' }, body: { padding: 24 } }}
-          >
+          <SectionCard title="权限矩阵总览">
             <div style={{ overflowX: 'auto', borderRadius: 12, border: `0.5px solid ${matrixBorder}` }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
                 <thead>
@@ -255,7 +240,7 @@ const Roles: React.FC = () => {
                 </tbody>
               </table>
             </div>
-          </Card>
+          </SectionCard>
         </>
       )}
 

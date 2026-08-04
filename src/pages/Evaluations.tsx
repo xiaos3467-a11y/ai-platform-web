@@ -2,12 +2,13 @@
 
 import React, { useState } from 'react';
 import {
-  Card, Typography, Button, Form, Input, Select, Table,
+  Typography, Button, Form, Input, Select, Table,
   App, Row, Col,
 } from 'antd';
 import { ExperimentOutlined, PlayCircleOutlined } from '@ant-design/icons';
 import { api } from '@/api/client';
 import type { EvalRunResult, EvalSampleResult } from '@/types';
+import { SectionCard, EmptyState } from '@/components';
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
@@ -51,18 +52,6 @@ const ScoreRing: React.FC<{ score: number; size?: number; label: string }> = ({ 
     </div>
   );
 };
-
-/* ─── Section card ────────────────────────────────────────────────── */
-const SectionCard: React.FC<{ title: string; children: React.ReactNode; style?: React.CSSProperties }> = ({ title, children, style }) => (
-  <Card
-    className="animate-fade-in-up"
-    title={<span style={{ fontSize: 17, fontWeight: 600, color: '#f5f5f7', letterSpacing: '-0.02em' }}>{title}</span>}
-    style={{ borderRadius: 16, border: '0.5px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', ...style }}
-    styles={{ header: { borderBottom: '0.5px solid rgba(255,255,255,0.06)', padding: '16px 24px', minHeight: 'auto' }, body: { padding: 24 } }}
-  >
-    {children}
-  </Card>
-);
 
 /* ─── Main ────────────────────────────────────────────────────────── */
 const Evaluations: React.FC = () => {
@@ -208,22 +197,11 @@ const Evaluations: React.FC = () => {
             </>
           ) : (
             <SectionCard title="评测结果">
-              <div style={{ textAlign: 'center', padding: '80px 24px' }}>
-                <div style={{
-                  width: 64, height: 64, borderRadius: 20, margin: '0 auto 16px',
-                  background: 'rgba(255,255,255,0.04)', border: '0.5px solid rgba(255,255,255,0.08)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 28, color: 'rgba(255,255,255,0.15)',
-                }}>
-                  <ExperimentOutlined />
-                </div>
-                <div style={{ fontSize: 15, color: 'rgba(255,255,255,0.3)', fontWeight: 500, marginBottom: 8 }}>
-                  配置左侧表单，运行评测
-                </div>
-                <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.15)' }}>
-                  评测结果将在此处展示
-                </div>
-              </div>
+              <EmptyState
+                icon={<ExperimentOutlined />}
+                title="配置左侧表单，运行评测"
+                description="评测结果将在此处展示"
+              />
             </SectionCard>
           )}
         </Col>

@@ -1,5 +1,5 @@
 /**
- * Main layout — Dark Apple aesthetic
+ * Main layout — Apple aesthetic, theme-aware
  * — Frosted glass sidebar, gradient accent, smooth collapse animation
  */
 
@@ -24,6 +24,8 @@ import {
 } from '@ant-design/icons';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { useAuthStore } from '@/contexts/auth';
+import { useTheme } from '@/contexts/theme';
+import ThemeToggle from '@/components/ThemeToggle';
 
 const { Header, Sider, Content } = Layout;
 const { Text } = Typography;
@@ -69,9 +71,28 @@ const AppLayout: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { logout, user } = useAuthStore((s) => ({ logout: s.logout, user: s.user }));
+  const { isDark } = useTheme();
 
   const displayName = user?.username || '管理员';
   const displayInitial = displayName.charAt(0).toUpperCase();
+
+  // ─── Theme-aware palette ────────────────────────────────────────
+  // Mirrors the token set so the shell (sidebar/header) follows the
+  // active theme even though those values are applied via inline style.
+  const palette = {
+    canvas: isDark ? '#000' : '#f5f5f7',
+    siderBg: isDark ? 'rgba(22, 22, 24, 0.82)' : 'rgba(255, 255, 255, 0.78)',
+    headerBg: isDark ? 'rgba(0, 0, 0, 0.72)' : 'rgba(255, 255, 255, 0.72)',
+    border: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)',
+    borderSubtle: isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.04)',
+    textPrimary: isDark ? '#f5f5f7' : '#1d1d1f',
+    textSecondary: isDark ? 'rgba(255, 255, 255, 0.35)' : 'rgba(0, 0, 0, 0.45)',
+    textMuted: isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.35)',
+    textSoft: isDark ? 'rgba(255, 255, 255, 0.45)' : 'rgba(0, 0, 0, 0.5)',
+    hoverBg: isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.04)',
+    userNameColor: isDark ? 'rgba(255, 255, 255, 0.85)' : 'rgba(0, 0, 0, 0.8)',
+    hoverBright: isDark ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.85)',
+  };
 
   const userMenu = {
     items: [
@@ -96,7 +117,7 @@ const AppLayout: React.FC = () => {
   };
 
   return (
-    <Layout style={{ minHeight: '100vh', background: '#000' }}>
+    <Layout style={{ minHeight: '100vh', background: palette.canvas, transition: 'background 0.35s ease' }}>
       {/* ─── Sidebar ──────────────────────────────────────────────── */}
       <Sider
         collapsible
@@ -106,10 +127,10 @@ const AppLayout: React.FC = () => {
         width={260}
         collapsedWidth={72}
         style={{
-          background: 'rgba(22, 22, 24, 0.82)',
+          background: palette.siderBg,
           backdropFilter: 'saturate(180%) blur(24px)',
           WebkitBackdropFilter: 'saturate(180%) blur(24px)',
-          borderRight: '0.5px solid rgba(255, 255, 255, 0.08)',
+          borderRight: `0.5px solid ${palette.border}`,
           overflow: 'auto',
           height: '100vh',
           position: 'fixed',
@@ -117,7 +138,8 @@ const AppLayout: React.FC = () => {
           top: 0,
           bottom: 0,
           zIndex: 20,
-          transition: 'width 0.35s cubic-bezier(0.4, 0, 0.2, 1)',
+          transition:
+            'width 0.35s cubic-bezier(0.4, 0, 0.2, 1), background 0.35s ease, border-color 0.35s ease',
         }}
       >
         {/* Logo */}
@@ -128,8 +150,8 @@ const AppLayout: React.FC = () => {
             alignItems: 'center',
             padding: collapsed ? '0 20px' : '0 24px',
             gap: 12,
-            borderBottom: '0.5px solid rgba(255, 255, 255, 0.06)',
-            transition: 'padding 0.35s cubic-bezier(0.4, 0, 0.2, 1)',
+            borderBottom: `0.5px solid ${palette.borderSubtle}`,
+            transition: 'padding 0.35s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.35s ease',
           }}
         >
           {/* Logo mark — gradient with subtle glow */}
@@ -164,10 +186,11 @@ const AppLayout: React.FC = () => {
                 style={{
                   fontSize: 15,
                   fontWeight: 600,
-                  color: '#f5f5f7',
+                  color: palette.textPrimary,
                   letterSpacing: '-0.03em',
                   lineHeight: 1.2,
                   whiteSpace: 'nowrap',
+                  transition: 'color 0.3s ease',
                 }}
               >
                 AI 中台
@@ -175,11 +198,12 @@ const AppLayout: React.FC = () => {
               <span
                 style={{
                   fontSize: 11,
-                  color: 'rgba(255, 255, 255, 0.35)',
+                  color: palette.textSecondary,
                   fontWeight: 500,
                   letterSpacing: '0.02em',
                   textTransform: 'uppercase' as const,
                   whiteSpace: 'nowrap',
+                  transition: 'color 0.3s ease',
                 }}
               >
                 Enterprise
@@ -221,9 +245,10 @@ const AppLayout: React.FC = () => {
             <Text
               style={{
                 fontSize: 11,
-                color: 'rgba(255, 255, 255, 0.2)',
+                color: palette.textMuted,
                 fontWeight: 500,
                 letterSpacing: '0.02em',
+                transition: 'color 0.3s ease',
               }}
             >
               v0.1.0
@@ -237,87 +262,102 @@ const AppLayout: React.FC = () => {
         style={{
           marginLeft: collapsed ? 72 : 260,
           transition: 'margin-left 0.35s cubic-bezier(0.4, 0, 0.2, 1)',
-          background: '#000',
+          background: palette.canvas,
         }}
       >
         {/* ─── Header — frosted glass bar ─────────────────────────── */}
         <Header
           style={{
-            background: 'rgba(0, 0, 0, 0.72)',
+            background: palette.headerBg,
             backdropFilter: 'saturate(180%) blur(20px)',
             WebkitBackdropFilter: 'saturate(180%) blur(20px)',
             padding: '0 32px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            borderBottom: '0.5px solid rgba(255, 255, 255, 0.06)',
+            borderBottom: `0.5px solid ${palette.borderSubtle}`,
             height: 56,
             position: 'sticky',
             top: 0,
             zIndex: 10,
+            transition: 'background 0.35s ease, border-color 0.35s ease',
           }}
         >
-          {/* Collapse toggle */}
+          {/* Left: collapse toggle */}
           <div
+            role="button"
+            tabIndex={0}
+            aria-label={collapsed ? '展开侧边栏' : '收起侧边栏'}
             style={{
               cursor: 'pointer',
               fontSize: 16,
-              color: 'rgba(255, 255, 255, 0.45)',
-              transition: 'color 0.2s ease, transform 0.2s ease',
-              padding: '6px',
+              color: palette.textSoft,
+              transition: 'color 0.2s ease, background 0.2s ease',
+              padding: 6,
               borderRadius: 8,
             }}
             onClick={() => setCollapsed(!collapsed)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                setCollapsed(!collapsed);
+              }
+            }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.color = 'rgba(255, 255, 255, 0.9)';
-              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.06)';
+              e.currentTarget.style.color = palette.hoverBright;
+              e.currentTarget.style.background = palette.hoverBg;
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.color = 'rgba(255, 255, 255, 0.45)';
+              e.currentTarget.style.color = palette.textSoft;
               e.currentTarget.style.background = 'transparent';
             }}
           >
             {collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
           </div>
 
-          {/* User area */}
-          <Dropdown menu={userMenu} placement="bottomRight" trigger={['click']}>
-            <div
-              style={{
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 10,
-                padding: '4px 10px',
-                borderRadius: 10,
-                transition: 'background 0.2s ease',
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(255, 255, 255, 0.06)')}
-              onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
-            >
-              <Avatar
-                size={30}
+          {/* Right: theme toggle + user menu */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <ThemeToggle />
+
+            <Dropdown menu={userMenu} placement="bottomRight" trigger={['click']}>
+              <div
                 style={{
-                  background: 'linear-gradient(135deg, #0a84ff, #5e5ce6)',
-                  fontSize: 13,
-                  fontWeight: 600,
-                  color: '#fff',
-                  boxShadow: '0 1px 4px rgba(10, 132, 255, 0.25)',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 10,
+                  padding: '4px 10px',
+                  borderRadius: 10,
+                  transition: 'background 0.2s ease',
                 }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = palette.hoverBg)}
+                onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
               >
-                {displayInitial}
-              </Avatar>
-              <span
-                style={{
-                  fontSize: 14,
-                  fontWeight: 500,
-                  color: 'rgba(255, 255, 255, 0.85)',
-                }}
-              >
-                {displayName}
-              </span>
-            </div>
-          </Dropdown>
+                <Avatar
+                  size={30}
+                  style={{
+                    background: 'linear-gradient(135deg, #0a84ff, #5e5ce6)',
+                    fontSize: 13,
+                    fontWeight: 600,
+                    color: '#fff',
+                    boxShadow: '0 1px 4px rgba(10, 132, 255, 0.25)',
+                  }}
+                >
+                  {displayInitial}
+                </Avatar>
+                <span
+                  style={{
+                    fontSize: 14,
+                    fontWeight: 500,
+                    color: palette.userNameColor,
+                    transition: 'color 0.3s ease',
+                  }}
+                >
+                  {displayName}
+                </span>
+              </div>
+            </Dropdown>
+          </div>
         </Header>
 
         {/* ─── Content ────────────────────────────────────────────── */}

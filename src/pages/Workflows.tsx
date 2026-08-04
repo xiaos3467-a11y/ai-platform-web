@@ -2,39 +2,17 @@
 
 import React, { useEffect, useState } from 'react';
 import {
-  Table, Button, Modal, Form, Input, Space, Card, Typography,
-  App, Drawer, Skeleton,
+  Table, Button, Modal, Form, Input, Space, Typography,
+  App, Drawer,
 } from 'antd';
 import {
   PlusOutlined, PlayCircleOutlined, BranchesOutlined,
-  CheckCircleOutlined, CloseCircleOutlined, ClockCircleOutlined, SyncOutlined,
-  } from '@ant-design/icons';
+} from '@ant-design/icons';
 import { api } from '@/api/client';
 import type { Workflow, WorkflowExecution } from '@/types';
+import { GlassCard, StatusPill, EmptyState, TableSkeleton } from '@/components';
 
 const { Title, Text } = Typography;
-
-/* ─── Status pill ─────────────────────────────────────────────────── */
-const StatusPill: React.FC<{ status: string }> = ({ status }) => {
-  const cfg: Record<string, { bg: string; border: string; color: string; icon: React.ReactNode; text: string }> = {
-    completed: { bg: 'rgba(48,209,88,0.08)', border: 'rgba(48,209,88,0.2)', color: '#30d158', icon: <CheckCircleOutlined />, text: '完成' },
-    running: { bg: 'rgba(10,132,255,0.08)', border: 'rgba(10,132,255,0.2)', color: '#0a84ff', icon: <SyncOutlined spin />, text: '运行中' },
-    published: { bg: 'rgba(48,209,88,0.08)', border: 'rgba(48,209,88,0.2)', color: '#30d158', icon: <CheckCircleOutlined />, text: '已发布' },
-    draft: { bg: 'rgba(255,255,255,0.04)', border: 'rgba(255,255,255,0.08)', color: '#6e6e73', icon: <ClockCircleOutlined />, text: '草稿' },
-    paused: { bg: 'rgba(255,214,10,0.08)', border: 'rgba(255,214,10,0.2)', color: '#ffd60a', icon: <ClockCircleOutlined />, text: '暂停' },
-    failed: { bg: 'rgba(255,69,58,0.08)', border: 'rgba(255,69,58,0.2)', color: '#ff453a', icon: <CloseCircleOutlined />, text: '失败' },
-    pending: { bg: 'rgba(255,255,255,0.04)', border: 'rgba(255,255,255,0.08)', color: '#6e6e73', icon: <ClockCircleOutlined />, text: '等待' },
-  };
-  const c = cfg[status] || cfg.pending;
-  return (
-    <span style={{
-      display: 'inline-flex', alignItems: 'center', gap: 6, padding: '3px 10px', borderRadius: 8,
-      background: c.bg, border: `0.5px solid ${c.border}`, fontSize: 12, fontWeight: 500, color: c.color,
-    }}>
-      {c.icon} {c.text}
-    </span>
-  );
-};
 
 /* ─── Main ────────────────────────────────────────────────────────── */
 const Workflows: React.FC = () => {
@@ -150,33 +128,21 @@ const Workflows: React.FC = () => {
 
       {/* Table */}
       {loading ? (
-        <Card style={{ borderRadius: 16, border: '0.5px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.04)' }} styles={{ body: { padding: 24 } }}>
-          <Skeleton active paragraph={{ rows: 6 }} />
-        </Card>
+        <TableSkeleton />
       ) : (
-        <Card
-          className="animate-fade-in-up"
-          style={{ borderRadius: 16, border: '0.5px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}
-          styles={{ body: { padding: 0 } }}
-        >
+        <GlassCard animate styles={{ body: { padding: 0 } }}>
           {workflows.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '80px 24px' }}>
-              <div style={{
-                width: 64, height: 64, borderRadius: 20, margin: '0 auto 16px',
-                background: 'rgba(255,255,255,0.04)', border: '0.5px solid rgba(255,255,255,0.08)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: 28, color: 'rgba(255,255,255,0.15)',
-              }}>
-                <BranchesOutlined />
-              </div>
-              <div style={{ fontSize: 15, color: 'rgba(255,255,255,0.3)', fontWeight: 500, marginBottom: 8 }}>还没有工作流</div>
-              <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.15)', marginBottom: 24 }}>创建工作流来编排 LLM 调用、工具使用和分支逻辑</div>
-              <Button type="primary" icon={<PlusOutlined />} onClick={() => setCreateOpen(true)}>创建第一个工作流</Button>
-            </div>
+            <EmptyState
+              icon={<BranchesOutlined />}
+              title="还没有工作流"
+              description="创建工作流来编排 LLM 调用、工具使用和分支逻辑"
+              actionText="创建第一个工作流"
+              onAction={() => setCreateOpen(true)}
+            />
           ) : (
             <Table dataSource={workflows} columns={columns} rowKey="id" />
           )}
-        </Card>
+        </GlassCard>
       )}
 
       {/* Create Modal */}
@@ -222,12 +188,8 @@ const Workflows: React.FC = () => {
           </Button>
 
           {execResult && (
-            <Card
-              style={{
-                borderRadius: 12,
-                border: '0.5px solid rgba(255,255,255,0.08)',
-                background: 'rgba(255,255,255,0.04)',
-              }}
+            <GlassCard
+              style={{ borderRadius: 12 }}
               styles={{ body: { padding: 16 } }}
             >
               <div style={{ fontSize: 13, fontWeight: 600, color: '#f5f5f7', marginBottom: 12 }}>执行结果</div>
@@ -261,7 +223,7 @@ const Workflows: React.FC = () => {
                   </pre>
                 )}
               </div>
-            </Card>
+            </GlassCard>
           )}
         </div>
       </Drawer>

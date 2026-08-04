@@ -2,14 +2,15 @@
 
 import React, { useEffect, useState } from 'react';
 import {
-  Table, Button, Modal, Form, Input, Select, Space, Card, Typography,
-  App, Switch, Drawer, Skeleton,
+  Table, Button, Modal, Form, Input, Select, Space, Typography,
+  App, Switch, Drawer,
 } from 'antd';
 import {
   PlusOutlined, DeleteOutlined, EditOutlined, UserOutlined,
   KeyOutlined, LockOutlined, TeamOutlined,
 } from '@ant-design/icons';
 import { api } from '@/api/client';
+import { GlassCard, EmptyState, TableSkeleton } from '@/components';
 
 const { Title, Text } = Typography;
 
@@ -107,20 +108,14 @@ const Users: React.FC = () => {
     { title: '操作', width: 120, render: (_: unknown, record: UserItem) => (
       <Space>
         <div onClick={() => { setEditUser(record); editForm.setFieldsValue({ ...record, role_ids: record.roles.map(r => r.id) }); }}
-          style={{ cursor: 'pointer', fontSize: 14, color: 'rgba(255,255,255,0.3)', padding: 4, borderRadius: 6, transition: 'all 0.2s' }}
-          onMouseEnter={(e) => { e.currentTarget.style.color = '#0a84ff'; e.currentTarget.style.background = 'rgba(10,132,255,0.1)'; }}
-          onMouseLeave={(e) => { e.currentTarget.style.color = 'rgba(255,255,255,0.3)'; e.currentTarget.style.background = 'transparent'; }}
+          className="icon-action icon-action--default icon-action--blue"
         ><EditOutlined /></div>
         <div onClick={() => { setResetPwdUser(record); resetPwdForm.resetFields(); }}
-          style={{ cursor: 'pointer', fontSize: 14, color: 'rgba(255,255,255,0.3)', padding: 4, borderRadius: 6, transition: 'all 0.2s' }}
-          onMouseEnter={(e) => { e.currentTarget.style.color = '#ffd60a'; e.currentTarget.style.background = 'rgba(255,214,10,0.1)'; }}
-          onMouseLeave={(e) => { e.currentTarget.style.color = 'rgba(255,255,255,0.3)'; e.currentTarget.style.background = 'transparent'; }}
+          className="icon-action icon-action--default icon-action--yellow"
         ><KeyOutlined /></div>
         {!record.is_superadmin && (
           <div onClick={() => handleDelete(record.id)}
-            style={{ cursor: 'pointer', fontSize: 14, color: 'rgba(255,255,255,0.2)', padding: 4, borderRadius: 6, transition: 'all 0.2s' }}
-            onMouseEnter={(e) => { e.currentTarget.style.color = '#ff453a'; e.currentTarget.style.background = 'rgba(255,69,58,0.1)'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.color = 'rgba(255,255,255,0.2)'; e.currentTarget.style.background = 'transparent'; }}
+            className="icon-action icon-action--muted icon-action--red"
           ><DeleteOutlined /></div>
         )}
       </Space>
@@ -142,28 +137,21 @@ const Users: React.FC = () => {
 
       {/* Table */}
       {loading ? (
-        <Card style={{ borderRadius: 16, border: '0.5px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.04)' }} styles={{ body: { padding: 24 } }}>
-          <Skeleton active paragraph={{ rows: 8 }} />
-        </Card>
+        <TableSkeleton />
       ) : (
-        <Card
-          className="animate-fade-in-up"
-          style={{ borderRadius: 16, border: '0.5px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}
-          styles={{ body: { padding: 0 } }}
-        >
+        <GlassCard animate styles={{ body: { padding: 0 } }}>
           {users.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '80px 24px' }}>
-              <div style={{ width: 64, height: 64, borderRadius: 20, margin: '0 auto 16px', background: 'rgba(255,255,255,0.04)', border: '0.5px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28, color: 'rgba(255,255,255,0.15)' }}>
-                <TeamOutlined />
-              </div>
-              <div style={{ fontSize: 15, color: 'rgba(255,255,255,0.3)', fontWeight: 500, marginBottom: 8 }}>还没有用户</div>
-              <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.15)', marginBottom: 24 }}>添加用户来使用系统功能</div>
-              <Button type="primary" icon={<PlusOutlined />} onClick={() => setCreateOpen(true)}>添加第一个用户</Button>
-            </div>
+            <EmptyState
+              icon={<TeamOutlined />}
+              title="还没有用户"
+              description="添加用户来使用系统功能"
+              actionText="添加第一个用户"
+              onAction={() => setCreateOpen(true)}
+            />
           ) : (
             <Table dataSource={users} columns={columns} rowKey="id" pagination={{ pageSize: 15 }} />
           )}
-        </Card>
+        </GlassCard>
       )}
 
       {/* Create Modal */}

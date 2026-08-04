@@ -269,6 +269,20 @@ html.light .glass {
   border: 1px solid rgba(0, 0, 0, 0.06);
 }
 
+/* ─── Glass card — the universal Apple glass surface ──────────────── */
+/* Used by the shared GlassCard / SectionCard / StatCard components.
+   Provides theme-aware glass background + border. Components add the
+   borderRadius: 16 and backdropFilter on top. */
+.glass-card {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+html.light .glass-card {
+  background: rgba(255, 255, 255, 0.72);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
 /* ─── Card hover effects ──────────────────────────────────────────── */
 .card-hover {
   transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
@@ -329,4 +343,71 @@ html.light .glass {
   opacity: 1;
   transform: translateY(0);
   transition: opacity 0.35s ease, transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ─── Icon action buttons ─────────────────────────────────────────── */
+/* Replaces inline onMouseEnter/onMouseLeave style mutations for table
+   operation icons (edit, delete, reset-password, play, etc.).
+   Usage:
+     <div className="icon-action icon-action--default icon-action--blue"><EditOutlined /></div>
+     <div className="icon-action icon-action--muted   icon-action--red"><DeleteOutlined /></div>
+*/
+.icon-action {
+  cursor: pointer;
+  font-size: 14px;
+  padding: 4px;
+  border-radius: 6px;
+  transition: color 0.2s ease, background-color 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Default (resting) opacity modifiers */
+.icon-action--default { color: rgba(255, 255, 255, 0.3); }
+.icon-action--muted   { color: rgba(255, 255, 255, 0.2); }
+
+/* Hover color modifiers — Apple design palette */
+.icon-action--blue:hover   { color: #0a84ff; background: rgba(10, 132, 255, 0.1); }
+.icon-action--red:hover    { color: #ff453a; background: rgba(255, 69, 58, 0.1); }
+.icon-action--yellow:hover { color: #ffd60a; background: rgba(255, 214, 10, 0.1); }
+
+/* Light theme adjustments for icon actions */
+html.light .icon-action--default { color: rgba(0, 0, 0, 0.35); }
+html.light .icon-action--muted   { color: rgba(0, 0, 0, 0.25); }
+html.light .icon-action--blue:hover   { color: #0066cc; background: rgba(0, 102, 204, 0.08); }
+html.light .icon-action--red:hover    { color: #cc0000; background: rgba(204, 0, 0, 0.08); }
+html.light .icon-action--yellow:hover { color: #8a6d00; background: rgba(138, 109, 0, 0.08); }
+
+/* ─── Generic subtle hover backgrounds ────────────────────────────── */
+.hover-bg-subtle {
+  transition: background-color 0.2s ease;
+}
+.hover-bg-subtle:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+html.light .hover-bg-subtle:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+/* Color brighten on hover (e.g. sidebar collapse toggle) */
+.hover-color-bright {
+  transition: color 0.2s ease, background-color 0.2s ease;
+}
+.hover-color-bright:hover {
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.06);
+}
+html.light .hover-color-bright:hover {
+  color: rgba(0, 0, 0, 0.9);
+  background: rgba(0, 0, 0, 0.05);
+}
+
+/* ─── Lift on hover ───────────────────────────────────────────────── */
+/* Used e.g. by the health pill on Dashboard. */
+.hover-lift {
+  transition: transform 0.2s ease;
+}
+.hover-lift:hover {
+  transform: translateY(-1px);
 }

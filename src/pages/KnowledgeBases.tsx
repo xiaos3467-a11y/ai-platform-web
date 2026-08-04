@@ -2,61 +2,18 @@
 
 import React, { useEffect, useState } from 'react';
 import {
-  Table, Button, Modal, Form, Input, Upload, Space, Card, Typography,
-  App, Skeleton,
+  Table, Button, Modal, Form, Input, Upload, Space, Skeleton, Typography,
+  App,
 } from 'antd';
 import {
   PlusOutlined, UploadOutlined, DeleteOutlined, FileTextOutlined,
-  CheckCircleOutlined, SyncOutlined, CloseCircleOutlined, ClockCircleOutlined,
   BookOutlined, InboxOutlined,
 } from '@ant-design/icons';
 import { api } from '@/api/client';
 import type { KnowledgeBase, Document } from '@/types';
+import { GlassCard, SectionCard, StatusPill, EmptyState, TableSkeleton } from '@/components';
 
 const { Title, Text } = Typography;
-
-/* ─── Status badge ────────────────────────────────────────────────── */
-const StatusPill: React.FC<{ status: string }> = ({ status }) => {
-  const cfg: Record<string, { bg: string; border: string; color: string; icon: React.ReactNode; text: string }> = {
-    ready: { bg: 'rgba(48, 209, 88, 0.08)', border: 'rgba(48, 209, 88, 0.2)', color: '#30d158', icon: <CheckCircleOutlined />, text: '就绪' },
-    processing: { bg: 'rgba(10, 132, 255, 0.08)', border: 'rgba(10, 132, 255, 0.2)', color: '#0a84ff', icon: <SyncOutlined spin />, text: '处理中' },
-    pending: { bg: 'rgba(255, 255, 255, 0.04)', border: 'rgba(255, 255, 255, 0.08)', color: '#6e6e73', icon: <ClockCircleOutlined />, text: '等待中' },
-    failed: { bg: 'rgba(255, 69, 58, 0.08)', border: 'rgba(255, 69, 58, 0.2)', color: '#ff453a', icon: <CloseCircleOutlined />, text: '失败' },
-  };
-  const c = cfg[status] || cfg.pending;
-  return (
-    <span
-      style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: 6,
-        padding: '3px 10px',
-        borderRadius: 8,
-        background: c.bg,
-        border: `0.5px solid ${c.border}`,
-        fontSize: 12,
-        fontWeight: 500,
-        color: c.color,
-      }}
-    >
-      {c.icon} {c.text}
-    </span>
-  );
-};
-
-/* ─── Skeleton ────────────────────────────────────────────────────── */
-const TableSkeleton: React.FC = () => (
-  <Card
-    style={{
-      borderRadius: 16,
-      border: '0.5px solid rgba(255, 255, 255, 0.08)',
-      background: 'rgba(255, 255, 255, 0.04)',
-    }}
-    styles={{ body: { padding: 24 } }}
-  >
-    <Skeleton active paragraph={{ rows: 6 }} />
-  </Card>
-);
 
 /* ─── Main ────────────────────────────────────────────────────────── */
 const KnowledgeBases: React.FC = () => {
@@ -142,9 +99,7 @@ const KnowledgeBases: React.FC = () => {
     { title: '', width: 60, render: (_: unknown, record: KnowledgeBase) => (
       <div
         onClick={() => handleDelete(record.id)}
-        style={{ cursor: 'pointer', fontSize: 14, color: 'rgba(255,255,255,0.2)', padding: 4, borderRadius: 6, transition: 'all 0.2s' }}
-        onMouseEnter={(e) => { e.currentTarget.style.color = '#ff453a'; e.currentTarget.style.background = 'rgba(255,69,58,0.1)'; }}
-        onMouseLeave={(e) => { e.currentTarget.style.color = 'rgba(255,255,255,0.2)'; e.currentTarget.style.background = 'transparent'; }}
+        className="icon-action icon-action--muted icon-action--red"
       >
         <DeleteOutlined />
       </div>
@@ -188,39 +143,15 @@ const KnowledgeBases: React.FC = () => {
 
       {/* Table */}
       {loading ? <TableSkeleton /> : (
-        <Card
-          className="animate-fade-in-up"
-          style={{
-            borderRadius: 16,
-            border: '0.5px solid rgba(255,255,255,0.08)',
-            background: 'rgba(255,255,255,0.04)',
-            backdropFilter: 'blur(20px)',
-            WebkitBackdropFilter: 'blur(20px)',
-          }}
-          styles={{ body: { padding: 0 } }}
-        >
+        <GlassCard animate styles={{ body: { padding: 0 } }}>
           {kbs.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '80px 24px' }}>
-              <div
-                style={{
-                  width: 64, height: 64, borderRadius: 20, margin: '0 auto 16px',
-                  background: 'rgba(255,255,255,0.04)', border: '0.5px solid rgba(255,255,255,0.08)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 28, color: 'rgba(255,255,255,0.15)',
-                }}
-              >
-                <BookOutlined />
-              </div>
-              <div style={{ fontSize: 15, color: 'rgba(255,255,255,0.3)', fontWeight: 500, marginBottom: 8 }}>
-                还没有知识库
-              </div>
-              <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.15)', marginBottom: 24 }}>
-                创建知识库后，可上传文档用于 RAG 检索
-              </div>
-              <Button type="primary" icon={<PlusOutlined />} onClick={() => setCreateOpen(true)}>
-                创建第一个知识库
-              </Button>
-            </div>
+            <EmptyState
+              icon={<BookOutlined />}
+              title="还没有知识库"
+              description="创建知识库后，可上传文档用于 RAG 检索"
+              actionText="创建第一个知识库"
+              onAction={() => setCreateOpen(true)}
+            />
           ) : (
             <Table
               dataSource={kbs}
@@ -230,25 +161,14 @@ const KnowledgeBases: React.FC = () => {
               style={{ borderRadius: 0 }}
             />
           )}
-        </Card>
+        </GlassCard>
       )}
 
       {/* Document panel */}
       {selectedKb && (
-        <Card
-          className="animate-fade-in-up"
-          style={{
-            marginTop: 20,
-            borderRadius: 16,
-            border: '0.5px solid rgba(255,255,255,0.08)',
-            background: 'rgba(255,255,255,0.04)',
-            backdropFilter: 'blur(20px)',
-            WebkitBackdropFilter: 'blur(20px)',
-          }}
-          styles={{
-            header: { borderBottom: '0.5px solid rgba(255,255,255,0.06)', padding: '16px 24px', minHeight: 'auto' },
-            body: { padding: docsLoading ? 24 : 0 },
-          }}
+        <SectionCard
+          style={{ marginTop: 20 }}
+          styles={{ body: { padding: docsLoading ? 24 : 0 } }}
           title={
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <span style={{ fontSize: 17, fontWeight: 600, color: '#f5f5f7' }}>{selectedKb.name}</span>
@@ -284,7 +204,7 @@ const KnowledgeBases: React.FC = () => {
               <Table dataSource={docs} columns={docColumns} rowKey="id" size="small" pagination={false} />
             )
           )}
-        </Card>
+        </SectionCard>
       )}
 
       {/* Create Modal */}
