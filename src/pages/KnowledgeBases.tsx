@@ -197,7 +197,7 @@ const KnowledgeBases: React.FC = () => {
           {docsLoading ? <Skeleton active paragraph={{ rows: 4 }} style={{ padding: 24 }} /> : (
             docs.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '60px 24px' }}>
-                <InboxOutlined style={{ fontSize: 36, color: 'rgba(255,255,255,0.1)', marginBottom: 12 }} />
+                <InboxOutlined style={{ fontSize: 36, color: 'var(--text-faint)', marginBottom: 12 }} />
                 <div style={{ fontSize: 14, color: 'var(--text-subtle)' }}>暂无文档，点击上方按钮上传</div>
               </div>
             ) : (

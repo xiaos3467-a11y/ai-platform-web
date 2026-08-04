@@ -120,10 +120,10 @@ const MessageBubble: React.FC<{ message: Message; index: number }> = ({
                 : '18px 18px 18px 4px',
               background: isUser
                 ? 'linear-gradient(135deg, #0a84ff, #0066d6)'
-                : 'rgba(255, 255, 255, 0.07)',
+                : 'var(--bg-chat-user)',
               border: isUser
                 ? 'none'
-                : '0.5px solid rgba(255, 255, 255, 0.08)',
+                : '0.5px solid var(--border-subtle)',
               color: 'var(--text-primary)',
               fontSize: 14,
               lineHeight: 1.6,
@@ -162,7 +162,7 @@ const MessageBubble: React.FC<{ message: Message; index: number }> = ({
               <span
                 style={{
                   fontSize: 11,
-                  color: 'rgba(255, 255, 255, 0.2)',
+                  color: 'var(--text-faint)',
                 }}
               >
                 {message.token_count} tokens
@@ -197,7 +197,7 @@ const ConversationItem: React.FC<{
     }}
     onMouseEnter={(e) => {
       if (!isSelected) {
-        e.currentTarget.style.background = 'rgba(255, 255, 255, 0.04)';
+        e.currentTarget.style.background = 'var(--bg-card)';
       }
     }}
     onMouseLeave={(e) => {
@@ -237,7 +237,7 @@ const ConversationItem: React.FC<{
         style={{
           cursor: 'pointer',
           fontSize: 13,
-          color: 'rgba(255, 255, 255, 0.2)',
+          color: 'var(--text-faint)',
           padding: '4px',
           borderRadius: 6,
           transition: 'all 0.2s ease',
@@ -249,7 +249,7 @@ const ConversationItem: React.FC<{
           e.currentTarget.style.background = 'rgba(255, 69, 58, 0.1)';
         }}
         onMouseLeave={(e) => {
-          e.currentTarget.style.color = 'rgba(255, 255, 255, 0.2)';
+          e.currentTarget.style.color = 'var(--text-faint)';
           e.currentTarget.style.opacity = '0.6';
           e.currentTarget.style.background = 'transparent';
         }}
@@ -496,7 +496,7 @@ const Conversations: React.FC = () => {
                   display: 'flex',
                   alignItems: 'center',
                   gap: 14,
-                  background: 'rgba(255, 255, 255, 0.02)',
+                  background: 'var(--bg-subtle)',
                 }}
               >
                 <div
@@ -581,7 +581,7 @@ const Conversations: React.FC = () => {
                     <MessageOutlined
                       style={{
                         fontSize: 40,
-                        color: 'rgba(255, 255, 255, 0.1)',
+                        color: 'var(--text-faint)',
                       }}
                     />
                     <Text style={{ color: 'var(--text-subtle)' }}>

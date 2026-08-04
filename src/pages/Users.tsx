@@ -157,7 +157,7 @@ const Users: React.FC = () => {
       {/* Create Modal */}
       <Modal title="添加用户" open={createOpen} onCancel={() => { setCreateOpen(false); form.resetFields(); }} onOk={() => form.submit()} width={500} okText="添加" cancelText="取消">
         <Form form={form} layout="vertical" onFinish={handleCreate}>
-          <Form.Item name="username" label="用户名" rules={[{ required: true, min: 2 }]}><Input prefix={<UserOutlined style={{ color: 'rgba(255,255,255,0.2)' }} />} placeholder="如：zhangsan" /></Form.Item>
+          <Form.Item name="username" label="用户名" rules={[{ required: true, min: 2 }]}><Input prefix={<UserOutlined style={{ color: 'var(--text-faint)' }} />} placeholder="如：zhangsan" /></Form.Item>
           <Form.Item name="email" label="邮箱" rules={[{ required: true, type: 'email' }]}><Input placeholder="user@company.com" /></Form.Item>
           <Form.Item name="password" label="密码" rules={[{ required: true, min: 6 }]}><Input.Password placeholder="至少6位" /></Form.Item>
           <Form.Item name="display_name" label="显示名称"><Input placeholder="如：张三" /></Form.Item>
@@ -247,7 +247,7 @@ const Users: React.FC = () => {
       >
         <Form form={resetPwdForm} layout="vertical" onFinish={handleResetPassword}>
           <Form.Item name="new_password" label="新密码" rules={[{ required: true, message: '请输入新密码' }, { min: 6, message: '密码至少 6 位' }]}>
-            <Input.Password prefix={<LockOutlined style={{ color: 'rgba(255,255,255,0.2)' }} />} placeholder="至少 6 位" />
+            <Input.Password prefix={<LockOutlined style={{ color: 'var(--text-faint)' }} />} placeholder="至少 6 位" />
           </Form.Item>
           <Form.Item
             name="confirm_password"
@@ -263,7 +263,7 @@ const Users: React.FC = () => {
               }),
             ]}
           >
-            <Input.Password prefix={<LockOutlined style={{ color: 'rgba(255,255,255,0.2)' }} />} placeholder="再次输入新密码" />
+            <Input.Password prefix={<LockOutlined style={{ color: 'var(--text-faint)' }} />} placeholder="再次输入新密码" />
           </Form.Item>
         </Form>
       </Modal>

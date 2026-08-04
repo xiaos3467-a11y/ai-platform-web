@@ -38,7 +38,7 @@ const ScoreRing: React.FC<{ score: number; size?: number; label: string }> = ({ 
     <div style={{ textAlign: 'center' }}>
       <div style={{ position: 'relative', width: size, height: size, margin: '0 auto 8px' }}>
         <svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }}>
-          <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth={4} />
+          <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="var(--border-divider)" strokeWidth={4} />
           <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke={color} strokeWidth={4} strokeLinecap="round"
             strokeDasharray={circumference} strokeDashoffset={offset}
             style={{ transition: 'stroke-dashoffset 0.8s cubic-bezier(0.16, 1, 0.3, 1)' }}
@@ -48,7 +48,7 @@ const ScoreRing: React.FC<{ score: number; size?: number; label: string }> = ({ 
           {pct}
         </div>
       </div>
-      <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', fontWeight: 500 }}>{label}</div>
+      <div style={{ fontSize: 12, color: 'var(--text-secondary)', fontWeight: 500 }}>{label}</div>
     </div>
   );
 };
@@ -89,7 +89,7 @@ const Evaluations: React.FC = () => {
     { title: '分数', dataIndex: 'score', width: 100, render: (v: number) => (
       <span style={{ fontWeight: 600, color: scoreColor(v) }}>{(v * 100).toFixed(1)}%</span>
     )},
-    { title: '原因', dataIndex: 'reason', ellipsis: true, render: (v: string) => <span style={{ color: 'rgba(255,255,255,0.45)', fontSize: 13 }}>{v}</span> },
+    { title: '原因', dataIndex: 'reason', ellipsis: true, render: (v: string) => <span style={{ color: 'var(--text-secondary)', fontSize: 13 }}>{v}</span> },
   ];
 
   const sampleColumns = [

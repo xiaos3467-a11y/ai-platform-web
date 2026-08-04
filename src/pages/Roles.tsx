@@ -123,7 +123,7 @@ const Roles: React.FC = () => {
     )},
   ];
 
-  const matrixBorder = 'rgba(255,255,255,0.06)';
+  const matrixBorder = 'var(--border-divider)';
 
   const renderPermissionMatrix = () => (
     <div style={{ overflowX: 'auto', borderRadius: 12, border: `0.5px solid ${matrixBorder}` }}>

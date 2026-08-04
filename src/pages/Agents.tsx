@@ -36,8 +36,8 @@ const ChatBubble: React.FC<{ role: string; content: string; agentName?: string }
           style={{
             padding: '10px 14px',
             borderRadius: isUser ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
-            background: isUser ? 'linear-gradient(135deg, #0a84ff, #0066d6)' : 'rgba(255,255,255,0.07)',
-            border: isUser ? 'none' : '0.5px solid rgba(255,255,255,0.08)',
+            background: isUser ? 'linear-gradient(135deg, #0a84ff, #0066d6)' : 'var(--bg-chat-user)',
+            border: isUser ? 'none' : '0.5px solid var(--border-subtle)',
             color: 'var(--text-primary)',
             fontSize: 13,
             lineHeight: 1.6,
@@ -142,8 +142,8 @@ const Agents: React.FC = () => {
     { title: '状态', dataIndex: 'status', render: (v: string) => (
       <span style={{
         display: 'inline-flex', alignItems: 'center', gap: 6, padding: '3px 10px', borderRadius: 8,
-        background: v === 'active' ? 'rgba(48,209,88,0.08)' : 'rgba(255,255,255,0.04)',
-        border: `0.5px solid ${v === 'active' ? 'rgba(48,209,88,0.2)' : 'rgba(255,255,255,0.08)'}`,
+        background: v === 'active' ? 'rgba(48,209,88,0.08)' : 'var(--bg-card)',
+        border: `0.5px solid ${v === 'active' ? 'rgba(48,209,88,0.2)' : 'var(--border-subtle)'}`,
         fontSize: 12, fontWeight: 500, color: v === 'active' ? '#30d158' : '#6e6e73',
       }}>
         <div style={{ width: 6, height: 6, borderRadius: '50%', background: v === 'active' ? '#30d158' : '#6e6e73' }} />
@@ -262,7 +262,7 @@ const Agents: React.FC = () => {
           <div style={{ flex: 1, overflowY: 'auto' }}>
             {chatMessages.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '60px 0' }}>
-                <MessageOutlined style={{ fontSize: 36, color: 'rgba(255,255,255,0.1)', marginBottom: 12 }} />
+                <MessageOutlined style={{ fontSize: 36, color: 'var(--text-faint)', marginBottom: 12 }} />
                 <div style={{ fontSize: 14, color: 'var(--text-subtle)' }}>发送消息开始对话</div>
               </div>
             ) : (

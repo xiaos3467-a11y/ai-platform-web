@@ -86,7 +86,7 @@ const ModelProviders: React.FC = () => {
       <span style={{ fontSize: 12, fontFamily: 'monospace', color: 'var(--text-muted)' }}>{v || '-'}</span>
     )},
     { title: 'API Key', dataIndex: 'api_key_display', render: (key: string, record: Provider) => {
-      if (!key) return <span style={{ color: 'rgba(255,255,255,0.2)' }}>-</span>;
+      if (!key) return <span style={{ color: 'var(--text-faint)' }}>-</span>;
       const visible = showKeys[record.id];
       return (
         <Space>

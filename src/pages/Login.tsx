@@ -170,7 +170,7 @@ const LoginPage: React.FC = () => {
           <Text
             style={{
               fontSize: 19,
-              color: 'rgba(255, 255, 255, 0.45)',
+              color: 'var(--text-secondary)',
               marginTop: 12,
               display: 'block',
               fontWeight: 400,
@@ -280,7 +280,7 @@ const LoginPage: React.FC = () => {
           style={{
             marginTop: 36,
             fontSize: 12,
-            color: 'rgba(255, 255, 255, 0.2)',
+            color: 'var(--text-faint)',
             letterSpacing: '0.02em',
           }}
         >

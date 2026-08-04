@@ -22,15 +22,15 @@ const VersionItem: React.FC<{ v: PromptVersion; isCurrent: boolean }> = ({ v, is
     style={{
       padding: '12px 16px',
       borderRadius: 12,
-      background: isCurrent ? 'rgba(10,132,255,0.06)' : 'rgba(255,255,255,0.03)',
-      border: `0.5px solid ${isCurrent ? 'rgba(10,132,255,0.15)' : 'rgba(255,255,255,0.06)'}`,
+      background: isCurrent ? 'rgba(10,132,255,0.06)' : 'var(--bg-subtle)',
+      border: `0.5px solid ${isCurrent ? 'rgba(10,132,255,0.15)' : 'var(--border-divider)'}`,
       marginBottom: 8,
     }}
   >
     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
       <span style={{
         padding: '2px 8px', borderRadius: 6, fontSize: 12, fontWeight: 500,
-        background: isCurrent ? 'rgba(10,132,255,0.15)' : 'rgba(255,255,255,0.08)',
+        background: isCurrent ? 'rgba(10,132,255,0.15)' : 'var(--bg-elevated-2)',
         color: isCurrent ? '#0a84ff' : '#a1a1a6',
       }}>
         v{v.version}

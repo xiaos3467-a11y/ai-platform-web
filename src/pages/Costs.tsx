@@ -113,10 +113,10 @@ const Costs: React.FC = () => {
                       <stop offset="100%" stopColor="#0a84ff" stopOpacity={0} />
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
-                  <XAxis dataKey="date" tick={{ fontSize: 11, fill: 'rgba(255,255,255,0.3)' }} axisLine={false} tickLine={false} />
-                  <YAxis yAxisId="left" tick={{ fontSize: 11, fill: 'rgba(255,255,255,0.3)' }} axisLine={false} tickLine={false} width={50} tickFormatter={(v) => `$${v.toFixed(2)}`} />
-                  <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 11, fill: 'rgba(255,255,255,0.3)' }} axisLine={false} tickLine={false} width={40} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border-divider)" vertical={false} />
+                  <XAxis dataKey="date" tick={{ fontSize: 11, fill: 'var(--text-subtle)' }} axisLine={false} tickLine={false} />
+                  <YAxis yAxisId="left" tick={{ fontSize: 11, fill: 'var(--text-subtle)' }} axisLine={false} tickLine={false} width={50} tickFormatter={(v) => `$${v.toFixed(2)}`} />
+                  <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 11, fill: 'var(--text-subtle)' }} axisLine={false} tickLine={false} width={40} />
                   <Tooltip contentStyle={tooltipStyle} labelStyle={{ color: 'var(--text-soft)' }} />
                   <Area yAxisId="left" type="monotone" dataKey="estimated_cost_usd" name="成本 (USD)" stroke="#0a84ff" strokeWidth={2} fill="url(#costGrad)" dot={false} activeDot={{ r: 5, fill: '#0a84ff' }} />
                   <Area yAxisId="right" type="monotone" dataKey="requests" name="请求数" stroke="#30d158" strokeWidth={2} fill="transparent" dot={false} />
@@ -141,7 +141,7 @@ const Costs: React.FC = () => {
                 </ResponsiveContainer>
               ) : (
                 <div style={{ textAlign: 'center', padding: '60px 0' }}>
-                  <ApiOutlined style={{ fontSize: 36, color: 'rgba(255,255,255,0.1)', marginBottom: 12 }} />
+                  <ApiOutlined style={{ fontSize: 36, color: 'var(--text-faint)', marginBottom: 12 }} />
                   <div style={{ fontSize: 14, color: 'var(--text-tertiary)' }}>暂无数据</div>
                 </div>
               )}
@@ -165,9 +165,9 @@ const Costs: React.FC = () => {
                       <stop offset="100%" stopColor="#64d2ff" stopOpacity={0.4} />
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
-                  <XAxis dataKey="date" tick={{ fontSize: 11, fill: 'rgba(255,255,255,0.3)' }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fontSize: 11, fill: 'rgba(255,255,255,0.3)' }} axisLine={false} tickLine={false} width={60} tickFormatter={(v) => v > 1000 ? `${(v/1000).toFixed(0)}K` : v} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border-divider)" vertical={false} />
+                  <XAxis dataKey="date" tick={{ fontSize: 11, fill: 'var(--text-subtle)' }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fontSize: 11, fill: 'var(--text-subtle)' }} axisLine={false} tickLine={false} width={60} tickFormatter={(v) => v > 1000 ? `${(v/1000).toFixed(0)}K` : v} />
                   <Tooltip contentStyle={tooltipStyle} labelStyle={{ color: 'var(--text-soft)' }} />
                   <Bar dataKey="input_tokens" name="输入 Token" fill="url(#barGrad1)" stackId="a" radius={[0, 0, 0, 0]} />
                   <Bar dataKey="output_tokens" name="输出 Token" fill="url(#barGrad2)" stackId="a" radius={[6, 6, 0, 0]} />
