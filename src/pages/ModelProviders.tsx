@@ -7,7 +7,7 @@ import {
 } from 'antd';
 import {
   PlusOutlined, DeleteOutlined, ReloadOutlined,
-  EyeOutlined, EyeInvisibleOutlined, ApiOutlined,
+  EyeOutlined, EyeInvisibleOutlined, ApiOutlined, EditOutlined,
 } from '@ant-design/icons';
 import { api } from '@/api/client';
 import type { Provider, ProviderCreateRequest } from '@/types';
@@ -29,8 +29,11 @@ const ModelProviders: React.FC = () => {
   const [providers, setProviders] = useState<Provider[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
+  const [editTarget, setEditTarget] = useState<Provider | null>(null);
+  const [editModalOpen, setEditModalOpen] = useState(false);
   const [showKeys, setShowKeys] = useState<Record<string, boolean>>({});
   const [form] = Form.useForm();
+  const [editForm] = Form.useForm();
   const { message, modal } = App.useApp();
 
   const fetchProviders = async () => {
@@ -46,6 +49,34 @@ const ModelProviders: React.FC = () => {
       message.success('Provider 添加成功（API Key 已加密存储）');
       setModalOpen(false);
       form.resetFields();
+      fetchProviders();
+    } catch { /* handled */ }
+  };
+
+  const openEdit = (record: Provider) => {
+    setEditTarget(record);
+    editForm.setFieldsValue({
+      display_name: record.display_name,
+      api_base_url: record.api_base_url,
+      models: record.models,
+      priority: record.priority,
+    });
+    setEditModalOpen(true);
+  };
+
+  const handleEdit = async (values: ProviderCreateRequest) => {
+    if (!editTarget) return;
+    try {
+      await api.put(`/models/providers/${editTarget.id}`, {
+        display_name: values.display_name,
+        api_base_url: values.api_base_url,
+        models: values.models,
+        priority: values.priority,
+      });
+      message.success('Provider 更新成功');
+      setEditModalOpen(false);
+      setEditTarget(null);
+      editForm.resetFields();
       fetchProviders();
     } catch { /* handled */ }
   };
@@ -112,12 +143,20 @@ const ModelProviders: React.FC = () => {
     { title: '状态', dataIndex: 'is_enabled', width: 80, render: (enabled: boolean, record: Provider) => (
       <Switch checked={enabled} onChange={(v) => handleToggle(record.id, v)} size="small" />
     )},
-    { title: '', width: 50, render: (_: unknown, record: Provider) => (
-      <div
-        onClick={() => handleDelete(record.id)}
-        className="icon-action icon-action--muted icon-action--red"
-      >
-        <DeleteOutlined />
+    { title: '', width: 90, render: (_: unknown, record: Provider) => (
+      <div style={{ display: 'flex', gap: 4 }}>
+        <div
+          onClick={() => openEdit(record)}
+          className="icon-action icon-action--muted icon-action--blue"
+        >
+          <EditOutlined />
+        </div>
+        <div
+          onClick={() => handleDelete(record.id)}
+          className="icon-action icon-action--muted icon-action--red"
+        >
+          <DeleteOutlined />
+        </div>
       </div>
     )},
   ];
@@ -185,6 +224,35 @@ const ModelProviders: React.FC = () => {
             <Input.Password placeholder="sk-..." />
           </Form.Item>
           <Form.Item name="priority" label="优先级" initialValue={0}>
+            <InputNumber min={0} max={100} style={{ width: '100%' }} />
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      {/* Edit Modal */}
+      <Modal
+        title="编辑模型提供商"
+        open={editModalOpen}
+        onCancel={() => { setEditModalOpen(false); setEditTarget(null); editForm.resetFields(); }}
+        onOk={() => editForm.submit()}
+        width={600}
+        okText="保存"
+        cancelText="取消"
+      >
+        <Form form={editForm} layout="vertical" onFinish={handleEdit}>
+          <Form.Item label="提供商">
+            <Input value={editTarget?.provider_name} disabled style={{ background: 'var(--bg-subtle)', color: 'var(--text-secondary)' }} />
+          </Form.Item>
+          <Form.Item name="display_name" label="显示名称">
+            <Input placeholder="如：公司私有 Qwen" />
+          </Form.Item>
+          <Form.Item name="api_base_url" label="API Base URL">
+            <Input placeholder="留空使用默认地址" style={{ fontFamily: 'monospace' }} />
+          </Form.Item>
+          <Form.Item name="models" label="模型列表" tooltip='JSON 数组，如 [{"name":"qwen-max","context_length":32000}]'>
+            <Input.TextArea rows={4} placeholder='[{"name": "qwen-max", "context_length": 32000}]' style={{ fontFamily: 'monospace', fontSize: 12 }} />
+          </Form.Item>
+          <Form.Item name="priority" label="优先级">
             <InputNumber min={0} max={100} style={{ width: '100%' }} />
           </Form.Item>
         </Form>
