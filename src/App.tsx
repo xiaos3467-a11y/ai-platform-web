@@ -62,7 +62,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     return <Navigate to="/login" replace state={{ from: location.pathname }} />;
   }
 
-  if (requiredRole && !hasRole(requiredRole) && !hasRole('platform_admin')) {
+  if (requiredRole && !hasRole(requiredRole) && !hasRole('platform_admin') && !hasRole('超级管理员')) {
     return (
       <div
         style={{
