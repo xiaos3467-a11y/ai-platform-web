@@ -46,41 +46,73 @@ const AppLayout: React.FC = () => {
   const displayName = user?.username || '管理员';
   const displayInitial = displayName.charAt(0).toUpperCase();
 
-  // Dynamic menu based on user roles
+  // Helpers for role checks
+  // Legacy role names (before init_rbac.sql migration): 超级管理员, 管理员, 开发者, 观察者
+  // New role codes: super_admin, platform_ops, tenant_admin, tenant_developer, tenant_viewer
+  // Both sets are checked for backward compatibility during migration.
+  const hasSuperAdmin = hasRole('super_admin') || hasRole('超级管理员');
+  const hasPlatformOps = hasRole('platform_ops') || hasRole('管理员');
+  const isTenant =
+    hasRole('tenant_admin') || hasRole('tenant_developer') || hasRole('tenant_viewer');
+  const canManageAI =
+    hasSuperAdmin ||
+    hasPlatformOps ||
+    hasRole('tenant_admin') ||
+    hasRole('tenant_developer') ||
+    hasRole('开发者');
+  const canManagePlatform = hasSuperAdmin || hasPlatformOps;
+
+  // Dynamic menu based on user roles — matches RBAC matrix
   const menuItems = useMemo(() => {
     const items: Array<{
       key: string;
       icon?: React.ReactNode;
       label: string;
       children?: Array<{ key: string; icon?: React.ReactNode; label: string }>;
-    }> = [
-      { key: '/', icon: <DashboardOutlined />, label: '仪表盘' },
-      {
-        key: 'ai',
-        icon: <RobotOutlined />,
-        label: 'AI 能力',
-        children: [
-          { key: '/models', icon: <ApiOutlined />, label: '模型管理' },
-          { key: '/knowledge', icon: <BookOutlined />, label: '知识库' },
-          { key: '/agents', icon: <RobotOutlined />, label: 'Agent 管理' },
-          { key: '/conversations', icon: <MessageOutlined />, label: '对话记录' },
-        ],
-      },
-      {
-        key: 'platform',
-        icon: <BranchesOutlined />,
-        label: '平台管理',
-        children: [
+    }> = [{ key: '/', icon: <DashboardOutlined />, label: '仪表盘' }];
+
+    // AI 能力 — visible to all authenticated users (at least read access)
+    const aiChildren: Array<{ key: string; icon?: React.ReactNode; label: string }> = [
+      { key: '/models', icon: <ApiOutlined />, label: '模型管理' },
+      { key: '/knowledge', icon: <BookOutlined />, label: '知识库' },
+      { key: '/agents', icon: <RobotOutlined />, label: 'Agent 管理' },
+      { key: '/conversations', icon: <MessageOutlined />, label: '对话记录' },
+    ];
+    items.push({ key: 'ai', icon: <RobotOutlined />, label: 'AI 能力', children: aiChildren });
+
+    // 平台管理 — only for users with AI management permissions
+    if (canManageAI) {
+      const platformChildren: Array<{ key: string; icon?: React.ReactNode; label: string }> = [];
+      // Prompt/Workflow/Evaluation: super_admin, platform_ops, tenant_admin, tenant_developer
+      if (
+        hasSuperAdmin ||
+        hasPlatformOps ||
+        hasRole('tenant_admin') ||
+        hasRole('tenant_developer') ||
+        hasRole('开发者')
+      ) {
+        platformChildren.push(
           { key: '/prompts', icon: <EditOutlined />, label: 'Prompt 管理' },
           { key: '/workflows', icon: <BranchesOutlined />, label: '工作流' },
           { key: '/evaluations', icon: <ExperimentOutlined />, label: '评测中心' },
-          { key: '/costs', icon: <DollarOutlined />, label: '成本分析' },
-        ],
-      },
-    ];
+        );
+      }
+      // Costs: super_admin, platform_ops, tenant_admin
+      if (hasSuperAdmin || hasPlatformOps || hasRole('tenant_admin')) {
+        platformChildren.push({ key: '/costs', icon: <DollarOutlined />, label: '成本分析' });
+      }
+      if (platformChildren.length > 0) {
+        items.push({
+          key: 'platform',
+          icon: <BranchesOutlined />,
+          label: '平台管理',
+          children: platformChildren,
+        });
+      }
+    }
 
-    // Add tenant console link for tenant members
-    if (hasRole('tenant_admin') || hasRole('tenant_developer') || hasRole('tenant_viewer')) {
+    // 租户控制台 — tenant members only
+    if (isTenant) {
       items.push({
         key: '/tenant',
         icon: <AppstoreOutlined />,
@@ -88,30 +120,41 @@ const AppLayout: React.FC = () => {
       });
     }
 
-    // Admin section — always visible but tenant management only for platform_admin
-    const adminChildren: Array<{ key: string; icon?: React.ReactNode; label: string }> = [
-      { key: '/users', icon: <TeamOutlined />, label: '用户管理' },
-      { key: '/roles', icon: <SafetyOutlined />, label: '角色权限' },
-      { key: '/settings', icon: <SettingOutlined />, label: '系统设置' },
-    ];
+    // 系统管理 — platform-level or tenant_admin
+    const adminChildren: Array<{ key: string; icon?: React.ReactNode; label: string }> = [];
 
-    if (hasRole('platform_admin')) {
-      adminChildren.unshift({
-        key: '/admin/tenants',
+    // 租户管理: super_admin, platform_ops
+    if (canManagePlatform) {
+      adminChildren.push({ key: '/admin/tenants', icon: <TeamOutlined />, label: '租户管理' });
+    }
+    // 用户管理: super_admin, platform_ops, tenant_admin
+    if (hasSuperAdmin || hasPlatformOps || hasRole('tenant_admin')) {
+      adminChildren.push({ key: '/users', icon: <TeamOutlined />, label: '用户管理' });
+    }
+    // 角色权限: super_admin only
+    if (hasSuperAdmin) {
+      adminChildren.push({ key: '/roles', icon: <SafetyOutlined />, label: '角色权限' });
+    }
+    // 审计日志: super_admin, platform_ops
+    if (canManagePlatform) {
+      adminChildren.push({ key: '/audit-logs', icon: <SettingOutlined />, label: '审计日志' });
+    }
+    // 系统设置: super_admin only
+    if (hasSuperAdmin) {
+      adminChildren.push({ key: '/settings', icon: <SettingOutlined />, label: '系统设置' });
+    }
+
+    if (adminChildren.length > 0) {
+      items.push({
+        key: 'admin',
         icon: <TeamOutlined />,
-        label: '租户管理',
+        label: '系统管理',
+        children: adminChildren,
       });
     }
 
-    items.push({
-      key: 'admin',
-      icon: <TeamOutlined />,
-      label: '系统管理',
-      children: adminChildren,
-    });
-
     return items;
-  }, [hasRole]);
+  }, [hasRole, hasSuperAdmin, hasPlatformOps, isTenant, canManageAI, canManagePlatform]);
 
   // ─── Theme-aware palette ────────────────────────────────────────
   // Uses CSS custom properties so sidebar/header follow the active theme

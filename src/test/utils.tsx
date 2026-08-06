@@ -67,7 +67,8 @@ export const mockUser: UserInfo = {
   id: 'user-001',
   username: 'tester',
   tenant_id: 'tenant-001',
-  role: 'admin',
+  role: 'super_admin',
+  roles: ['super_admin'],
 };
 
 /** Generate a fake but structurally valid JWT (HS256, unsigned) */

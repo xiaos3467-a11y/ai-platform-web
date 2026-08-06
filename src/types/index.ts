@@ -24,8 +24,9 @@ export interface LoginUserPayload {
   id: string;
   username: string;
   tenant_id: string;
-  roles?: { id: string; name: string }[];
+  roles?: { id: string; name: string; code?: string }[];
   role?: string;
+  permissions?: string[];
 }
 
 export interface LoginResponse {

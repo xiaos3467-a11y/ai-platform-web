@@ -10,7 +10,7 @@
  * Integrates with the theme via CSS custom properties.
  */
 
-import React from 'react';
+import React, { Component, type ErrorInfo, type ReactNode } from 'react';
 import { Link, useMatches } from 'react-router-dom';
 import { HomeOutlined, RightOutlined } from '@ant-design/icons';
 import { radius } from '@/styles/themeTokens';
@@ -42,8 +42,8 @@ export interface RouteHandle {
  * Returns an empty array when used outside a data router.
  */
 function useAutoCrumbs(): BreadcrumbItem[] {
-  // useMatches requires a data router; call unconditionally to satisfy rules-of-hooks.
-  // If the router isn't a data router, useMatches returns an empty array or throws.
+  // useMatches requires a data router; BreadcrumbAuto is wrapped in an
+  // ErrorBoundary that catches the throw when rendered outside one.
   const matches = useMatches();
   const items: BreadcrumbItem[] = [];
 
@@ -108,14 +108,37 @@ const Breadcrumb: React.FC<BreadcrumbProps> = ({ items: explicitItems, renderIte
   return <BreadcrumbAuto renderItem={render} />;
 };
 
+/** Error boundary — catches useMatches throw when rendered outside a data router. */
+class BreadcrumbErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean }> {
+  state = { hasError: false };
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+  componentDidCatch(_err: Error, _info: ErrorInfo) {
+    /* swallow */
+  }
+  render() {
+    if (this.state.hasError) return null;
+    return this.props.children;
+  }
+}
+
 /** Auto-crumb variant — reads from React Router useMatches. */
-const BreadcrumbAuto: React.FC<{ renderItem: (item: BreadcrumbItem, index: number) => React.ReactNode }> = ({
-  renderItem,
-}) => {
+const BreadcrumbAutoInner: React.FC<{
+  renderItem: (item: BreadcrumbItem, index: number) => React.ReactNode;
+}> = ({ renderItem }) => {
   const items = useAutoCrumbs();
   if (items.length === 0) return null;
   return <BreadcrumbInner items={items} renderItem={renderItem} />;
 };
+
+const BreadcrumbAuto: React.FC<{
+  renderItem: (item: BreadcrumbItem, index: number) => React.ReactNode;
+}> = ({ renderItem }) => (
+  <BreadcrumbErrorBoundary>
+    <BreadcrumbAutoInner renderItem={renderItem} />
+  </BreadcrumbErrorBoundary>
+);
 
 /** Core renderer — takes explicit items and renders the nav. */
 const BreadcrumbInner: React.FC<{
@@ -160,9 +183,7 @@ const BreadcrumbInner: React.FC<{
 
       {items.map((item, index) => (
         <React.Fragment key={item.to ?? index}>
-          <RightOutlined
-            style={{ fontSize: 10, color: 'var(--text-faint)' }}
-          />
+          <RightOutlined style={{ fontSize: 10, color: 'var(--text-faint)' }} />
           {renderItem(item, index)}
         </React.Fragment>
       ))}

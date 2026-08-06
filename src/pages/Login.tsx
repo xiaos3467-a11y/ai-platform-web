@@ -31,7 +31,19 @@ const LoginPage: React.FC = () => {
         id: user.id,
         username: user.username,
         tenant_id: user.tenant_id,
-        role: user.roles?.[0]?.name || 'user',
+        role:
+          (typeof user.roles?.[0] === 'string' ? user.roles[0] : user.roles?.[0]?.code) ||
+          user.roles?.[0]?.name ||
+          'user',
+        roles:
+          user.roles
+            ?.map((r: unknown) =>
+              typeof r === 'string'
+                ? r
+                : (r as { code?: string; name?: string })?.code || (r as { name?: string })?.name,
+            )
+            .filter(Boolean) || [],
+        permissions: user.permissions || [],
       });
       message.success(t('auth.loginTitle'));
       navigate('/', { replace: true });

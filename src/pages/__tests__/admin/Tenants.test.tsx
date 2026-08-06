@@ -32,12 +32,27 @@ vi.mock('@/hooks/useApiQuery', () => ({
   useApiQuery: () => mockUseApiQuery(),
 }));
 
-const mockUseApiMutation = vi.fn(() => ({
-  mutate: vi.fn(),
-  isPending: false,
-}));
+const mutationHandlers: Record<string, { onSuccess?: (...args: unknown[]) => void }> = {};
 vi.mock('@/hooks/useApiMutation', () => ({
-  useApiMutation: () => mockUseApiMutation(),
+  useApiMutation: (opts: {
+    endpoint: string | ((...args: unknown[]) => string);
+    onSuccess?: (...args: unknown[]) => void;
+  }) => {
+    // Derive a stable key from the endpoint to differentiate mutations
+    const key =
+      typeof opts.endpoint === 'function'
+        ? opts.endpoint({ id: 'x', tenantId: 'x', userId: 'x' })
+        : opts.endpoint;
+    const mutateFn = vi.fn((...args: unknown[]) => {
+      // Invoke the registered onSuccess handler if any
+      opts.onSuccess?.({}, args[0]);
+    });
+    mutationHandlers[key] = { onSuccess: opts.onSuccess as (...args: unknown[]) => void };
+    return {
+      mutate: mutateFn,
+      isPending: false,
+    };
+  },
 }));
 
 // Member query mock (separate to allow different data)
@@ -52,7 +67,6 @@ vi.mock('@/contexts/auth', async () => {
   return {
     ...actual,
     useAuthStore: Object.assign(
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       (_selector: (s: unknown) => unknown) => {
         // hasRole selector
         return () => true;
@@ -60,7 +74,7 @@ vi.mock('@/contexts/auth', async () => {
       {
         getState: () => ({
           hasRole: () => true,
-          user: { id: 'u1', username: 'admin', roles: ['platform_admin'] },
+          user: { id: 'u1', username: 'admin', roles: ['super_admin'] },
         }),
         setState: vi.fn(),
       },
@@ -233,9 +247,9 @@ describe('AdminTenants page', () => {
 
     // The view button is rendered as a tooltip with title "查看详情"
     // Find buttons with the EyeOutlined icon (renders as anticon-eye)
-    const viewButtons = screen.getAllByRole('button').filter((btn) =>
-      btn.querySelector('.anticon-eye'),
-    );
+    const viewButtons = screen
+      .getAllByRole('button')
+      .filter((btn) => btn.querySelector('.anticon-eye'));
     expect(viewButtons.length).toBeGreaterThan(0);
     await user.click(viewButtons[0]);
 
@@ -249,9 +263,9 @@ describe('AdminTenants page', () => {
     const user = userEvent.setup();
     render(<AdminTenants />);
 
-    const editButtons = screen.getAllByRole('button').filter((btn) =>
-      btn.querySelector('.anticon-edit'),
-    );
+    const editButtons = screen
+      .getAllByRole('button')
+      .filter((btn) => btn.querySelector('.anticon-edit'));
     expect(editButtons.length).toBeGreaterThan(0);
     await user.click(editButtons[0]);
 
@@ -265,16 +279,19 @@ describe('AdminTenants page', () => {
     const user = userEvent.setup();
     render(<AdminTenants />);
 
-    const memberButtons = screen.getAllByRole('button').filter((btn) =>
-      btn.querySelector('.anticon-team'),
-    );
+    const memberButtons = screen
+      .getAllByRole('button')
+      .filter((btn) => btn.querySelector('.anticon-team'));
     expect(memberButtons.length).toBeGreaterThan(0);
     await user.click(memberButtons[0]);
 
-    await waitFor(() => {
-      // The drawer title includes "成员管理 — Acme Corp"
-      expect(screen.getByText(/成员管理/)).toBeInTheDocument();
-    });
+    await waitFor(
+      () => {
+        // The drawer title includes "成员管理 — Acme Corp"
+        expect(screen.getByText(/成员管理/)).toBeInTheDocument();
+      },
+      { timeout: 2000 },
+    );
   });
 
   it('renders status filter area', () => {
@@ -298,10 +315,11 @@ describe('AdminTenants page', () => {
 
     // The active tenant should have a stop icon button for disabling
     // Find any button with stop/check-circle icon
-    const toggleButtons = screen.getAllByRole('button').filter(
-      (btn) =>
-        btn.querySelector('.anticon-stop') || btn.querySelector('.anticon-check-circle'),
-    );
+    const toggleButtons = screen
+      .getAllByRole('button')
+      .filter(
+        (btn) => btn.querySelector('.anticon-stop') || btn.querySelector('.anticon-check-circle'),
+      );
     expect(toggleButtons.length).toBeGreaterThan(0);
     // Click should not crash the page
     await user.click(toggleButtons[0]);
@@ -317,7 +335,8 @@ describe('AdminTenants page', () => {
     const nameLinks = screen.getAllByText('Acme Corp');
     const link = nameLinks.find((el) => el.closest('a'));
     expect(link).toBeTruthy();
-    await user.click(link!);
+    if (!link) return;
+    await user.click(link);
 
     await waitFor(() => {
       // After clicking, drawer should be open showing the tenant
@@ -334,12 +353,6 @@ describe('AdminTenants page', () => {
 
   it('submits the create form with valid data', async () => {
     const user = userEvent.setup();
-    const mutateMock = vi.fn();
-    mockUseApiMutation.mockReturnValue({
-      mutate: mutateMock,
-      isPending: false,
-    });
-
     render(<AdminTenants />);
 
     // Open create modal — use the primary button which is the extra in PageHeader
@@ -353,15 +366,42 @@ describe('AdminTenants page', () => {
       },
       { timeout: 2000 },
     );
+
+    // Fill out the required form fields
+    const nameInput = screen.getByPlaceholderText('例如：某科技有限公司');
+    const slugInput = screen.getByPlaceholderText('例如：my-company');
+    await user.type(nameInput, 'Test Corp');
+    await user.type(slugInput, 'test-corp');
+
+    // Click the modal OK button to submit — it has okText="创建"
+    const modalFooter = document.querySelector('.ant-modal-footer');
+    expect(modalFooter).toBeTruthy();
+    if (!modalFooter) return;
+    const okBtn = modalFooter.querySelector('.ant-btn-primary') as HTMLElement;
+    expect(okBtn).toBeTruthy();
+    if (!okBtn) return;
+    await user.click(okBtn);
+
+    // After form.validateFields() → createMutation.mutate is called.
+    // Our mock calls onSuccess which closes the modal. Wait for that.
+    await waitFor(
+      () => {
+        // Either the modal closed, OR the success message appeared
+        const modalGone = !screen.queryByText('新建租户', { selector: '.ant-modal-title' });
+        const successShown = screen.queryByText('租户创建成功');
+        expect(modalGone || successShown).toBeTruthy();
+      },
+      { timeout: 3000 },
+    );
   });
 
   it('renders the view drawer with tenant detail', async () => {
     const user = userEvent.setup();
     render(<AdminTenants />);
 
-    const viewButtons = screen.getAllByRole('button').filter((btn) =>
-      btn.querySelector('.anticon-eye'),
-    );
+    const viewButtons = screen
+      .getAllByRole('button')
+      .filter((btn) => btn.querySelector('.anticon-eye'));
     await user.click(viewButtons[0]);
 
     // The view drawer should open with detail info
@@ -378,9 +418,9 @@ describe('AdminTenants page', () => {
     const user = userEvent.setup();
     render(<AdminTenants />);
 
-    const viewButtons = screen.getAllByRole('button').filter((btn) =>
-      btn.querySelector('.anticon-eye'),
-    );
+    const viewButtons = screen
+      .getAllByRole('button')
+      .filter((btn) => btn.querySelector('.anticon-eye'));
     await user.click(viewButtons[0]);
 
     // Wait for drawer to open and verify detail fields render
@@ -412,9 +452,9 @@ describe('AdminTenants page', () => {
     });
     render(<AdminTenants />);
 
-    const editButtons = screen.getAllByRole('button').filter((btn) =>
-      btn.querySelector('.anticon-edit'),
-    );
+    const editButtons = screen
+      .getAllByRole('button')
+      .filter((btn) => btn.querySelector('.anticon-edit'));
     await user.click(editButtons[0]);
 
     await waitFor(() => {
@@ -446,9 +486,9 @@ describe('AdminTenants page', () => {
     const user = userEvent.setup();
     render(<AdminTenants />);
 
-    const viewButtons = screen.getAllByRole('button').filter((btn) =>
-      btn.querySelector('.anticon-eye'),
-    );
+    const viewButtons = screen
+      .getAllByRole('button')
+      .filter((btn) => btn.querySelector('.anticon-eye'));
     await user.click(viewButtons[0]);
 
     await waitFor(() => {
@@ -467,13 +507,130 @@ describe('AdminTenants page', () => {
     const user = userEvent.setup();
     render(<AdminTenants />);
 
-    const editButtons = screen.getAllByRole('button').filter((btn) =>
-      btn.querySelector('.anticon-edit'),
-    );
+    const editButtons = screen
+      .getAllByRole('button')
+      .filter((btn) => btn.querySelector('.anticon-edit'));
     await user.click(editButtons[0]);
 
     await waitFor(() => {
       expect(screen.getByText('编辑租户')).toBeInTheDocument();
     });
+  });
+
+  it('submits the edit form when save button is clicked', async () => {
+    mockUseApiQuery.mockReturnValue({
+      data: mockTenant,
+      isLoading: false,
+    });
+    const user = userEvent.setup();
+    render(<AdminTenants />);
+
+    const editButtons = screen
+      .getAllByRole('button')
+      .filter((btn) => btn.querySelector('.anticon-edit'));
+    await user.click(editButtons[0]);
+
+    // Wait for the edit drawer to open
+    await waitFor(
+      () => {
+        expect(screen.getByText('编辑租户')).toBeInTheDocument();
+      },
+      { timeout: 2000 },
+    );
+
+    // Wait for drawer to open, then click the "保存" button in the extra area
+    await waitFor(
+      () => {
+        expect(screen.getByText('编辑租户')).toBeInTheDocument();
+        expect(screen.getByText('保存')).toBeInTheDocument();
+      },
+      { timeout: 2000 },
+    );
+    await user.click(screen.getByText('保存'));
+
+    // After save, the updateMutation.mutate → onSuccess is invoked, closing the drawer
+    await waitFor(
+      () => {
+        expect(screen.queryByText('编辑租户')).not.toBeInTheDocument();
+      },
+      { timeout: 2000 },
+    );
+  });
+
+  it('toggles status via modal.confirm and calls the mutation', async () => {
+    const user = userEvent.setup();
+    render(<AdminTenants />);
+
+    // Find the stop icon button (for active tenant → disable)
+    const toggleButtons = screen
+      .getAllByRole('button')
+      .filter(
+        (btn) => btn.querySelector('.anticon-stop') || btn.querySelector('.anticon-check-circle'),
+      );
+    expect(toggleButtons.length).toBeGreaterThan(0);
+    await user.click(toggleButtons[0]);
+
+    // modal.confirm opens — verify it shows the confirm text
+    await waitFor(
+      () => {
+        expect(screen.getAllByText(/确认禁用租户/).length).toBeGreaterThanOrEqual(1);
+      },
+      { timeout: 2000 },
+    );
+
+    // Wait for the OK button to appear, then click it
+    await waitFor(
+      () => {
+        // The OK button text is "确认" inside a confirm modal
+        const okBtn = document.querySelector('.ant-modal-confirm-btns .ant-btn-primary');
+        expect(okBtn).toBeTruthy();
+      },
+      { timeout: 2000 },
+    );
+    const okBtn = document.querySelector('.ant-modal-confirm-btns .ant-btn-primary') as HTMLElement;
+    await user.click(okBtn);
+
+    // After mutation success, success message should appear
+    await waitFor(
+      () => {
+        expect(screen.getByText('租户已禁用')).toBeInTheDocument();
+      },
+      { timeout: 2000 },
+    );
+  });
+
+  it('clicks the view drawer navigate button', async () => {
+    const user = userEvent.setup();
+    // Spy on location href assignment
+    const originalHref = window.location.href;
+    delete (window as { location?: unknown }).location;
+    const locationMock = { href: originalHref, assign: vi.fn(), replace: vi.fn() };
+    Object.defineProperty(window, 'location', { value: locationMock, writable: true });
+
+    render(<AdminTenants />);
+
+    const viewButtons = screen
+      .getAllByRole('button')
+      .filter((btn) => btn.querySelector('.anticon-eye'));
+    await user.click(viewButtons[0]);
+
+    await waitFor(
+      () => {
+        expect(screen.getByText('查看用量统计')).toBeInTheDocument();
+      },
+      { timeout: 2000 },
+    );
+
+    // Click the "查看用量统计" button - this triggers window.location.href assignment
+    const navBtn = screen.getByText('查看用量统计');
+    await user.click(navBtn);
+
+    // After click, drawer should close and window.location.href should be set
+    await waitFor(
+      () => {
+        expect(locationMock.href).toContain('/admin/tenants/tenant-1/usage');
+      },
+      { timeout: 2000 },
+    );
   });
 });

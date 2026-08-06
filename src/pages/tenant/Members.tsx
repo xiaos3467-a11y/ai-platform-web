@@ -1,18 +1,7 @@
 /** Tenant member management */
 
 import React, { useState, useCallback } from 'react';
-import {
-  Table,
-  Button,
-  Modal,
-  Form,
-  Input,
-  Select,
-  Typography,
-  App,
-  Tag,
-  Switch,
-} from 'antd';
+import { Table, Button, Modal, Form, Input, Select, Typography, App, Tag, Switch } from 'antd';
 import { PlusOutlined, DeleteOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { useApiListQuery } from '@/hooks/useApiQuery';
@@ -35,7 +24,7 @@ const TenantMembers: React.FC = () => {
   const [inviteForm] = Form.useForm();
   const [inviteOpen, setInviteOpen] = useState(false);
   const hasRole = useAuthStore((s) => s.hasRole);
-  const isAdmin = hasRole('tenant_admin') || hasRole('platform_admin');
+  const isAdmin = hasRole('tenant_admin') || hasRole('super_admin') || hasRole('platform_ops');
 
   const { data: membersData, isLoading } = useApiListQuery<TenantMember>({
     queryKey: ['tenant', 'members'],
@@ -185,7 +174,14 @@ const TenantMembers: React.FC = () => {
 
   return (
     <>
-      <div style={{ marginBottom: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+      <div
+        style={{
+          marginBottom: 20,
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'flex-end',
+        }}
+      >
         <div>
           <Title level={3} style={{ marginBottom: 4 }}>
             成员管理
@@ -207,7 +203,9 @@ const TenantMembers: React.FC = () => {
           pagination={{ pageSize: 10 }}
           scroll={{ x: 800 }}
           size="middle"
-          locale={{ emptyText: <span style={{ color: "var(--text-faint)", padding: 24 }}>暂无成员</span> }}
+          locale={{
+            emptyText: <span style={{ color: 'var(--text-faint)', padding: 24 }}>暂无成员</span>,
+          }}
         />
       </GlassCard>
 

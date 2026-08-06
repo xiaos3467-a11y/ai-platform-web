@@ -62,25 +62,30 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     return <Navigate to="/login" replace state={{ from: location.pathname }} />;
   }
 
-  if (requiredRole && !hasRole(requiredRole) && !hasRole('platform_admin') && !hasRole('超级管理员')) {
-    return (
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          minHeight: '60vh',
-          flexDirection: 'column',
-          gap: 12,
-        }}
-      >
-        <div style={{ fontSize: 48 }}>🔒</div>
-        <div style={{ fontSize: 18, fontWeight: 600 }}>无访问权限</div>
-        <div style={{ color: 'var(--text-secondary)', fontSize: 14 }}>
-          您没有访问此页面所需的权限
+  if (requiredRole) {
+    // Support pipe-separated roles: "super_admin|platform_ops" means either role is allowed
+    const allowedRoles = requiredRole.split('|');
+    const hasAnyRole = allowedRoles.some((r) => hasRole(r));
+    if (!hasAnyRole) {
+      return (
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            minHeight: '60vh',
+            flexDirection: 'column',
+            gap: 12,
+          }}
+        >
+          <div style={{ fontSize: 48 }}>🔒</div>
+          <div style={{ fontSize: 18, fontWeight: 600 }}>无访问权限</div>
+          <div style={{ color: 'var(--text-secondary)', fontSize: 14 }}>
+            您没有访问此页面所需的权限
+          </div>
         </div>
-      </div>
-    );
+      );
+    }
   }
 
   if (requiredPermission && !hasPermission(requiredPermission)) {
@@ -145,23 +150,100 @@ const App: React.FC = () => {
             }
           >
             <Route index element={<Dashboard />} />
-            <Route path="models" element={<ModelProviders />} />
-            <Route path="knowledge" element={<KnowledgeBases />} />
-            <Route path="agents" element={<Agents />} />
-            <Route path="conversations" element={<Conversations />} />
-            <Route path="prompts" element={<Prompts />} />
-            <Route path="workflows" element={<Workflows />} />
-            <Route path="evaluations" element={<Evaluations />} />
-            <Route path="costs" element={<Costs />} />
-            <Route path="users" element={<Users />} />
-            <Route path="roles" element={<Roles />} />
-            <Route path="settings" element={<Settings />} />
+            <Route
+              path="models"
+              element={
+                <ProtectedRoute requiredRole="super_admin|platform_ops|tenant_admin|tenant_developer|tenant_viewer">
+                  <ModelProviders />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="knowledge"
+              element={
+                <ProtectedRoute requiredRole="super_admin|platform_ops|tenant_admin|tenant_developer|tenant_viewer">
+                  <KnowledgeBases />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="agents"
+              element={
+                <ProtectedRoute requiredRole="super_admin|platform_ops|tenant_admin|tenant_developer|tenant_viewer">
+                  <Agents />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="conversations"
+              element={
+                <ProtectedRoute>
+                  <Conversations />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="prompts"
+              element={
+                <ProtectedRoute requiredRole="super_admin|platform_ops|tenant_admin|tenant_developer">
+                  <Prompts />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="workflows"
+              element={
+                <ProtectedRoute requiredRole="super_admin|platform_ops|tenant_admin|tenant_developer">
+                  <Workflows />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="evaluations"
+              element={
+                <ProtectedRoute requiredRole="super_admin|platform_ops|tenant_admin|tenant_developer">
+                  <Evaluations />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="costs"
+              element={
+                <ProtectedRoute requiredRole="super_admin|platform_ops|tenant_admin">
+                  <Costs />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="users"
+              element={
+                <ProtectedRoute requiredRole="super_admin|platform_ops|tenant_admin">
+                  <Users />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="roles"
+              element={
+                <ProtectedRoute requiredRole="super_admin">
+                  <Roles />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="settings"
+              element={
+                <ProtectedRoute requiredRole="super_admin">
+                  <Settings />
+                </ProtectedRoute>
+              }
+            />
 
-            {/* Admin routes — require platform_admin role */}
+            {/* Admin routes — require platform-level roles */}
             <Route
               path="admin/tenants"
               element={
-                <ProtectedRoute requiredRole="platform_admin">
+                <ProtectedRoute requiredRole="super_admin|platform_ops">
                   <AdminTenants />
                 </ProtectedRoute>
               }
@@ -174,7 +256,7 @@ const App: React.FC = () => {
           <Route
             path="/tenant"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute requiredRole="tenant_admin|tenant_developer|tenant_viewer">
                 <TenantLayout />
               </ProtectedRoute>
             }

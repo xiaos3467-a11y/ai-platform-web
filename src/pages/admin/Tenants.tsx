@@ -32,13 +32,7 @@ import { useApiMutation } from '@/hooks/useApiMutation';
 import { GlassCard, TableSkeleton, PageHeader } from '@/components';
 import { radius } from '@/styles/themeTokens';
 import { useAuthStore } from '@/contexts/auth';
-import type {
-  Tenant,
-  TenantPlan,
-  TenantStatus,
-  TenantMember,
-  TenantMemberRole,
-} from '@/types';
+import type { Tenant, TenantPlan, TenantStatus, TenantMember, TenantMemberRole } from '@/types';
 import dayjs from 'dayjs';
 
 const { TextArea } = Input;
@@ -369,7 +363,7 @@ const AdminTenants: React.FC = () => {
           value={role}
           style={{ width: 120 }}
           options={MEMBER_ROLES}
-          disabled={!hasRole('platform_admin')}
+          disabled={!hasRole('super_admin') && !hasRole('platform_ops')}
           onChange={(newRole) => {
             if (!membersTenant) return;
             updateMemberRoleMutation.mutate({
@@ -397,7 +391,7 @@ const AdminTenants: React.FC = () => {
           size="small"
           danger
           onClick={() => handleRemoveMember(record)}
-          disabled={!hasRole('platform_admin')}
+          disabled={!hasRole('super_admin') && !hasRole('platform_ops')}
         >
           移除
         </Button>
@@ -499,12 +493,7 @@ const AdminTenants: React.FC = () => {
           >
             <Input placeholder="例如：my-company" />
           </Form.Item>
-          <Form.Item
-            name="plan"
-            label="套餐"
-            initialValue="standard"
-            rules={[{ required: true }]}
-          >
+          <Form.Item name="plan" label="套餐" initialValue="standard" rules={[{ required: true }]}>
             <Select options={PLAN_OPTIONS.map((p) => ({ value: p.value, label: p.label }))} />
           </Form.Item>
           <Form.Item name="description" label="描述">
@@ -527,11 +516,7 @@ const AdminTenants: React.FC = () => {
       >
         {tenantDetail && (
           <Form form={editForm} layout="vertical">
-            <Form.Item
-              name="name"
-              label="租户名称"
-              rules={[{ required: true }]}
-            >
+            <Form.Item name="name" label="租户名称" rules={[{ required: true }]}>
               <Input />
             </Form.Item>
             <Form.Item name="plan" label="套餐" rules={[{ required: true }]}>
@@ -555,11 +540,7 @@ const AdminTenants: React.FC = () => {
               可用模型
             </Typography.Title>
             <Form.Item name="allowed_models" label="可用模型（多选）">
-              <Select
-                mode="tags"
-                placeholder="输入模型名称后回车"
-                style={{ width: '100%' }}
-              />
+              <Select mode="tags" placeholder="输入模型名称后回车" style={{ width: '100%' }} />
             </Form.Item>
 
             <Typography.Title level={5} style={{ marginTop: 16 }}>
@@ -598,12 +579,7 @@ const AdminTenants: React.FC = () => {
       </Drawer>
 
       {/* ─── View Tenant Drawer ──────────────────────────────────────── */}
-      <Drawer
-        title="租户详情"
-        open={!!viewTenant}
-        onClose={() => setViewTenant(null)}
-        width={520}
-      >
+      <Drawer title="租户详情" open={!!viewTenant} onClose={() => setViewTenant(null)} width={520}>
         {viewTenant && (
           <>
             <Descriptions column={1} bordered size="small">
@@ -617,16 +593,12 @@ const AdminTenants: React.FC = () => {
                 <Text code>{viewTenant.slug}</Text>
               </Descriptions.Item>
               <Descriptions.Item label="套餐">
-                <Tag
-                  color={PLAN_OPTIONS.find((p) => p.value === viewTenant.plan)?.color}
-                >
+                <Tag color={PLAN_OPTIONS.find((p) => p.value === viewTenant.plan)?.color}>
                   {PLAN_OPTIONS.find((p) => p.value === viewTenant.plan)?.label}
                 </Tag>
               </Descriptions.Item>
               <Descriptions.Item label="状态">
-                <Tag
-                  color={STATUS_OPTIONS.find((s) => s.value === viewTenant.status)?.color}
-                >
+                <Tag color={STATUS_OPTIONS.find((s) => s.value === viewTenant.status)?.color}>
                   {STATUS_OPTIONS.find((s) => s.value === viewTenant.status)?.label}
                 </Tag>
               </Descriptions.Item>
@@ -644,9 +616,7 @@ const AdminTenants: React.FC = () => {
               </Descriptions.Item>
               <Descriptions.Item label="可用模型">
                 {viewTenant.allowed_models?.length
-                  ? viewTenant.allowed_models.map((m) => (
-                      <Tag key={m}>{m}</Tag>
-                    ))
+                  ? viewTenant.allowed_models.map((m) => <Tag key={m}>{m}</Tag>)
                   : '—'}
               </Descriptions.Item>
             </Descriptions>
@@ -673,11 +643,7 @@ const AdminTenants: React.FC = () => {
         onClose={() => setMembersTenant(null)}
         width={720}
         extra={
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={() => setInviteOpen(true)}
-          >
+          <Button type="primary" icon={<PlusOutlined />} onClick={() => setInviteOpen(true)}>
             邀请成员
           </Button>
         }
@@ -689,7 +655,9 @@ const AdminTenants: React.FC = () => {
           loading={membersLoading}
           pagination={{ pageSize: 10 }}
           size="small"
-          locale={{ emptyText: <span style={{ color: "var(--text-faint)", padding: 24 }}>暂无成员</span> }}
+          locale={{
+            emptyText: <span style={{ color: 'var(--text-faint)', padding: 24 }}>暂无成员</span>,
+          }}
         />
       </Drawer>
 

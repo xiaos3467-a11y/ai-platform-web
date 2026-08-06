@@ -145,7 +145,7 @@ describe('getUserRoles helper', () => {
   });
 
   it('falls back to [user.role] when roles is undefined', () => {
-    const user: UserInfo = { ...mockUser, role: 'viewer' };
+    const user: UserInfo = { ...mockUser, role: 'viewer', roles: undefined };
     expect(getUserRoles(user)).toEqual(['viewer']);
   });
 

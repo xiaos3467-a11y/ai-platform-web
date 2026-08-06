@@ -36,7 +36,16 @@ function willExpireSoon(token: string, thresholdSeconds = 120): boolean {
 function loadStoredUser(): UserInfo | null {
   try {
     const raw = localStorage.getItem(USER_KEY);
-    return raw ? (JSON.parse(raw) as UserInfo) : null;
+    if (!raw) return null;
+    const user = JSON.parse(raw) as UserInfo;
+    // Migrate stale data: filter out undefined/null role entries
+    // (can happen when old login code mapped string roles via r.code → undefined)
+    if (user.roles && user.roles.some((r) => !r)) {
+      user.roles = user.roles.filter(Boolean);
+      // Persist cleaned data so this only runs once
+      localStorage.setItem(USER_KEY, JSON.stringify(user));
+    }
+    return user;
   } catch {
     return null;
   }
@@ -73,12 +82,38 @@ if (initialToken && !initialValid) {
 /**
  * Compute the effective roles array for a user.
  * Supports both legacy single-role (`role`) and new multi-role (`roles[]`) formats.
+ *
+ * Backward compatibility: before init_rbac.sql migration the DB stores Chinese
+ * role names (超级管理员/管理员/开发者/观察者). Map them to the new code-based
+ * equivalents so every `hasRole('super_admin')` check works for legacy users too.
  */
+const LEGACY_ROLE_MAP: Record<string, string[]> = {
+  // init_rbac.sql 新角色名 → code（后端未部署时 API 返回中文名而非 code）
+  超级管理员: ['super_admin'],
+  平台运营员: ['platform_ops'],
+  租户管理员: ['tenant_admin'],
+  租户开发者: ['tenant_developer'],
+  租户观察者: ['tenant_viewer'],
+  // 更早期的旧角色名（兼容历史数据）
+  管理员: ['platform_ops'],
+  开发者: ['tenant_developer'],
+  观察者: ['tenant_viewer'],
+};
+
 function getUserRoles(user: UserInfo | null): string[] {
   if (!user) return [];
-  if (user.roles && user.roles.length > 0) return user.roles;
-  if (user.role) return [user.role];
-  return [];
+  // Filter out undefined/null entries (can happen from stale localStorage after migration)
+  const raw: string[] = (
+    user.roles && user.roles.length > 0 ? user.roles : user.role ? [user.role] : []
+  ).filter(Boolean);
+  // Expand legacy names → new codes (keep originals for any code still matching on Chinese name)
+  const expanded = new Set<string>();
+  for (const r of raw) {
+    expanded.add(r);
+    const aliases = LEGACY_ROLE_MAP[r];
+    if (aliases) aliases.forEach((a) => expanded.add(a));
+  }
+  return [...expanded];
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({
