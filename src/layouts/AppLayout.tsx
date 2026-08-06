@@ -470,16 +470,17 @@ const AppLayout: React.FC = () => {
           />
         </div>
 
-        {/* Version tag at bottom */}
+        {/* Version tag — sticky at bottom of sidebar, stays visible
+            regardless of scroll position. */}
         {!collapsed && (
           <div
             style={{
-              position: 'absolute',
-              bottom: 20,
-              left: 0,
-              right: 0,
+              position: 'sticky',
+              bottom: 0,
               textAlign: 'center',
-              padding: '0 24px',
+              padding: '16px 24px 20px',
+              background: `linear-gradient(to bottom, transparent, ${palette.siderBg} 30%)`,
+              zIndex: 1,
             }}
           >
             <Text
@@ -488,7 +489,6 @@ const AppLayout: React.FC = () => {
                 color: palette.textMuted,
                 fontWeight: 500,
                 letterSpacing: '0.02em',
-                transition: 'color 0.3s ease',
               }}
             >
               v0.1.0
