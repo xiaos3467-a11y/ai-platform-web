@@ -381,6 +381,9 @@ const ModelProviders: React.FC = () => {
   // ─── Handlers ──────────────────────────────────────────────────
   const handleTestConnectivity = useCallback(() => {
     if (!editTarget) return;
+    // Defensive guard: button is already disabled while pending, but prevent
+    // any programmatic / race-condition double-invocation from firing again.
+    if (connectivityTestMutation.isPending) return;
     setTestResult(null);
     connectivityTestMutation.mutate(
       { id: editTarget.id },
@@ -412,10 +415,21 @@ const ModelProviders: React.FC = () => {
 
   const handleCreate = async (values: ProviderCreateRequest) => {
     createMutation.mutate(values, {
-      onSuccess: () => {
+      onSuccess: (newProvider) => {
         message.success('Provider 添加成功（API Key 已加密存储）');
         setModalOpen(false);
         form.resetFields();
+
+        // F-05: 后端 B-09 后，新建时传了 api_key 会返回 needs_retest=true，
+        // 此时默认 is_enabled=false，必须先做连通性测试才能启用。
+        // 自动打开编辑弹窗并引导用户执行测试。
+        if (newProvider?.needs_retest) {
+          setEditTarget(newProvider);
+          setTestResult(null);
+          setTestPassed(false);
+          setEditModalOpen(true);
+          message.info('供应商已创建，请先执行连通性测试后再启用');
+        }
       },
     });
   };
@@ -874,6 +888,7 @@ const ModelProviders: React.FC = () => {
               icon={connectivityTestMutation.isPending ? <LoadingOutlined /> : <ApiOutlined />}
               onClick={handleTestConnectivity}
               loading={connectivityTestMutation.isPending}
+              disabled={connectivityTestMutation.isPending}
               size="small"
               style={{ borderRadius: radius.sm }}
             >
