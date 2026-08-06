@@ -137,13 +137,7 @@ const ModelConfigCard: React.FC<{
       >
         模型 {fieldKey + 1}
       </Text>
-      <Button
-        type="text"
-        size="small"
-        danger
-        icon={<DeleteOutlined />}
-        onClick={onRemove}
-      />
+      <Button type="text" size="small" danger icon={<DeleteOutlined />} onClick={onRemove} />
     </div>
 
     {/* Row 1 — name + context length */}
@@ -305,9 +299,7 @@ const ModelChipsInTable: React.FC<{
         );
       })}
       {models.some((m) => !m.purposes || m.purposes.length === 0) && (
-        <Text style={{ fontSize: 10, color: 'var(--text-faint)' }}>
-          旧数据 — 用途视为"通用"
-        </Text>
+        <Text style={{ fontSize: 10, color: 'var(--text-faint)' }}>旧数据 — 用途视为"通用"</Text>
       )}
       {/* hidden key so React reconciler keys on provider */}
       <span key={providerId} style={{ display: 'none' }} />
@@ -381,10 +373,7 @@ const ModelProviders: React.FC = () => {
     invalidateKeys: [PROVIDERS_KEY],
   });
 
-  const connectivityTestMutation = useApiMutation<
-    ConnectivityTestResult,
-    { id: string }
-  >({
+  const connectivityTestMutation = useApiMutation<ConnectivityTestResult, { id: string }>({
     method: 'post',
     endpoint: ({ id }) => `/models/providers/${id}/test`,
   });
@@ -393,29 +382,32 @@ const ModelProviders: React.FC = () => {
   const handleTestConnectivity = useCallback(() => {
     if (!editTarget) return;
     setTestResult(null);
-    connectivityTestMutation.mutate({ id: editTarget.id }, {
-      onSuccess: (data) => {
-        setTestResult(data);
-        if (data.success) {
-          setTestPassed(true);
-          message.success(`连接成功 (${data.latency_ms}ms)`);
-        } else {
+    connectivityTestMutation.mutate(
+      { id: editTarget.id },
+      {
+        onSuccess: (data) => {
+          setTestResult(data);
+          if (data.success) {
+            setTestPassed(true);
+            message.success(`连接成功 (${data.latency_ms}ms)`);
+          } else {
+            setTestPassed(false);
+            message.error(data.message || '连通性测试失败');
+          }
+          // Refresh providers so table shows updated last_test_* fields
+          queryClient.invalidateQueries({ queryKey: PROVIDERS_KEY });
+        },
+        onError: (err) => {
           setTestPassed(false);
-          message.error(data.message || '连通性测试失败');
-        }
-        // Refresh providers so table shows updated last_test_* fields
-        queryClient.invalidateQueries({ queryKey: PROVIDERS_KEY });
+          setTestResult({
+            success: false,
+            latency_ms: 0,
+            model: '',
+            message: err.message || '网络错误',
+          });
+        },
       },
-      onError: (err) => {
-        setTestPassed(false);
-        setTestResult({
-          success: false,
-          latency_ms: 0,
-          model: '',
-          message: err.message || '网络错误',
-        });
-      },
-    });
+    );
   }, [editTarget, connectivityTestMutation, message, queryClient]);
 
   const handleCreate = async (values: ProviderCreateRequest) => {
@@ -470,43 +462,40 @@ const ModelProviders: React.FC = () => {
     );
   };
 
-  const handleToggle = (id: string, enabled: boolean) => {
-    toggleMutation.mutate(
-      { id, enabled },
-      {
-        onSuccess: () => message.success(enabled ? '已启用' : '已禁用'),
-      },
-    );
-  };
+  const handleDelete = useCallback(
+    (id: string) => {
+      modal.confirm({
+        title: '删除 Provider',
+        content: '确认删除此提供商？所有相关模型配置将一并移除。',
+        okText: '删除',
+        okButtonProps: { danger: true },
+        cancelText: '取消',
+        onOk: () =>
+          new Promise<void>((resolve) => {
+            deleteMutation.mutate(id, {
+              onSuccess: () => {
+                message.success('已删除');
+                resolve();
+              },
+              onError: () => resolve(),
+            });
+          }),
+      });
+    },
+    [modal, deleteMutation, message],
+  );
 
-  const handleDelete = (id: string) => {
-    modal.confirm({
-      title: '删除 Provider',
-      content: '确认删除此提供商？所有相关模型配置将一并移除。',
-      okText: '删除',
-      okButtonProps: { danger: true },
-      cancelText: '取消',
-      onOk: () =>
-        new Promise<void>((resolve) => {
-          deleteMutation.mutate(id, {
-            onSuccess: () => {
-              message.success('已删除');
-              resolve();
-            },
-            onError: () => resolve(),
-          });
-        }),
-    });
-  };
-
-  const handleModelToggle = (providerId: string, modelName: string, enabled: boolean) => {
-    toggleModelMutation.mutate(
-      { providerId, modelName, enabled },
-      {
-        onSuccess: () => message.success(enabled ? `已启用 ${modelName}` : `已禁用 ${modelName}`),
-      },
-    );
-  };
+  const handleModelToggle = useCallback(
+    (providerId: string, modelName: string, enabled: boolean) => {
+      toggleModelMutation.mutate(
+        { providerId, modelName, enabled },
+        {
+          onSuccess: () => message.success(enabled ? `已启用 ${modelName}` : `已禁用 ${modelName}`),
+        },
+      );
+    },
+    [toggleModelMutation, message],
+  );
 
   const columns = useMemo(
     () => [
@@ -611,8 +600,7 @@ const ModelProviders: React.FC = () => {
         width: 100,
         render: (_: unknown, record: Provider) => {
           const total = record.models?.length ?? 0;
-          const enabled =
-            record.models?.filter((m) => m.enabled !== false).length ?? 0;
+          const enabled = record.models?.filter((m) => m.enabled !== false).length ?? 0;
           return (
             <Text
               style={{
@@ -637,17 +625,42 @@ const ModelProviders: React.FC = () => {
         dataIndex: 'is_enabled',
         width: 80,
         render: (enabled: boolean, record: Provider) => {
-          const needsTest = !enabled && !record.last_test_success;
-          return (
-            <Tooltip title={needsTest ? '请先通过连通性测试' : undefined}>
-              <Switch
-                checked={enabled}
-                disabled={needsTest}
-                onChange={(v) => handleToggle(record.id, v)}
-                size="small"
-              />
-            </Tooltip>
+          // 允许启用的条件：不需要重测，或上次测试成功
+          const canEnable = !record.needs_retest || record.last_test_success === true;
+          const isDisabled = !enabled && !canEnable;
+
+          let tooltipText: string | undefined;
+          if (record.needs_retest && !enabled) {
+            tooltipText = 'API 配置已变更，请先通过连通性测试';
+          } else if (!enabled && record.last_test_success !== true) {
+            tooltipText = '请先执行连通性测试';
+          }
+
+          const switchEl = (
+            <Switch
+              checked={enabled}
+              disabled={isDisabled}
+              size="small"
+              onChange={async (checked) => {
+                try {
+                  await toggleMutation.mutateAsync({ id: record.id, enabled: checked });
+                  message.success(checked ? '已启用' : '已禁用');
+                } catch (err: unknown) {
+                  const anyErr = err as { response?: { status?: number } };
+                  if (anyErr?.response?.status === 400) {
+                    message.warning('请先通过连通性测试再启用');
+                  } else {
+                    message.error('操作失败');
+                  }
+                }
+              }}
+            />
           );
+
+          if (isDisabled) {
+            return <Tooltip title={tooltipText}>{switchEl}</Tooltip>;
+          }
+          return switchEl;
         },
       },
       {
@@ -683,7 +696,7 @@ const ModelProviders: React.FC = () => {
         ),
       },
     ],
-    [showKeys],
+    [showKeys, handleDelete, handleModelToggle, message, toggleMutation],
   );
 
   /* Edit form default values — computed from editTarget */
@@ -858,13 +871,7 @@ const ModelProviders: React.FC = () => {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span>编辑模型提供商</span>
             <Button
-              icon={
-                connectivityTestMutation.isPending ? (
-                  <LoadingOutlined />
-                ) : (
-                  <ApiOutlined />
-                )
-              }
+              icon={connectivityTestMutation.isPending ? <LoadingOutlined /> : <ApiOutlined />}
               onClick={handleTestConnectivity}
               loading={connectivityTestMutation.isPending}
               size="small"
@@ -969,9 +976,7 @@ const ModelProviders: React.FC = () => {
                   ? 'rgba(48, 209, 88, 0.08)'
                   : 'rgba(255, 69, 58, 0.08)',
                 border: `0.5px solid ${
-                  testResult.success
-                    ? 'rgba(48, 209, 88, 0.2)'
-                    : 'rgba(255, 69, 58, 0.2)'
+                  testResult.success ? 'rgba(48, 209, 88, 0.2)' : 'rgba(255, 69, 58, 0.2)'
                 }`,
                 display: 'flex',
                 alignItems: 'center',
@@ -998,8 +1003,7 @@ const ModelProviders: React.FC = () => {
             </div>
           ) : editTarget?.last_test_at ? (
             <Text style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-              上次测试:{' '}
-              {dayjs(editTarget.last_test_at).format('YYYY-MM-DD HH:mm')}{' '}
+              上次测试: {dayjs(editTarget.last_test_at).format('YYYY-MM-DD HH:mm')}{' '}
               {editTarget.last_test_success ? (
                 <span style={{ color: 'var(--color-success, #30d158)' }}>
                   <CheckCircleOutlined /> {editTarget.last_test_latency_ms}ms
@@ -1026,11 +1030,42 @@ const ModelProviders: React.FC = () => {
             )}
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <Text style={{ fontSize: 13, color: 'var(--text-secondary)' }}>启用此提供商</Text>
-              <Tooltip title={!testPassed ? '请先通过连通性测试' : undefined}>
+              <Tooltip
+                title={
+                  editTarget?.needs_retest && !editTarget?.is_enabled && !testPassed
+                    ? 'API 配置已变更，请先通过连通性测试'
+                    : !testPassed && !editTarget?.is_enabled
+                      ? '请先通过连通性测试'
+                      : undefined
+                }
+              >
                 <Switch
                   checked={testPassed || editTarget?.is_enabled || false}
-                  disabled={!testPassed && !editTarget?.is_enabled}
+                  disabled={!!editTarget?.needs_retest && !editTarget?.is_enabled && !testPassed}
                   size="small"
+                  onChange={async (checked) => {
+                    if (!editTarget) return;
+                    try {
+                      await toggleMutation.mutateAsync({ id: editTarget.id, enabled: checked });
+                      setEditTarget((prev) =>
+                        prev
+                          ? {
+                              ...prev,
+                              is_enabled: checked,
+                              needs_retest: checked ? false : prev.needs_retest,
+                            }
+                          : prev,
+                      );
+                      message.success(checked ? '已启用' : '已禁用');
+                    } catch (err: unknown) {
+                      const anyErr = err as { response?: { status?: number } };
+                      if (anyErr?.response?.status === 400) {
+                        message.warning('请先通过连通性测试再启用');
+                      } else {
+                        message.error('操作失败');
+                      }
+                    }
+                  }}
                 />
               </Tooltip>
               {testPassed ? (
