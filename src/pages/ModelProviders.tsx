@@ -328,7 +328,10 @@ const ModelProviders: React.FC = () => {
     invalidateKeys: [PROVIDERS_KEY],
   });
 
-  const updateMutation = useApiMutation<Provider, { id: string; data: Partial<Provider> }>({
+  const updateMutation = useApiMutation<
+    Provider,
+    { id: string; display_name?: string; api_base_url?: string; models?: ModelConfig[]; priority?: number }
+  >({
     method: 'put',
     endpoint: (v) => `/models/providers/${v.id}`,
     invalidateKeys: [PROVIDERS_KEY],
@@ -383,12 +386,10 @@ const ModelProviders: React.FC = () => {
     updateMutation.mutate(
       {
         id: editTarget.id,
-        data: {
-          display_name: values.display_name,
-          api_base_url: values.api_base_url,
-          models: values.models,
-          priority: values.priority,
-        } as Partial<Provider>,
+        display_name: values.display_name,
+        api_base_url: values.api_base_url,
+        models: values.models,
+        priority: values.priority,
       },
       {
         onSuccess: () => {
