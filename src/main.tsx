@@ -12,7 +12,7 @@ import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import { ConfigProvider, App as AntApp } from 'antd';
 import zhCN from 'antd/locale/zh_CN';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClient, QueryClientProvider, keepPreviousData } from '@tanstack/react-query';
 import App from './App';
 import '@/styles/global.css';
 import { ThemeProvider, useThemeTokens } from '@/contexts/theme';
@@ -30,6 +30,7 @@ const queryClient = new QueryClient({
       gcTime: 5 * 60_000, // 5min — unused queries get garbage-collected
       retry: 1,
       refetchOnWindowFocus: false,
+      placeholderData: keepPreviousData, // Keep previous data during route transitions
     },
   },
 });

@@ -114,23 +114,89 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 };
 
 const AppSkeleton: React.FC = () => (
-  <div
-    style={{
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      minHeight: '60vh',
-    }}
-  >
+  <div style={{ padding: '0 4px' }}>
+    {/* 标题骨架 */}
+    <div style={{ marginBottom: 32 }}>
+      <div
+        style={{
+          width: 200,
+          height: 34,
+          borderRadius: radius.md,
+          background: 'var(--bg-elevated, rgba(255,255,255,0.04))',
+          animation: 'pulse 1.5s ease-in-out infinite',
+          marginBottom: 10,
+        }}
+      />
+      <div
+        style={{
+          width: 300,
+          height: 18,
+          borderRadius: radius.sm,
+          background: 'var(--bg-elevated, rgba(255,255,255,0.04))',
+          animation: 'pulse 1.5s ease-in-out infinite',
+        }}
+      />
+    </div>
+    {/* 卡片骨架 */}
     <div
       style={{
-        width: 36,
-        height: 36,
-        borderRadius: radius.md,
-        background: 'linear-gradient(135deg, #0a84ff, #5e5ce6)',
-        animation: 'pulse 1.5s ease-in-out infinite',
+        borderRadius: radius.lg,
+        background: 'var(--bg-card, rgba(255,255,255,0.03))',
+        border: '0.5px solid var(--border-subtle, rgba(255,255,255,0.08))',
+        padding: 24,
+        minHeight: 400,
       }}
-    />
+    >
+      {/* 表格行骨架 */}
+      {Array.from({ length: 5 }).map((_, i) => (
+        <div
+          key={i}
+          style={{
+            display: 'flex',
+            gap: 16,
+            marginBottom: 20,
+            opacity: 1 - i * 0.12,
+          }}
+        >
+          <div
+            style={{
+              width: 40,
+              height: 16,
+              borderRadius: 8,
+              background: 'var(--bg-elevated)',
+              animation: 'pulse 1.5s ease-in-out infinite',
+            }}
+          />
+          <div
+            style={{
+              flex: 2,
+              height: 16,
+              borderRadius: 8,
+              background: 'var(--bg-elevated)',
+              animation: 'pulse 1.5s ease-in-out infinite',
+            }}
+          />
+          <div
+            style={{
+              flex: 1,
+              height: 16,
+              borderRadius: 8,
+              background: 'var(--bg-elevated)',
+              animation: 'pulse 1.5s ease-in-out infinite',
+            }}
+          />
+          <div
+            style={{
+              width: 80,
+              height: 16,
+              borderRadius: 8,
+              background: 'var(--bg-elevated)',
+              animation: 'pulse 1.5s ease-in-out infinite',
+            }}
+          />
+        </div>
+      ))}
+    </div>
   </div>
 );
 

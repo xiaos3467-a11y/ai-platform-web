@@ -3,7 +3,7 @@
  * — Frosted glass sidebar, gradient accent, smooth collapse animation
  */
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, startTransition } from 'react';
 import { Layout, Menu, Avatar, Dropdown, Typography, message } from 'antd';
 import {
   DashboardOutlined,
@@ -26,6 +26,7 @@ import {
   CheckOutlined,
 } from '@ant-design/icons';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '@/contexts/auth';
 import { useTheme } from '@/contexts/theme';
 import { api } from '@/api/client';
@@ -49,6 +50,7 @@ const AppLayout: React.FC = () => {
   const [collapsed, setCollapsed] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const queryClient = useQueryClient();
   const { logout, user, hasRole, switchRole } = useAuthStore((s) => ({
     logout: s.logout,
     user: s.user,
@@ -104,27 +106,74 @@ const AppLayout: React.FC = () => {
     }
   };
 
+  // Map route path → queryKey(s) for prefetch on hover
+  const ROUTE_QUERY_KEYS: Record<string, string[][]> = useMemo(
+    () => ({
+      '/models': [['models', 'providers']],
+      '/knowledge': [['knowledge-groups'], ['knowledge-bases']],
+      '/agents': [['agents']],
+      '/conversations': [['conversations']],
+      '/prompts': [['prompts']],
+      '/workflows': [['workflows']],
+      '/evaluations': [['evaluations']],
+      '/costs': [['costs', 'summary']],
+      '/users': [['users']],
+      '/roles': [['roles']],
+      '/audit-logs': [['audit-logs']],
+      '/settings': [['settings']],
+    }),
+    [],
+  );
+
+  const prefetchRoute = (path: string) => {
+    const keys = ROUTE_QUERY_KEYS[path];
+    if (!keys) return;
+    keys.forEach((key) => {
+      queryClient.prefetchQuery({
+        queryKey: key,
+        queryFn: async ({ signal }) => {
+          const resp = await api.get(`/${key.join('/')}/`, undefined, signal);
+          return resp.data;
+        },
+        staleTime: 30_000,
+      });
+    });
+  };
+
   // Dynamic menu based on user roles — matches RBAC matrix
+  // Wrap leaf item labels in a span with onMouseEnter to prefetch route data
+  const wrapPrefetch = (key: string, label: React.ReactNode): React.ReactNode => (
+    <span onMouseEnter={() => prefetchRoute(key)}>{label}</span>
+  );
+
   const menuItems = useMemo(() => {
     const items: Array<{
       key: string;
       icon?: React.ReactNode;
-      label: string;
-      children?: Array<{ key: string; icon?: React.ReactNode; label: string }>;
-    }> = [{ key: '/', icon: <DashboardOutlined />, label: '仪表盘' }];
+      label: React.ReactNode;
+      children?: Array<{ key: string; icon?: React.ReactNode; label: React.ReactNode }>;
+    }> = [{ key: '/', icon: <DashboardOutlined />, label: wrapPrefetch('/', '仪表盘') }];
 
     // AI 能力 — visible to all authenticated users (at least read access)
-    const aiChildren: Array<{ key: string; icon?: React.ReactNode; label: string }> = [
-      { key: '/models', icon: <ApiOutlined />, label: '模型管理' },
-      { key: '/knowledge', icon: <BookOutlined />, label: '知识库' },
-      { key: '/agents', icon: <RobotOutlined />, label: 'Agent 管理' },
-      { key: '/conversations', icon: <MessageOutlined />, label: '对话记录' },
+    const aiChildren: Array<{ key: string; icon?: React.ReactNode; label: React.ReactNode }> = [
+      { key: '/models', icon: <ApiOutlined />, label: wrapPrefetch('/models', '模型管理') },
+      { key: '/knowledge', icon: <BookOutlined />, label: wrapPrefetch('/knowledge', '知识库') },
+      { key: '/agents', icon: <RobotOutlined />, label: wrapPrefetch('/agents', 'Agent 管理') },
+      {
+        key: '/conversations',
+        icon: <MessageOutlined />,
+        label: wrapPrefetch('/conversations', '对话记录'),
+      },
     ];
     items.push({ key: 'ai', icon: <RobotOutlined />, label: 'AI 能力', children: aiChildren });
 
     // 平台管理 — only for users with AI management permissions
     if (canManageAI) {
-      const platformChildren: Array<{ key: string; icon?: React.ReactNode; label: string }> = [];
+      const platformChildren: Array<{
+        key: string;
+        icon?: React.ReactNode;
+        label: React.ReactNode;
+      }> = [];
       // Prompt/Workflow/Evaluation: super_admin, platform_ops, tenant_admin, tenant_developer
       if (
         hasSuperAdmin ||
@@ -134,14 +183,26 @@ const AppLayout: React.FC = () => {
         hasRole('开发者')
       ) {
         platformChildren.push(
-          { key: '/prompts', icon: <EditOutlined />, label: 'Prompt 管理' },
-          { key: '/workflows', icon: <BranchesOutlined />, label: '工作流' },
-          { key: '/evaluations', icon: <ExperimentOutlined />, label: '评测中心' },
+          { key: '/prompts', icon: <EditOutlined />, label: wrapPrefetch('/prompts', 'Prompt 管理') },
+          {
+            key: '/workflows',
+            icon: <BranchesOutlined />,
+            label: wrapPrefetch('/workflows', '工作流'),
+          },
+          {
+            key: '/evaluations',
+            icon: <ExperimentOutlined />,
+            label: wrapPrefetch('/evaluations', '评测中心'),
+          },
         );
       }
       // Costs: super_admin, platform_ops, tenant_admin
       if (hasSuperAdmin || hasPlatformOps || hasRole('tenant_admin')) {
-        platformChildren.push({ key: '/costs', icon: <DollarOutlined />, label: '成本分析' });
+        platformChildren.push({
+          key: '/costs',
+          icon: <DollarOutlined />,
+          label: wrapPrefetch('/costs', '成本分析'),
+        });
       }
       if (platformChildren.length > 0) {
         items.push({
@@ -158,32 +219,56 @@ const AppLayout: React.FC = () => {
       items.push({
         key: '/tenant',
         icon: <AppstoreOutlined />,
-        label: '租户控制台',
+        label: wrapPrefetch('/tenant', '租户控制台'),
       });
     }
 
     // 系统管理 — platform-level or tenant_admin
-    const adminChildren: Array<{ key: string; icon?: React.ReactNode; label: string }> = [];
+    const adminChildren: Array<{
+      key: string;
+      icon?: React.ReactNode;
+      label: React.ReactNode;
+    }> = [];
 
     // 租户管理: super_admin, platform_ops
     if (canManagePlatform) {
-      adminChildren.push({ key: '/admin/tenants', icon: <TeamOutlined />, label: '租户管理' });
+      adminChildren.push({
+        key: '/admin/tenants',
+        icon: <TeamOutlined />,
+        label: wrapPrefetch('/admin/tenants', '租户管理'),
+      });
     }
     // 用户管理: super_admin, platform_ops, tenant_admin
     if (hasSuperAdmin || hasPlatformOps || hasRole('tenant_admin')) {
-      adminChildren.push({ key: '/users', icon: <TeamOutlined />, label: '用户管理' });
+      adminChildren.push({
+        key: '/users',
+        icon: <TeamOutlined />,
+        label: wrapPrefetch('/users', '用户管理'),
+      });
     }
     // 角色权限: super_admin only
     if (hasSuperAdmin) {
-      adminChildren.push({ key: '/roles', icon: <SafetyOutlined />, label: '角色权限' });
+      adminChildren.push({
+        key: '/roles',
+        icon: <SafetyOutlined />,
+        label: wrapPrefetch('/roles', '角色权限'),
+      });
     }
     // 审计日志: super_admin, platform_ops
     if (canManagePlatform) {
-      adminChildren.push({ key: '/audit-logs', icon: <SettingOutlined />, label: '审计日志' });
+      adminChildren.push({
+        key: '/audit-logs',
+        icon: <SettingOutlined />,
+        label: wrapPrefetch('/audit-logs', '审计日志'),
+      });
     }
     // 系统设置: super_admin only
     if (hasSuperAdmin) {
-      adminChildren.push({ key: '/settings', icon: <SettingOutlined />, label: '系统设置' });
+      adminChildren.push({
+        key: '/settings',
+        icon: <SettingOutlined />,
+        label: wrapPrefetch('/settings', '系统设置'),
+      });
     }
 
     if (adminChildren.length > 0) {
@@ -371,7 +456,11 @@ const AppLayout: React.FC = () => {
             defaultOpenKeys={['ai', 'platform', 'admin']}
             items={menuItems}
             onClick={({ key }) => {
-              if (key.startsWith('/')) navigate(key);
+              if (key.startsWith('/')) {
+                startTransition(() => {
+                  navigate(key);
+                });
+              }
             }}
             style={{
               borderRight: 'none',
