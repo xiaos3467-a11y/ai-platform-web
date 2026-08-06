@@ -1,4 +1,9 @@
-/** Model Providers — Apple glass aesthetic */
+/**
+ * ModelProviders — Apple glass aesthetic
+ *
+ * Enhanced: model configuration via Form.List with per-model purposes,
+ * enable/disable toggles, and cost tracking.
+ */
 
 import React, { useState, useMemo } from 'react';
 import {
@@ -14,6 +19,8 @@ import {
   Switch,
   App,
   Tooltip,
+  Tag,
+  Divider,
 } from 'antd';
 import {
   PlusOutlined,
@@ -25,13 +32,16 @@ import {
   EditOutlined,
 } from '@ant-design/icons';
 import { useQueryClient } from '@tanstack/react-query';
-import type { Provider, ProviderCreateRequest, ModelConfig } from '@/types';
+import type { Provider, ProviderCreateRequest, ModelConfig, ModelPurpose } from '@/types';
+import { PURPOSE_META, ALL_PURPOSES } from '@/types';
 import { GlassCard, EmptyState, TableSkeleton } from '@/components';
 import { useApiQuery, useApiMutation } from '@/hooks';
 
 import { radius } from '@/styles/themeTokens';
 const { Title, Text } = Typography;
 const { Option } = Select;
+
+/* ─── Provider display metadata ──────────────────────────────────── */
 
 const PROVIDER_META: Record<string, { label: string; gradient: string }> = {
   openai: { label: 'OpenAI', gradient: 'linear-gradient(135deg, #30d158, #34c759)' },
@@ -43,6 +53,257 @@ const PROVIDER_META: Record<string, { label: string; gradient: string }> = {
 };
 
 const PROVIDERS_KEY = ['models', 'providers'];
+
+/* ─── Helpers ─────────────────────────────────────────────────────── */
+
+/** Map PURPOSE_META.color (any string) → AntD Tag color. */
+function mapTagColor(c: string): string {
+  const ok = new Set([
+    'blue',
+    'green',
+    'purple',
+    'orange',
+    'cyan',
+    'red',
+    'yellow',
+    'pink',
+    'magenta',
+    'volcano',
+    'gold',
+    'lime',
+    'geekblue',
+    'default',
+  ]);
+  return ok.has(c) ? c : 'default';
+}
+
+/**
+ * Normalize a ModelConfig to ensure new fields have safe defaults
+ * (backward compatibility with older backend data).
+ */
+function normalizeModel(m: ModelConfig): ModelConfig {
+  return {
+    ...m,
+    purposes: m.purposes && m.purposes.length > 0 ? m.purposes : (['general'] as ModelPurpose[]),
+    enabled: m.enabled !== undefined ? m.enabled : true,
+    cost_per_1k_input: m.cost_per_1k_input,
+    cost_per_1k_output: m.cost_per_1k_output,
+    context_length: m.context_length,
+  };
+}
+
+/* ─── Model config card (used inside Form.List) ─────────────────── */
+
+const ModelConfigCard: React.FC<{
+  fieldKey: number;
+  fieldName: number;
+  onRemove: () => void;
+}> = ({ fieldKey, fieldName, onRemove }) => (
+  <div
+    style={{
+      padding: 16,
+      borderRadius: radius.md,
+      border: '0.5px solid var(--border-subtle)',
+      background: 'var(--bg-card)',
+      marginBottom: 12,
+    }}
+  >
+    <div
+      style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 12,
+      }}
+    >
+      <Text
+        style={{
+          fontSize: 13,
+          fontWeight: 600,
+          color: 'var(--text-primary)',
+        }}
+      >
+        模型 {fieldKey + 1}
+      </Text>
+      <Button
+        type="text"
+        size="small"
+        danger
+        icon={<DeleteOutlined />}
+        onClick={onRemove}
+      />
+    </div>
+
+    {/* Row 1 — name + context length */}
+    <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 12 }}>
+      <Form.Item
+        name={[fieldName, 'name']}
+        label="模型名称"
+        rules={[{ required: true, message: '请输入模型名称' }]}
+        style={{ marginBottom: 12 }}
+      >
+        <Input placeholder="如 gpt-4o" />
+      </Form.Item>
+      <Form.Item
+        name={[fieldName, 'context_length']}
+        label="上下文长度"
+        style={{ marginBottom: 12 }}
+      >
+        <InputNumber min={1} style={{ width: '100%' }} placeholder="128000" />
+      </Form.Item>
+    </div>
+
+    {/* Row 2 — purposes */}
+    <Form.Item
+      name={[fieldName, 'purposes']}
+      label="用途"
+      initialValue={['llm']}
+      style={{ marginBottom: 12 }}
+    >
+      <Select mode="multiple" placeholder="选择模型用途">
+        {ALL_PURPOSES.map((p) => (
+          <Option key={p} value={p}>
+            <Tag
+              color={mapTagColor(PURPOSE_META[p].color)}
+              style={{ marginRight: 4, fontSize: 11 }}
+            >
+              {PURPOSE_META[p].label}
+            </Tag>
+          </Option>
+        ))}
+      </Select>
+    </Form.Item>
+
+    {/* Row 3 — enabled + costs */}
+    <div
+      style={{
+        display: 'grid',
+        gridTemplateColumns: 'auto 1fr 1fr',
+        gap: 12,
+        alignItems: 'end',
+      }}
+    >
+      <Form.Item
+        name={[fieldName, 'enabled']}
+        label="启用"
+        valuePropName="checked"
+        initialValue={true}
+        style={{ marginBottom: 0 }}
+      >
+        <Switch size="small" />
+      </Form.Item>
+      <Form.Item
+        name={[fieldName, 'cost_per_1k_input']}
+        label="输入成本 ($/1k)"
+        style={{ marginBottom: 0 }}
+      >
+        <InputNumber min={0} step={0.001} style={{ width: '100%' }} placeholder="0.005" />
+      </Form.Item>
+      <Form.Item
+        name={[fieldName, 'cost_per_1k_output']}
+        label="输出成本 ($/1k)"
+        style={{ marginBottom: 0 }}
+      >
+        <InputNumber min={0} step={0.001} style={{ width: '100%' }} placeholder="0.015" />
+      </Form.Item>
+    </div>
+  </div>
+);
+
+/* ─── Model chips for the table "模型" column ───────────────────── */
+
+const ModelChipsInTable: React.FC<{
+  models: ModelConfig[];
+  providerId: string;
+  onToggle: (modelName: string, enabled: boolean) => void;
+}> = ({ models, providerId, onToggle }) => {
+  if (!models || models.length === 0) {
+    return <Text style={{ color: 'var(--text-faint)', fontSize: 12 }}>暂无模型</Text>;
+  }
+
+  return (
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 6,
+        maxWidth: 420,
+      }}
+    >
+      {models.map((m) => {
+        const enabled = m.enabled !== false;
+        const purposes: ModelPurpose[] =
+          m.purposes && m.purposes.length > 0 ? m.purposes : ['general'];
+
+        return (
+          <div
+            key={m.name}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              padding: '5px 10px',
+              borderRadius: radius.sm,
+              background: 'var(--bg-card)',
+              border: '0.5px solid var(--border-subtle)',
+              opacity: enabled ? 1 : 0.55,
+              transition: 'opacity 0.2s ease',
+            }}
+          >
+            <Text
+              style={{
+                fontSize: 12,
+                fontWeight: 500,
+                color: 'var(--text-primary)',
+                textDecoration: enabled ? 'none' : 'line-through',
+                flexShrink: 0,
+              }}
+            >
+              {m.name}
+            </Text>
+            <div style={{ display: 'flex', gap: 3, flexWrap: 'wrap', flex: 1, minWidth: 0 }}>
+              {purposes.slice(0, 3).map((p) => {
+                const meta = PURPOSE_META[p];
+                if (!meta) return null;
+                return (
+                  <Tag
+                    key={p}
+                    color={mapTagColor(meta.color)}
+                    style={{
+                      marginRight: 0,
+                      fontSize: 10,
+                      lineHeight: '16px',
+                      padding: '0 5px',
+                    }}
+                  >
+                    {meta.label}
+                  </Tag>
+                );
+              })}
+            </div>
+            <Tooltip title={enabled ? '点击禁用' : '点击启用'}>
+              <Switch
+                size="small"
+                checked={enabled}
+                onChange={(v) => onToggle(m.name, v)}
+                style={{ flexShrink: 0 }}
+              />
+            </Tooltip>
+          </div>
+        );
+      })}
+      {models.some((m) => !m.purposes || m.purposes.length === 0) && (
+        <Text style={{ fontSize: 10, color: 'var(--text-faint)' }}>
+          旧数据 — 用途视为"通用"
+        </Text>
+      )}
+      {/* hidden key so React reconciler keys on provider */}
+      <span key={providerId} style={{ display: 'none' }} />
+    </div>
+  );
+};
+
+/* ─── Main page ─────────────────────────────────────────────────── */
 
 const ModelProviders: React.FC = () => {
   const [modalOpen, setModalOpen] = useState(false);
@@ -85,6 +346,17 @@ const ModelProviders: React.FC = () => {
     invalidateKeys: [PROVIDERS_KEY],
   });
 
+  /** Toggle an individual model within a provider. */
+  const toggleModelMutation = useApiMutation<
+    unknown,
+    { providerId: string; modelName: string; enabled: boolean }
+  >({
+    method: 'post',
+    endpoint: ({ providerId, modelName }) =>
+      `/models/providers/${providerId}/models/${modelName}/toggle`,
+    invalidateKeys: [PROVIDERS_KEY],
+  });
+
   // ─── Handlers ──────────────────────────────────────────────────
   const handleCreate = async (values: ProviderCreateRequest) => {
     createMutation.mutate(values, {
@@ -98,39 +370,23 @@ const ModelProviders: React.FC = () => {
 
   const openEdit = (record: Provider) => {
     setEditTarget(record);
-    editForm.setFieldsValue({
-      display_name: record.display_name,
-      api_base_url: record.api_base_url,
-      models: record.models != null ? JSON.stringify(record.models, null, 2) : '',
-      priority: record.priority,
-    });
     setEditModalOpen(true);
   };
 
   const handleEdit = async (values: {
     display_name?: string;
     api_base_url?: string;
-    models?: string;
+    models?: ModelConfig[];
     priority?: number;
   }) => {
     if (!editTarget) return;
-    let parsedModels: ModelConfig[] | undefined;
-    if (values.models !== undefined && values.models !== null && values.models !== '') {
-      try {
-        parsedModels = JSON.parse(values.models);
-        if (!Array.isArray(parsedModels)) throw new Error('models must be an array');
-      } catch (e) {
-        message.error('模型列表 JSON 格式错误：' + (e as Error).message);
-        return;
-      }
-    }
     updateMutation.mutate(
       {
         id: editTarget.id,
         data: {
           display_name: values.display_name,
           api_base_url: values.api_base_url,
-          models: parsedModels,
+          models: values.models,
           priority: values.priority,
         } as Partial<Provider>,
       },
@@ -172,6 +428,15 @@ const ModelProviders: React.FC = () => {
           });
         }),
     });
+  };
+
+  const handleModelToggle = (providerId: string, modelName: string, enabled: boolean) => {
+    toggleModelMutation.mutate(
+      { providerId, modelName, enabled },
+      {
+        onSuccess: () => message.success(enabled ? `已启用 ${modelName}` : `已禁用 ${modelName}`),
+      },
+    );
   };
 
   const columns = useMemo(
@@ -264,9 +529,33 @@ const ModelProviders: React.FC = () => {
       {
         title: '模型',
         dataIndex: 'models',
-        render: (models: { name: string }[]) => (
-          <span style={{ color: 'var(--text-muted)', fontSize: 13 }}>{models?.length || 0} 个</span>
+        render: (models: ModelConfig[], record: Provider) => (
+          <ModelChipsInTable
+            models={models}
+            providerId={record.id}
+            onToggle={(name, enabled) => handleModelToggle(record.id, name, enabled)}
+          />
         ),
+      },
+      {
+        title: '已启用',
+        width: 100,
+        render: (_: unknown, record: Provider) => {
+          const total = record.models?.length ?? 0;
+          const enabled =
+            record.models?.filter((m) => m.enabled !== false).length ?? 0;
+          return (
+            <Text
+              style={{
+                fontSize: 13,
+                fontWeight: 500,
+                color: enabled > 0 ? 'var(--color-success, #30d158)' : 'var(--text-muted)',
+              }}
+            >
+              {enabled}/{total}
+            </Text>
+          );
+        },
       },
       {
         title: '优先级',
@@ -309,6 +598,17 @@ const ModelProviders: React.FC = () => {
     [showKeys],
   );
 
+  /* Edit form default values — computed from editTarget */
+  const editInitialValues = useMemo(() => {
+    if (!editTarget) return {};
+    return {
+      display_name: editTarget.display_name,
+      api_base_url: editTarget.api_base_url,
+      priority: editTarget.priority,
+      models: (editTarget.models ?? []).map(normalizeModel),
+    };
+  }, [editTarget]);
+
   return (
     <div>
       {/* Page title */}
@@ -342,7 +642,7 @@ const ModelProviders: React.FC = () => {
               display: 'block',
             }}
           >
-            配置 LLM API 接入
+            配置 LLM API 接入与模型用途
           </Text>
         </div>
         <Space>
@@ -393,7 +693,7 @@ const ModelProviders: React.FC = () => {
         </GlassCard>
       )}
 
-      {/* Create Modal */}
+      {/* ─── Create Modal ────────────────────────────────────────── */}
       <Modal
         title="添加模型提供商"
         open={modalOpen}
@@ -402,11 +702,16 @@ const ModelProviders: React.FC = () => {
           form.resetFields();
         }}
         onOk={() => form.submit()}
-        width={600}
+        width={680}
         okText="添加"
         cancelText="取消"
       >
-        <Form form={form} layout="vertical" onFinish={handleCreate}>
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={handleCreate}
+          initialValues={{ priority: 0, models: [] }}
+        >
           <Form.Item name="provider_name" label="提供商" rules={[{ required: true }]}>
             <Select placeholder="选择提供商">
               {Object.entries(PROVIDER_META).map(([value, meta]) => (
@@ -428,10 +733,38 @@ const ModelProviders: React.FC = () => {
           <Form.Item name="priority" label="优先级" initialValue={0}>
             <InputNumber min={0} max={100} style={{ width: '100%' }} />
           </Form.Item>
+
+          <Divider style={{ margin: '8px 0 16px' }}>
+            <Text style={{ color: 'var(--text-secondary)', fontSize: 13 }}>模型配置</Text>
+          </Divider>
+
+          <Form.List name="models">
+            {(fields, { add, remove }) => (
+              <>
+                {fields.map((field) => (
+                  <ModelConfigCard
+                    key={field.key}
+                    fieldKey={field.key}
+                    fieldName={field.name}
+                    onRemove={() => remove(field.name)}
+                  />
+                ))}
+                <Button
+                  type="dashed"
+                  onClick={() => add()}
+                  block
+                  icon={<PlusOutlined />}
+                  style={{ borderRadius: radius.md }}
+                >
+                  添加模型
+                </Button>
+              </>
+            )}
+          </Form.List>
         </Form>
       </Modal>
 
-      {/* Edit Modal */}
+      {/* ─── Edit Modal ──────────────────────────────────────────── */}
       <Modal
         title="编辑模型提供商"
         open={editModalOpen}
@@ -441,11 +774,18 @@ const ModelProviders: React.FC = () => {
           editForm.resetFields();
         }}
         onOk={() => editForm.submit()}
-        width={600}
+        width={680}
         okText="保存"
         cancelText="取消"
+        /* Force remount when editTarget changes so initialValues populate Form.List correctly */
+        key={editTarget?.id ?? 'new'}
       >
-        <Form form={editForm} layout="vertical" onFinish={handleEdit}>
+        <Form
+          form={editForm}
+          layout="vertical"
+          onFinish={handleEdit}
+          initialValues={editInitialValues}
+        >
           <Form.Item label="提供商">
             <Input
               value={editTarget?.provider_name}
@@ -462,20 +802,37 @@ const ModelProviders: React.FC = () => {
           <Form.Item name="api_base_url" label="API Base URL">
             <Input placeholder="留空使用默认地址" style={{ fontFamily: 'monospace' }} />
           </Form.Item>
-          <Form.Item
-            name="models"
-            label="模型列表"
-            tooltip='JSON 数组，如 [{"name":"qwen-max","context_length":32000}]'
-          >
-            <Input.TextArea
-              rows={4}
-              placeholder='[{"name": "qwen-max", "context_length": 32000}]'
-              style={{ fontFamily: 'monospace', fontSize: 12 }}
-            />
-          </Form.Item>
           <Form.Item name="priority" label="优先级">
             <InputNumber min={0} max={100} style={{ width: '100%' }} />
           </Form.Item>
+
+          <Divider style={{ margin: '8px 0 16px' }}>
+            <Text style={{ color: 'var(--text-secondary)', fontSize: 13 }}>模型配置</Text>
+          </Divider>
+
+          <Form.List name="models">
+            {(fields, { add, remove }) => (
+              <>
+                {fields.map((field) => (
+                  <ModelConfigCard
+                    key={field.key}
+                    fieldKey={field.key}
+                    fieldName={field.name}
+                    onRemove={() => remove(field.name)}
+                  />
+                ))}
+                <Button
+                  type="dashed"
+                  onClick={() => add()}
+                  block
+                  icon={<PlusOutlined />}
+                  style={{ borderRadius: radius.md }}
+                >
+                  添加模型
+                </Button>
+              </>
+            )}
+          </Form.List>
         </Form>
       </Modal>
     </div>

@@ -12,6 +12,7 @@ import {
   Space,
   App,
   Drawer,
+  Typography,
 } from 'antd';
 import {
   PlusOutlined,
@@ -23,10 +24,11 @@ import {
 } from '@ant-design/icons';
 import { api } from '@/api/client';
 import type { Agent, AgentCreateRequest, Tool } from '@/types';
-import { GlassCard, EmptyState, TableSkeleton, PageHeader } from '@/components';
+import { GlassCard, EmptyState, TableSkeleton, PageHeader, ModelSelector } from '@/components';
 
 import { radius } from '@/styles/themeTokens';
 const { TextArea } = Input;
+const { Text } = Typography;
 
 /* ─── Chat bubble (dark iMessage style) ───────────────────────────── */
 const ChatBubble: React.FC<{ role: string; content: string; agentName?: string }> = ({
@@ -100,6 +102,7 @@ const Agents: React.FC = () => {
   const [chatMessages, setChatMessages] = useState<{ role: string; content: string }[]>([]);
   const [chatInput, setChatInput] = useState('');
   const [chatLoading, setChatLoading] = useState(false);
+  const [chatModel, setChatModel] = useState<string | undefined>(undefined);
   const [form] = Form.useForm();
   const { message, modal } = App.useApp();
 
@@ -382,13 +385,8 @@ const Agents: React.FC = () => {
               style={{ fontFamily: 'monospace' }}
             />
           </Form.Item>
-          <Form.Item name="model" label="模型" initialValue="qwen-max" rules={[{ required: true }]}>
-            <Select>
-              <Select.Option value="qwen-max">Qwen Max</Select.Option>
-              <Select.Option value="gpt-4o">GPT-4o</Select.Option>
-              <Select.Option value="claude-sonnet-4-20250514">Claude Sonnet</Select.Option>
-              <Select.Option value="deepseek-chat">DeepSeek Chat</Select.Option>
-            </Select>
+          <Form.Item name="model" label="推理模型" rules={[{ required: true, message: '请选择模型' }]}>
+            <ModelSelector purpose="llm" placeholder="选择 LLM 模型" />
           </Form.Item>
           <Form.Item name="tools" label="工具" initialValue={[]}>
             <Select mode="multiple" placeholder="选择可用工具">
@@ -434,6 +432,38 @@ const Agents: React.FC = () => {
         width={500}
       >
         <div style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: 16 }}>
+          {/* Model selector for chat */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 12,
+              padding: '10px 14px',
+              borderRadius: radius.md,
+              background: 'var(--bg-card)',
+              border: '0.5px solid var(--border-subtle)',
+            }}
+          >
+            <Text
+              style={{
+                fontSize: 12,
+                fontWeight: 600,
+                color: 'var(--text-secondary)',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              推理模型
+            </Text>
+            <ModelSelector
+              purpose="llm"
+              value={chatModel}
+              onChange={setChatModel}
+              placeholder="选择对话使用的模型"
+              style={{ flex: 1, minWidth: 0 }}
+              allowClear
+            />
+          </div>
+
           <div style={{ flex: 1, overflowY: 'auto' }}>
             {chatMessages.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '60px 0' }}>

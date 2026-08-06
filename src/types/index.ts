@@ -154,7 +154,66 @@ export interface ModelMetrics {
   estimated_cost_usd: number;
 }
 
-// --- Providers ---
+// --- Providers / Models ---
+
+/** Purpose categories for model configuration */
+export type ModelPurpose =
+  | 'llm'
+  | 'embedding'
+  | 'vision'
+  | 'multimodal'
+  | 'general'
+  | 'chat';
+
+/** Metadata for each purpose (label, tag color, icon name) */
+export const PURPOSE_META: Record<
+  ModelPurpose,
+  { label: string; color: string; icon: string }
+> = {
+  llm: { label: '大语言', color: 'blue', icon: 'RobotOutlined' },
+  embedding: { label: '向量化', color: 'purple', icon: 'PartitionOutlined' },
+  vision: { label: '视觉', color: 'orange', icon: 'EyeOutlined' },
+  multimodal: { label: '多模态', color: 'cyan', icon: 'FileImageOutlined' },
+  general: { label: '通用', color: 'default', icon: 'AppstoreOutlined' },
+  chat: { label: '对话', color: 'green', icon: 'MessageOutlined' },
+};
+
+/** Ordered list of all purpose keys (used by Select options, etc.) */
+export const ALL_PURPOSES: ModelPurpose[] = [
+  'llm',
+  'embedding',
+  'vision',
+  'multimodal',
+  'general',
+  'chat',
+];
+
+export interface ModelConfig {
+  name: string;
+  context_length?: number;
+  capabilities?: string[];
+  /** Purpose tags — defaults to ['general'] when missing on existing data. */
+  purposes?: ModelPurpose[];
+  /** Whether the model is enabled — defaults to true when missing. */
+  enabled?: boolean;
+  /** Cost per 1K input tokens (USD) */
+  cost_per_1k_input?: number;
+  /** Cost per 1K output tokens (USD) */
+  cost_per_1k_output?: number;
+}
+
+/** Model entry returned by `GET /models/available?purpose=...` */
+export interface AvailableModel {
+  /** Provider identifier (provider id) */
+  id: string;
+  provider_name: string;
+  provider_display: string;
+  model_name: string;
+  purposes: ModelPurpose[];
+  context_length?: number;
+  priority: number;
+}
+
 export interface Provider {
   id: string;
   provider_name: string;
@@ -165,12 +224,6 @@ export interface Provider {
   is_enabled: boolean;
   priority: number;
   created_at: string;
-}
-
-export interface ModelConfig {
-  name: string;
-  context_length?: number;
-  capabilities?: string[];
 }
 
 export interface ProviderCreateRequest {

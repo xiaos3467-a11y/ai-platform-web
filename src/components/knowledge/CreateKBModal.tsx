@@ -16,6 +16,7 @@ import React from 'react';
 import { Modal, Form, Input, InputNumber, Select, App } from 'antd';
 import { useApiMutation } from '@/hooks';
 import type { KnowledgeBase, KnowledgeGroup } from '@/types';
+import ModelSelector from '@/components/ModelSelector';
 
 export interface CreateKBModalProps {
   open: boolean;
@@ -37,11 +38,6 @@ function flattenGroups(
   }
   return out;
 }
-
-const EMBEDDING_MODELS = [
-  { value: 'text-embedding-3-small', label: 'text-embedding-3-small（推荐）' },
-  { value: 'text-embedding-ada-002', label: 'text-embedding-ada-002' },
-];
 
 interface KBCreateValues {
   name: string;
@@ -104,7 +100,6 @@ const CreateKBModal: React.FC<CreateKBModalProps> = ({
         layout="vertical"
         style={{ marginTop: 16 }}
         initialValues={{
-          embedding_model: 'text-embedding-3-small',
           chunk_size: 512,
           chunk_overlap: 64,
           group_id: defaultGroupId && defaultGroupId !== 'ungrouped' ? defaultGroupId : null,
@@ -130,8 +125,12 @@ const CreateKBModal: React.FC<CreateKBModalProps> = ({
             }))}
           />
         </Form.Item>
-        <Form.Item name="embedding_model" label="Embedding 模型" rules={[{ required: true }]}>
-          <Select options={EMBEDDING_MODELS} />
+        <Form.Item
+          name="embedding_model"
+          label="Embedding 模型"
+          rules={[{ required: true, message: '请选择嵌入模型' }]}
+        >
+          <ModelSelector purpose="embedding" placeholder="选择向量化模型" />
         </Form.Item>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
           <Form.Item

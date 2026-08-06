@@ -58,3 +58,6 @@ export { default as VirtualTable } from './VirtualTable';
 export type { VirtualTableProps, VirtualTableColumn } from './VirtualTable';
 
 export { default as LanguageSwitcher } from './LanguageSwitcher';
+
+export { default as ModelSelector } from './ModelSelector';
+export type { ModelSelectorProps } from './ModelSelector';
