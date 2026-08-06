@@ -1,9 +1,25 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import { sentryVitePlugin } from '@sentry/vite-plugin';
 import path from 'path';
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+    // Upload source maps to Sentry after build (only when DSN + auth token are set)
+    sentryVitePlugin({
+      disable: !process.env.SENTRY_AUTH_TOKEN,
+      org: process.env.SENTRY_ORG || 'ai-platform',
+      project: process.env.SENTRY_PROJECT || 'web-console',
+      authToken: process.env.SENTRY_AUTH_TOKEN,
+      sourcemaps: {
+        assets: ['./dist/assets/**'],
+      },
+      release: {
+        name: process.env.SENTRY_RELEASE || 'dev',
+      },
+    }),
+  ],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
@@ -31,7 +47,7 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
-    sourcemap: false,
+    sourcemap: true,
     // Split vendor chunks for better long-term caching
     rollupOptions: {
       output: {

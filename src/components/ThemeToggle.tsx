@@ -9,6 +9,7 @@ import React from 'react';
 import { Tooltip } from 'antd';
 import { useTheme } from '@/contexts/theme';
 
+import { radius } from '@/styles/themeTokens';
 const ThemeToggle: React.FC = () => {
   const { isDark, toggle, mode } = useTheme();
 
@@ -23,21 +24,17 @@ const ThemeToggle: React.FC = () => {
           position: 'relative',
           width: 60,
           height: 30,
-          borderRadius: 999,
+          borderRadius: radius.full,
           border: isDark
             ? '0.5px solid rgba(255, 255, 255, 0.12)'
             : '0.5px solid rgba(0, 0, 0, 0.08)',
-          background: isDark
-            ? 'rgba(255, 255, 255, 0.06)'
-            : 'rgba(0, 0, 0, 0.04)',
-          backdropFilter: 'saturate(180%) blur(12px)',
+          background: isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.04)',
           WebkitBackdropFilter: 'saturate(180%) blur(12px)',
           cursor: 'pointer',
           padding: 0,
           display: 'flex',
           alignItems: 'center',
-          transition:
-            'background 0.35s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.35s ease',
+          transition: 'background 0.35s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.35s ease',
           outline: 'none',
         }}
       >

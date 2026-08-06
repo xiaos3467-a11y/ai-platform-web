@@ -3,7 +3,7 @@
  * — Frosted glass sidebar, gradient accent, smooth collapse animation
  */
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Layout, Menu, Avatar, Dropdown, Typography } from 'antd';
 import {
   DashboardOutlined,
@@ -21,60 +21,97 @@ import {
   MenuUnfoldOutlined,
   TeamOutlined,
   SafetyOutlined,
+  AppstoreOutlined,
 } from '@ant-design/icons';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { useAuthStore } from '@/contexts/auth';
 import { useTheme } from '@/contexts/theme';
 import ThemeToggle from '@/components/ThemeToggle';
 
+import { radius } from '@/styles/themeTokens';
 const { Header, Sider, Content } = Layout;
 const { Text } = Typography;
-
-const menuItems = [
-  { key: '/', icon: <DashboardOutlined />, label: '仪表盘' },
-  {
-    key: 'ai',
-    icon: <RobotOutlined />,
-    label: 'AI 能力',
-    children: [
-      { key: '/models', icon: <ApiOutlined />, label: '模型管理' },
-      { key: '/knowledge', icon: <BookOutlined />, label: '知识库' },
-      { key: '/agents', icon: <RobotOutlined />, label: 'Agent 管理' },
-      { key: '/conversations', icon: <MessageOutlined />, label: '对话记录' },
-    ],
-  },
-  {
-    key: 'platform',
-    icon: <BranchesOutlined />,
-    label: '平台管理',
-    children: [
-      { key: '/prompts', icon: <EditOutlined />, label: 'Prompt 管理' },
-      { key: '/workflows', icon: <BranchesOutlined />, label: '工作流' },
-      { key: '/evaluations', icon: <ExperimentOutlined />, label: '评测中心' },
-      { key: '/costs', icon: <DollarOutlined />, label: '成本分析' },
-    ],
-  },
-  {
-    key: 'admin',
-    icon: <TeamOutlined />,
-    label: '系统管理',
-    children: [
-      { key: '/users', icon: <TeamOutlined />, label: '用户管理' },
-      { key: '/roles', icon: <SafetyOutlined />, label: '角色权限' },
-      { key: '/settings', icon: <SettingOutlined />, label: '系统设置' },
-    ],
-  },
-];
 
 const AppLayout: React.FC = () => {
   const [collapsed, setCollapsed] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const { logout, user } = useAuthStore((s) => ({ logout: s.logout, user: s.user }));
+  const { logout, user, hasRole } = useAuthStore((s) => ({
+    logout: s.logout,
+    user: s.user,
+    hasRole: s.hasRole,
+  }));
   const { isDark } = useTheme();
 
   const displayName = user?.username || '管理员';
   const displayInitial = displayName.charAt(0).toUpperCase();
+
+  // Dynamic menu based on user roles
+  const menuItems = useMemo(() => {
+    const items: Array<{
+      key: string;
+      icon?: React.ReactNode;
+      label: string;
+      children?: Array<{ key: string; icon?: React.ReactNode; label: string }>;
+    }> = [
+      { key: '/', icon: <DashboardOutlined />, label: '仪表盘' },
+      {
+        key: 'ai',
+        icon: <RobotOutlined />,
+        label: 'AI 能力',
+        children: [
+          { key: '/models', icon: <ApiOutlined />, label: '模型管理' },
+          { key: '/knowledge', icon: <BookOutlined />, label: '知识库' },
+          { key: '/agents', icon: <RobotOutlined />, label: 'Agent 管理' },
+          { key: '/conversations', icon: <MessageOutlined />, label: '对话记录' },
+        ],
+      },
+      {
+        key: 'platform',
+        icon: <BranchesOutlined />,
+        label: '平台管理',
+        children: [
+          { key: '/prompts', icon: <EditOutlined />, label: 'Prompt 管理' },
+          { key: '/workflows', icon: <BranchesOutlined />, label: '工作流' },
+          { key: '/evaluations', icon: <ExperimentOutlined />, label: '评测中心' },
+          { key: '/costs', icon: <DollarOutlined />, label: '成本分析' },
+        ],
+      },
+    ];
+
+    // Add tenant console link for tenant members
+    if (hasRole('tenant_admin') || hasRole('tenant_developer') || hasRole('tenant_viewer')) {
+      items.push({
+        key: '/tenant',
+        icon: <AppstoreOutlined />,
+        label: '租户控制台',
+      });
+    }
+
+    // Admin section — always visible but tenant management only for platform_admin
+    const adminChildren: Array<{ key: string; icon?: React.ReactNode; label: string }> = [
+      { key: '/users', icon: <TeamOutlined />, label: '用户管理' },
+      { key: '/roles', icon: <SafetyOutlined />, label: '角色权限' },
+      { key: '/settings', icon: <SettingOutlined />, label: '系统设置' },
+    ];
+
+    if (hasRole('platform_admin')) {
+      adminChildren.unshift({
+        key: '/admin/tenants',
+        icon: <TeamOutlined />,
+        label: '租户管理',
+      });
+    }
+
+    items.push({
+      key: 'admin',
+      icon: <TeamOutlined />,
+      label: '系统管理',
+      children: adminChildren,
+    });
+
+    return items;
+  }, [hasRole]);
 
   // ─── Theme-aware palette ────────────────────────────────────────
   // Uses CSS custom properties so sidebar/header follow the active theme
@@ -118,7 +155,13 @@ const AppLayout: React.FC = () => {
   };
 
   return (
-    <Layout style={{ minHeight: '100vh', background: palette.canvas, transition: 'background 0.35s ease' }}>
+    <Layout
+      style={{
+        minHeight: '100vh',
+        background: palette.canvas,
+        transition: 'background 0.35s ease',
+      }}
+    >
       {/* ─── Sidebar ──────────────────────────────────────────────── */}
       <Sider
         collapsible
@@ -129,7 +172,6 @@ const AppLayout: React.FC = () => {
         collapsedWidth={72}
         style={{
           background: palette.siderBg,
-          backdropFilter: 'saturate(180%) blur(24px)',
           WebkitBackdropFilter: 'saturate(180%) blur(24px)',
           borderRight: `0.5px solid var(--border-subtle)`,
           overflow: 'auto',
@@ -160,7 +202,7 @@ const AppLayout: React.FC = () => {
             style={{
               width: 34,
               height: 34,
-              borderRadius: 10,
+              borderRadius: radius.md,
               background: 'linear-gradient(135deg, #0a84ff 0%, #5e5ce6 50%, #bf5af2 100%)',
               display: 'flex',
               alignItems: 'center',
@@ -270,7 +312,6 @@ const AppLayout: React.FC = () => {
         <Header
           style={{
             background: palette.headerBg,
-            backdropFilter: 'saturate(180%) blur(20px)',
             WebkitBackdropFilter: 'saturate(180%) blur(20px)',
             padding: '0 32px',
             display: 'flex',
@@ -295,7 +336,7 @@ const AppLayout: React.FC = () => {
               color: palette.textSoft,
               transition: 'color 0.2s ease, background 0.2s ease',
               padding: 6,
-              borderRadius: 8,
+              borderRadius: radius.sm,
             }}
             onClick={() => setCollapsed(!collapsed)}
             onKeyDown={(e) => {
@@ -328,7 +369,7 @@ const AppLayout: React.FC = () => {
                   alignItems: 'center',
                   gap: 10,
                   padding: '4px 10px',
-                  borderRadius: 10,
+                  borderRadius: radius.md,
                   transition: 'background 0.2s ease',
                 }}
                 onMouseEnter={(e) => (e.currentTarget.style.background = palette.hoverBg)}

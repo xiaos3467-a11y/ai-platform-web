@@ -1,0 +1,121 @@
+{
+  "common": {
+    "loading": "Loading…",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "confirm": "Confirm",
+    "refresh": "Refresh",
+    "back": "Back",
+    "backHome": "Back to Home",
+    "retry": "Retry",
+    "search": "Search",
+    "actions": "Actions",
+    "status": "Status",
+    "name": "Name",
+    "description": "Description",
+    "noData": "No data",
+    "total": "{{count}} total",
+    "success": "Success",
+    "failed": "Failed",
+    "unknown": "Unknown"
+  },
+  "auth": {
+    "login": "Log In",
+    "logout": "Log Out",
+    "username": "Username",
+    "password": "Password",
+    "loginTitle": "Welcome Back",
+    "loginSubtitle": "Log in to your AI Platform account",
+    "loginButton": "Log In",
+    "loggingIn": "Logging in…",
+    "loginFailed": "Login Failed",
+    "invalidCredentials": "Invalid username or password"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "agents": "Agents",
+    "conversations": "Conversations",
+    "costs": "Costs",
+    "settings": "Settings",
+    "knowledge": "Knowledge Base",
+    "prompts": "Prompts",
+    "workflows": "Workflows",
+    "models": "Models",
+    "evaluations": "Evaluations",
+    "admin": "Admin",
+    "tenants": "Tenants",
+    "users": "Users",
+    "roles": "Roles"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "subtitle": "AI Platform Overview",
+    "totalRequests": "Total Requests",
+    "totalTokens": "Total Tokens",
+    "totalCost": "Total Cost",
+    "activeAgents": "Active Agents"
+  },
+  "agents": {
+    "title": "Agents",
+    "subtitle": "Create tool-calling AI assistants",
+    "createAgent": "Create Agent"
+  },
+  "conversations": {
+    "title": "Conversations",
+    "subtitle": "Browse conversation history and messages",
+    "allConversations": "All Conversations",
+    "noConversations": "No conversations yet",
+    "selectConversation": "Select a conversation to view messages",
+    "selectHint": "Click any conversation from the list to start browsing",
+    "noMessages": "No messages",
+    "backToList": "Back to List",
+    "messages": "{{count}} messages",
+    "deleted": "Conversation deleted"
+  },
+  "costs": {
+    "title": "Cost Analysis",
+    "subtitle": "Token consumption and cost tracking",
+    "modelBreakdown": "Model Cost Breakdown",
+    "requests": "{{count}} requests",
+    "percentage": "Share"
+  },
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Service status and security configuration",
+    "refreshStatus": "Refresh Status",
+    "language": "Language",
+    "theme": "Theme",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System",
+    "general": "General",
+    "security": "Security",
+    "notifications": "Notifications",
+    "about": "About"
+  },
+  "error": {
+    "title": "Something went wrong",
+    "description": "The application encountered an unexpected error. Please refresh and try again.",
+    "retry": "Retry",
+    "backHome": "Back to Home"
+  },
+  "empty": {
+    "noData": "No data",
+    "getStarted": "Get Started"
+  },
+  "tenants": {
+    "title": "Tenants",
+    "subtitle": "Manage multi-tenancy and resource quotas",
+    "createTenant": "New Tenant",
+    "tenantName": "Tenant Name",
+    "slug": "Slug",
+    "plan": "Plan",
+    "createdAt": "Created",
+    "members": "Members",
+    "inviteMember": "Invite Member",
+    "totalTenants": "{{count}} tenants total"
+  }
+}

@@ -1,21 +1,21 @@
 /** Evaluation center — Apple glass aesthetic */
 
 import React, { useState } from 'react';
-import {
-  Typography, Button, Form, Input, Select, Table,
-  App, Row, Col,
-} from 'antd';
+import { Typography, Button, Form, Input, Select, Table, App, Row, Col } from 'antd';
 import { ExperimentOutlined, PlayCircleOutlined } from '@ant-design/icons';
 import { api } from '@/api/client';
 import type { EvalRunResult, EvalSampleResult } from '@/types';
 import { SectionCard, EmptyState } from '@/components';
 
+import { radius } from '@/styles/themeTokens';
 const { Title, Text } = Typography;
 const { TextArea } = Input;
 
 const metricLabels: Record<string, string> = {
-  faithfulness: '忠实度', answer_relevancy: '答案相关性',
-  context_precision: '上下文精确度', context_recall: '上下文召回率',
+  faithfulness: '忠实度',
+  answer_relevancy: '答案相关性',
+  context_precision: '上下文精确度',
+  context_recall: '上下文召回率',
   answer_correctness: '答案正确性',
 };
 
@@ -27,7 +27,11 @@ const scoreColor = (score: number) => {
 };
 
 /* ─── Score ring ──────────────────────────────────────────────────── */
-const ScoreRing: React.FC<{ score: number; size?: number; label: string }> = ({ score, size = 80, label }) => {
+const ScoreRing: React.FC<{ score: number; size?: number; label: string }> = ({
+  score,
+  size = 80,
+  label,
+}) => {
   const pct = Math.round(score * 100);
   const color = scoreColor(score);
   const radius = (size - 8) / 2;
@@ -38,13 +42,39 @@ const ScoreRing: React.FC<{ score: number; size?: number; label: string }> = ({ 
     <div style={{ textAlign: 'center' }}>
       <div style={{ position: 'relative', width: size, height: size, margin: '0 auto 8px' }}>
         <svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }}>
-          <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="var(--border-divider)" strokeWidth={4} />
-          <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke={color} strokeWidth={4} strokeLinecap="round"
-            strokeDasharray={circumference} strokeDashoffset={offset}
+          <circle
+            cx={size / 2}
+            cy={size / 2}
+            r={radius}
+            fill="none"
+            stroke="var(--border-divider)"
+            strokeWidth={4}
+          />
+          <circle
+            cx={size / 2}
+            cy={size / 2}
+            r={radius}
+            fill="none"
+            stroke={color}
+            strokeWidth={4}
+            strokeLinecap="round"
+            strokeDasharray={circumference}
+            strokeDashoffset={offset}
             style={{ transition: 'stroke-dashoffset 0.8s cubic-bezier(0.16, 1, 0.3, 1)' }}
           />
         </svg>
-        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, fontWeight: 700, color }}>
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: 18,
+            fontWeight: 700,
+            color,
+          }}
+        >
           {pct}
         </div>
       </div>
@@ -61,8 +91,12 @@ const Evaluations: React.FC = () => {
   const { message } = App.useApp();
 
   const handleRun = async (values: {
-    dataset_name: string; questions: string; contexts: string; expected_answers: string;
-    judge_model: string; generate_model: string;
+    dataset_name: string;
+    questions: string;
+    contexts: string;
+    expected_answers: string;
+    judge_model: string;
+    generate_model: string;
   }) => {
     setRunning(true);
     try {
@@ -80,33 +114,89 @@ const Evaluations: React.FC = () => {
         generate_model: values.generate_model,
       });
       setResult(resp.data);
-      message.success(`评测完成：${resp.data?.completed_samples}/${resp.data?.total_samples} 个样本`);
-    } catch { message.error('评测失败'); } finally { setRunning(false); }
+      message.success(
+        `评测完成：${resp.data?.completed_samples}/${resp.data?.total_samples} 个样本`,
+      );
+    } catch {
+      message.error('评测失败');
+    } finally {
+      setRunning(false);
+    }
   };
 
   const metricColumns = [
-    { title: '指标', dataIndex: 'metric', render: (v: string) => <span style={{ fontWeight: 500, color: 'var(--text-primary)' }}>{metricLabels[v] || v}</span> },
-    { title: '分数', dataIndex: 'score', width: 100, render: (v: number) => (
-      <span style={{ fontWeight: 600, color: scoreColor(v) }}>{(v * 100).toFixed(1)}%</span>
-    )},
-    { title: '原因', dataIndex: 'reason', ellipsis: true, render: (v: string) => <span style={{ color: 'var(--text-secondary)', fontSize: 13 }}>{v}</span> },
+    {
+      title: '指标',
+      dataIndex: 'metric',
+      render: (v: string) => (
+        <span style={{ fontWeight: 500, color: 'var(--text-primary)' }}>
+          {metricLabels[v] || v}
+        </span>
+      ),
+    },
+    {
+      title: '分数',
+      dataIndex: 'score',
+      width: 100,
+      render: (v: number) => (
+        <span style={{ fontWeight: 600, color: scoreColor(v) }}>{(v * 100).toFixed(1)}%</span>
+      ),
+    },
+    {
+      title: '原因',
+      dataIndex: 'reason',
+      ellipsis: true,
+      render: (v: string) => (
+        <span style={{ color: 'var(--text-secondary)', fontSize: 13 }}>{v}</span>
+      ),
+    },
   ];
 
   const sampleColumns = [
-    { title: '#', dataIndex: 'sample_index', width: 50, render: (v: number) => <span style={{ color: 'var(--text-muted)' }}>{v + 1}</span> },
+    {
+      title: '#',
+      dataIndex: 'sample_index',
+      width: 50,
+      render: (v: number) => <span style={{ color: 'var(--text-muted)' }}>{v + 1}</span>,
+    },
     { title: '问题', dataIndex: 'question', ellipsis: true },
-    { title: '生成答案', dataIndex: 'generated_answer', ellipsis: true, render: (v: string) => <span style={{ color: 'var(--text-dim)' }}>{v}</span> },
-    { title: '评分', dataIndex: 'overall_score', width: 80, render: (v: number) => (
-      <span style={{ fontWeight: 600, color: scoreColor(v) }}>{(v * 100).toFixed(1)}%</span>
-    )},
+    {
+      title: '生成答案',
+      dataIndex: 'generated_answer',
+      ellipsis: true,
+      render: (v: string) => <span style={{ color: 'var(--text-dim)' }}>{v}</span>,
+    },
+    {
+      title: '评分',
+      dataIndex: 'overall_score',
+      width: 80,
+      render: (v: number) => (
+        <span style={{ fontWeight: 600, color: scoreColor(v) }}>{(v * 100).toFixed(1)}%</span>
+      ),
+    },
   ];
 
   return (
     <div>
       {/* Page title */}
       <div className="animate-fade-in-up" style={{ marginBottom: 32 }}>
-        <Title level={2} style={{ margin: 0, fontWeight: 700, fontSize: 34, letterSpacing: '-0.04em', color: 'var(--text-primary)' }}>评测中心</Title>
-        <Text style={{ fontSize: 17, color: 'var(--text-secondary)', marginTop: 6, display: 'block' }}>RAG 与 LLM 输出质量评估</Text>
+        <Title
+          level={2}
+          style={{
+            margin: 0,
+            fontWeight: 700,
+            fontSize: 34,
+            letterSpacing: '-0.04em',
+            color: 'var(--text-primary)',
+          }}
+        >
+          评测中心
+        </Title>
+        <Text
+          style={{ fontSize: 17, color: 'var(--text-secondary)', marginTop: 6, display: 'block' }}
+        >
+          RAG 与 LLM 输出质量评估
+        </Text>
       </div>
 
       <Row gutter={20}>
@@ -114,17 +204,34 @@ const Evaluations: React.FC = () => {
         <Col xs={24} lg={10}>
           <SectionCard title="运行评测">
             <Form form={form} layout="vertical" onFinish={handleRun}>
-              <Form.Item name="dataset_name" label="数据集名称" initialValue="手动评测集" rules={[{ required: true }]}>
+              <Form.Item
+                name="dataset_name"
+                label="数据集名称"
+                initialValue="手动评测集"
+                rules={[{ required: true }]}
+              >
                 <Input placeholder="评测集名称" />
               </Form.Item>
               <Form.Item name="questions" label="问题（每行一个）" rules={[{ required: true }]}>
-                <TextArea rows={4} placeholder={"什么是AI？\n公司年假怎么算？"} style={{ borderRadius: 10 }} />
+                <TextArea
+                  rows={4}
+                  placeholder={'什么是AI？\n公司年假怎么算？'}
+                  style={{ borderRadius: radius.md }}
+                />
               </Form.Item>
               <Form.Item name="contexts" label="参考上下文（用 --- 分隔）">
-                <TextArea rows={3} placeholder={"AI是人工智能的缩写\n---\n公司年假制度..."} style={{ borderRadius: 10 }} />
+                <TextArea
+                  rows={3}
+                  placeholder={'AI是人工智能的缩写\n---\n公司年假制度...'}
+                  style={{ borderRadius: radius.md }}
+                />
               </Form.Item>
               <Form.Item name="expected_answers" label="期望答案（每行一个，可选）">
-                <TextArea rows={3} placeholder={"AI是Artificial Intelligence\n..."} style={{ borderRadius: 10 }} />
+                <TextArea
+                  rows={3}
+                  placeholder={'AI是Artificial Intelligence\n...'}
+                  style={{ borderRadius: radius.md }}
+                />
               </Form.Item>
               <Row gutter={12}>
                 <Col span={12}>
@@ -146,7 +253,14 @@ const Evaluations: React.FC = () => {
                   </Form.Item>
                 </Col>
               </Row>
-              <Button type="primary" htmlType="submit" icon={<PlayCircleOutlined />} loading={running} block style={{ height: 44, borderRadius: 12, fontWeight: 500, fontSize: 15 }}>
+              <Button
+                type="primary"
+                htmlType="submit"
+                icon={<PlayCircleOutlined />}
+                loading={running}
+                block
+                style={{ height: 44, borderRadius: radius.md, fontWeight: 500, fontSize: 15 }}
+              >
                 运行评测
               </Button>
             </Form>
@@ -159,7 +273,17 @@ const Evaluations: React.FC = () => {
             <>
               {/* Score overview */}
               <SectionCard title="评测结果总览" style={{ marginBottom: 20 }}>
-                <div style={{ display: 'flex', gap: 20, marginBottom: 20, padding: '12px 16px', borderRadius: 10, background: 'var(--bg-subtle)', border: '0.5px solid var(--border-divider)' }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    gap: 20,
+                    marginBottom: 20,
+                    padding: '12px 16px',
+                    borderRadius: radius.md,
+                    background: 'var(--bg-subtle)',
+                    border: '0.5px solid var(--border-divider)',
+                  }}
+                >
                   {[
                     { label: '数据集', value: result.dataset_name },
                     { label: '模型', value: result.model },
@@ -167,12 +291,23 @@ const Evaluations: React.FC = () => {
                     { label: '耗时', value: `${result.duration_seconds}s` },
                   ].map((item) => (
                     <div key={item.label} style={{ flex: 1 }}>
-                      <div style={{ fontSize: 11, color: 'var(--text-subtle)', marginBottom: 4 }}>{item.label}</div>
-                      <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-primary)' }}>{item.value}</div>
+                      <div style={{ fontSize: 11, color: 'var(--text-subtle)', marginBottom: 4 }}>
+                        {item.label}
+                      </div>
+                      <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-primary)' }}>
+                        {item.value}
+                      </div>
                     </div>
                   ))}
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-around', flexWrap: 'wrap', gap: 16 }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-around',
+                    flexWrap: 'wrap',
+                    gap: 16,
+                  }}
+                >
                   {Object.entries(result.aggregate_scores).map(([metric, score]) => (
                     <ScoreRing key={metric} score={score} label={metricLabels[metric] || metric} />
                   ))}
@@ -189,7 +324,13 @@ const Evaluations: React.FC = () => {
                   pagination={false}
                   expandable={{
                     expandedRowRender: (record: EvalSampleResult) => (
-                      <Table dataSource={record.metrics} columns={metricColumns} rowKey="metric" size="small" pagination={false} />
+                      <Table
+                        dataSource={record.metrics}
+                        columns={metricColumns}
+                        rowKey="metric"
+                        size="small"
+                        pagination={false}
+                      />
                     ),
                   }}
                 />

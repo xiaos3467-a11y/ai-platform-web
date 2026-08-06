@@ -13,8 +13,9 @@
 import React from 'react';
 import { Card, Skeleton } from 'antd';
 
+import { radius } from '@/styles/themeTokens';
 const glassCardBase: React.CSSProperties = {
-  borderRadius: 16,
+  borderRadius: radius.lg,
   border: '0.5px solid var(--border-subtle)',
   background: 'var(--bg-card)',
 };

@@ -12,9 +12,27 @@ import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import { ConfigProvider, App as AntApp } from 'antd';
 import zhCN from 'antd/locale/zh_CN';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import App from './App';
 import '@/styles/global.css';
 import { ThemeProvider, useThemeTokens } from '@/contexts/theme';
+import { initSentry } from '@/lib/sentry';
+import '@/i18n';
+
+// Initialize Sentry as early as possible
+initSentry();
+
+// Shared React Query client — configured once, used everywhere
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 30_000, // 30s — data stays fresh
+      gcTime: 5 * 60_000, // 5min — unused queries get garbage-collected
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 /**
  * Inner wrapper that re-renders ConfigProvider with the active token set
@@ -32,12 +50,14 @@ const ThemeAwareConfigProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <ThemeProvider>
-      <ThemeAwareConfigProvider>
-        <BrowserRouter>
-          <App />
-        </BrowserRouter>
-      </ThemeAwareConfigProvider>
-    </ThemeProvider>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider>
+        <ThemeAwareConfigProvider>
+          <BrowserRouter>
+            <App />
+          </BrowserRouter>
+        </ThemeAwareConfigProvider>
+      </ThemeProvider>
+    </QueryClientProvider>
   </React.StrictMode>,
 );

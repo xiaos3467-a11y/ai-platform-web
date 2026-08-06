@@ -6,10 +6,12 @@
 import React, { useState } from 'react';
 import { Form, Input, Button, Typography, App } from 'antd';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '@/contexts/auth';
 import { api } from '@/api/client';
 import type { LoginResponse } from '@/types';
 
+import { radius } from '@/styles/themeTokens';
 const { Title, Text } = Typography;
 
 const LoginPage: React.FC = () => {
@@ -17,23 +19,26 @@ const LoginPage: React.FC = () => {
   const login = useAuthStore((s) => s.login);
   const { message } = App.useApp();
   const [submitting, setSubmitting] = useState(false);
+  const { t } = useTranslation();
 
   const onFinish = async (values: { username: string; password: string }) => {
     setSubmitting(true);
     try {
       const resp = await api.post<LoginResponse>('/auth/login', values);
-      const { token, user } = resp.data;
+      const { token, refresh_token, user } = resp.data;
 
-      login(token, {
+      login(token, refresh_token, {
         id: user.id,
         username: user.username,
         tenant_id: user.tenant_id,
         role: user.roles?.[0]?.name || 'user',
       });
-      message.success('欢迎回来');
+      message.success(t('auth.loginTitle'));
       navigate('/', { replace: true });
     } catch (err: unknown) {
-      if (err instanceof TypeError && err.message === 'Failed to fetch') {
+      // Global interceptor handles error messages.
+      // Only add a custom message for network errors (no response).
+      if (err instanceof TypeError) {
         message.error('网络连接失败，请检查网络后重试');
       }
     } finally {
@@ -138,7 +143,7 @@ const LoginPage: React.FC = () => {
             style={{
               width: 64,
               height: 64,
-              borderRadius: 18,
+              borderRadius: radius.lg,
               background: 'linear-gradient(135deg, #0a84ff 0%, #5e5ce6 50%, #bf5af2 100%)',
               display: 'inline-flex',
               alignItems: 'center',
@@ -147,7 +152,8 @@ const LoginPage: React.FC = () => {
               fontSize: 24,
               fontWeight: 700,
               marginBottom: 24,
-              boxShadow: '0 8px 32px rgba(10, 132, 255, 0.35), 0 0 0 1px rgba(255,255,255,0.08) inset',
+              boxShadow:
+                '0 8px 32px rgba(10, 132, 255, 0.35), 0 0 0 1px rgba(255,255,255,0.08) inset',
               letterSpacing: '-0.02em',
             }}
           >
@@ -187,9 +193,8 @@ const LoginPage: React.FC = () => {
             width: '100%',
             maxWidth: 420,
             background: 'var(--bg-card)',
-            backdropFilter: 'saturate(180%) blur(24px)',
             WebkitBackdropFilter: 'saturate(180%) blur(24px)',
-            borderRadius: 24,
+            borderRadius: radius.xl,
             padding: '44px 40px',
             border: '0.5px solid var(--border-subtle)',
             boxShadow: '0 24px 64px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255,255,255,0.04) inset',
@@ -206,7 +211,7 @@ const LoginPage: React.FC = () => {
                     fontSize: 14,
                   }}
                 >
-                  用户名
+                  {t('auth.username')}
                 </span>
               }
               rules={[{ required: true, message: '请输入用户名' }]}
@@ -216,7 +221,7 @@ const LoginPage: React.FC = () => {
                 placeholder="输入用户名"
                 style={{
                   height: 48,
-                  borderRadius: 12,
+                  borderRadius: radius.md,
                   fontSize: 15,
                   background: 'var(--bg-elevated)',
                   borderColor: 'var(--border-subtle)',
@@ -234,7 +239,7 @@ const LoginPage: React.FC = () => {
                     fontSize: 14,
                   }}
                 >
-                  密码
+                  {t('auth.password')}
                 </span>
               }
               rules={[{ required: true, message: '请输入密码' }]}
@@ -244,7 +249,7 @@ const LoginPage: React.FC = () => {
                 placeholder="输入密码"
                 style={{
                   height: 48,
-                  borderRadius: 12,
+                  borderRadius: radius.md,
                   fontSize: 15,
                   background: 'var(--bg-elevated)',
                   borderColor: 'var(--border-subtle)',
@@ -260,16 +265,17 @@ const LoginPage: React.FC = () => {
                 loading={submitting}
                 style={{
                   height: 48,
-                  borderRadius: 12,
+                  borderRadius: radius.md,
                   fontSize: 16,
                   fontWeight: 600,
                   background: 'linear-gradient(135deg, #0a84ff, #5e5ce6)',
                   border: 'none',
-                  boxShadow: '0 2px 12px rgba(10, 132, 255, 0.35), 0 0 0 1px rgba(255,255,255,0.1) inset',
+                  boxShadow:
+                    '0 2px 12px rgba(10, 132, 255, 0.35), 0 0 0 1px rgba(255,255,255,0.1) inset',
                   letterSpacing: '-0.01em',
                 }}
               >
-                登录
+                {t('auth.loginButton')}
               </Button>
             </Form.Item>
           </Form>

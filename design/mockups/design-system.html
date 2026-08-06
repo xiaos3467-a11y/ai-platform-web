@@ -1,0 +1,1056 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Platform — Design System</title>
+  <style>
+    /* ─── Design Tokens (mirrored from global.css + design-tokens.json) ─── */
+    :root {
+      --font-stack: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text',
+                    'Inter', 'Helvetica Neue', 'PingFang SC', 'Noto Sans SC', sans-serif;
+
+      /* Brand */
+      --color-primary: #0a84ff;
+      --color-success: #30d158;
+      --color-warning: #ffd60a;
+      --color-error:   #ff453a;
+      --color-info:    #0a84ff;
+      --color-purple:  #5e5ce6;
+      --color-violet:  #bf5af2;
+      --color-teal:    #64d2ff;
+
+      /* Surfaces */
+      --bg-body: #000000;
+      --bg-card: rgba(255, 255, 255, 0.04);
+      --bg-elevated: rgba(255, 255, 255, 0.06);
+      --bg-elevated-2: rgba(255, 255, 255, 0.08);
+      --bg-spotlight: rgba(255, 255, 255, 0.12);
+
+      /* Text */
+      --text-primary: #f5f5f7;
+      --text-secondary: rgba(255, 255, 255, 0.45);
+      --text-tertiary: rgba(255, 255, 255, 0.25);
+      --text-muted: rgba(255, 255, 255, 0.35);
+      --text-soft: rgba(255, 255, 255, 0.5);
+
+      /* Borders */
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --border-divider: rgba(255, 255, 255, 0.06);
+
+      /* Shadows */
+      --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4), 0 0 1px rgba(255, 255, 255, 0.05);
+      --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 1px rgba(255, 255, 255, 0.08);
+      --shadow-glow-blue: 0 0 20px rgba(10, 132, 255, 0.25);
+
+      /* Radius */
+      --radius-xs: 6px;
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-xl: 20px;
+      --radius-full: 999px;
+
+      /* Spacing */
+      --space-xs: 4px;
+      --space-sm: 8px;
+      --space-md: 12px;
+      --space-lg: 16px;
+      --space-xl: 24px;
+      --space-xxl: 32px;
+      --space-3xl: 48px;
+
+      /* Motion */
+      --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+      --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+      --duration-mid: 0.3s;
+    }
+
+    /* ─── Light mode ─── */
+    html.light {
+      --color-primary: #0071e3;
+      --color-success: #34c759;
+      --color-warning: #ff9f0a;
+      --color-error:   #ff3b30;
+      --color-info:    #0071e3;
+
+      --bg-body: #f5f5f7;
+      --bg-card: rgba(255, 255, 255, 0.8);
+      --bg-elevated: rgba(0, 0, 0, 0.03);
+      --bg-elevated-2: rgba(0, 0, 0, 0.05);
+      --bg-spotlight: rgba(0, 0, 0, 0.04);
+
+      --text-primary: #1d1d1f;
+      --text-secondary: rgba(0, 0, 0, 0.45);
+      --text-tertiary: rgba(0, 0, 0, 0.3);
+      --text-muted: rgba(0, 0, 0, 0.35);
+      --text-soft: rgba(0, 0, 0, 0.5);
+
+      --border-subtle: rgba(0, 0, 0, 0.08);
+      --border-divider: rgba(0, 0, 0, 0.06);
+
+      --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+      --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+      --shadow-glow-blue: 0 0 20px rgba(0, 113, 227, 0.18);
+    }
+
+    /* ─── Reset & Base ─── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 16px; -webkit-font-smoothing: antialiased; scroll-behavior: smooth; }
+    body {
+      font-family: var(--font-stack);
+      background: var(--bg-body);
+      color: var(--text-primary);
+      line-height: 1.47;
+      letter-spacing: -0.022em;
+      min-height: 100vh;
+      transition: background 0.4s var(--ease-out), color 0.4s var(--ease-out);
+    }
+
+    ::selection { background: rgba(0, 122, 255, 0.3); color: inherit; }
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.12); border-radius: 4px; }
+    html.light ::-webkit-scrollbar-thumb { background: rgba(0, 0, 0, 0.15); }
+
+    /* ─── Layout ─── */
+    .page-wrapper {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 48px 40px 120px;
+    }
+    .page-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 56px;
+      padding-bottom: 32px;
+      border-bottom: 0.5px solid var(--border-divider);
+    }
+    .page-title {
+      font-size: 40px;
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      line-height: 1.1;
+    }
+    .page-title span {
+      background: linear-gradient(135deg, #0a84ff 0%, #5e5ce6 50%, #bf5af2 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .page-subtitle {
+      font-size: 17px;
+      color: var(--text-secondary);
+      margin-top: 8px;
+      font-weight: 400;
+    }
+
+    /* Theme toggle */
+    .theme-toggle {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 16px;
+      border-radius: var(--radius-full);
+      background: var(--bg-elevated);
+      border: 0.5px solid var(--border-subtle);
+      cursor: pointer;
+      color: var(--text-soft);
+      font-size: 13px;
+      font-weight: 500;
+      transition: all 0.2s ease;
+      font-family: var(--font-stack);
+    }
+    .theme-toggle:hover {
+      background: var(--bg-elevated-2);
+      color: var(--text-primary);
+    }
+    .theme-toggle-icon {
+      font-size: 16px;
+    }
+
+    /* ─── Section ─── */
+    .section {
+      margin-bottom: 80px;
+    }
+    .section-header {
+      margin-bottom: 32px;
+    }
+    .section-number {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border-radius: var(--radius-sm);
+      background: linear-gradient(135deg, #0a84ff 0%, #5e5ce6 100%);
+      color: #fff;
+      font-size: 14px;
+      font-weight: 700;
+      margin-right: 12px;
+      vertical-align: middle;
+    }
+    .section-title {
+      display: inline;
+      font-size: 28px;
+      font-weight: 600;
+      letter-spacing: -0.03em;
+      vertical-align: middle;
+    }
+    .section-desc {
+      font-size: 15px;
+      color: var(--text-secondary);
+      margin-top: 8px;
+      max-width: 640px;
+    }
+
+    /* Glass card */
+    .glass-card {
+      background: var(--bg-card);
+      border: 0.5px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      backdrop-filter: saturate(180%) blur(20px);
+      -webkit-backdrop-filter: saturate(180%) blur(20px);
+      padding: var(--space-xl);
+    }
+
+    /* ─── 1. Color System ─── */
+    .color-group {
+      margin-bottom: 32px;
+    }
+    .color-group-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-soft);
+      margin-bottom: 16px;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+    }
+    .color-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 16px;
+    }
+    .color-swatch {
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      border: 0.5px solid var(--border-subtle);
+      transition: transform 0.3s var(--ease-out), box-shadow 0.3s var(--ease-out);
+    }
+    .color-swatch:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg);
+    }
+    .color-preview {
+      height: 88px;
+      width: 100%;
+    }
+    .color-info {
+      padding: 14px 16px;
+      background: var(--bg-card);
+    }
+    .color-name {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .color-hex {
+      font-size: 12px;
+      color: var(--text-secondary);
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-variant-numeric: tabular-nums;
+    }
+    .color-usage {
+      font-size: 11px;
+      color: var(--text-tertiary);
+      margin-top: 4px;
+    }
+
+    /* Gradient swatches */
+    .gradient-preview {
+      height: 88px;
+      width: 100%;
+    }
+
+    /* ─── 2. Typography ─── */
+    .type-specimen {
+      display: grid;
+      grid-template-columns: 180px 1fr;
+      gap: 24px;
+      padding: 28px 0;
+      border-bottom: 0.5px solid var(--border-divider);
+      align-items: baseline;
+    }
+    .type-specimen:last-child { border-bottom: none; }
+    .type-meta {
+      font-size: 12px;
+      color: var(--text-tertiary);
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      line-height: 1.8;
+    }
+    .type-meta strong {
+      color: var(--text-soft);
+      font-weight: 500;
+      display: block;
+      font-size: 13px;
+      margin-bottom: 4px;
+      font-family: var(--font-stack);
+      letter-spacing: 0.02em;
+    }
+    .type-sample-h1 { font-size: 40px; font-weight: 700; letter-spacing: -0.04em; line-height: 1.2; }
+    .type-sample-h2 { font-size: 28px; font-weight: 600; letter-spacing: -0.03em; line-height: 1.3; }
+    .type-sample-h3 { font-size: 22px; font-weight: 600; letter-spacing: -0.03em; line-height: 1.4; }
+    .type-sample-h4 { font-size: 17px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.5; }
+    .type-sample-h5 { font-size: 15px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.5; }
+    .type-sample-body { font-size: 14px; font-weight: 400; line-height: 1.57; color: var(--text-primary); }
+    .type-sample-caption { font-size: 13px; font-weight: 400; line-height: 1.5; color: var(--text-secondary); }
+    .type-sample-small { font-size: 12px; font-weight: 400; line-height: 1.5; color: var(--text-tertiary); }
+
+    /* ─── 3. Spacing ─── */
+    .spacing-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .spacing-row {
+      display: grid;
+      grid-template-columns: 80px 100px 1fr 180px;
+      align-items: center;
+      gap: 20px;
+    }
+    .spacing-label {
+      font-size: 14px;
+      font-weight: 600;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      color: var(--text-soft);
+    }
+    .spacing-value {
+      font-size: 13px;
+      color: var(--text-secondary);
+      font-family: 'SF Mono', 'Fira Code', monospace;
+    }
+    .spacing-bar {
+      height: 32px;
+      border-radius: var(--radius-sm);
+      background: linear-gradient(135deg, #0a84ff 0%, #5e5ce6 100%);
+      opacity: 0.8;
+      transition: width 0.4s var(--ease-out);
+    }
+    .spacing-desc {
+      font-size: 12px;
+      color: var(--text-tertiary);
+    }
+
+    /* ─── 4. Border Radius ─── */
+    .radius-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 20px;
+    }
+    .radius-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+    }
+    .radius-shape {
+      width: 96px;
+      height: 96px;
+      background: var(--bg-elevated-2);
+      border: 0.5px solid var(--border-subtle);
+      transition: all 0.3s var(--ease-out);
+    }
+    .radius-shape:hover {
+      background: linear-gradient(135deg, rgba(10, 132, 255, 0.15), rgba(94, 92, 230, 0.15));
+      border-color: rgba(10, 132, 255, 0.3);
+    }
+    .radius-meta {
+      text-align: center;
+    }
+    .radius-name {
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+    .radius-val {
+      font-size: 12px;
+      color: var(--text-tertiary);
+      font-family: 'SF Mono', 'Fira Code', monospace;
+    }
+
+    /* ─── 5. Shadows ─── */
+    .shadow-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 24px;
+    }
+    .shadow-card {
+      background: var(--bg-card);
+      border: 0.5px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 32px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      transition: transform 0.3s var(--ease-out);
+    }
+    .shadow-card:hover { transform: translateY(-2px); }
+    .shadow-demo {
+      width: 100%;
+      height: 80px;
+      border-radius: var(--radius-md);
+      background: var(--bg-elevated-2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-soft);
+    }
+    .shadow-meta {
+      font-size: 12px;
+      color: var(--text-tertiary);
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      text-align: center;
+      word-break: break-all;
+    }
+    .shadow-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    /* ─── 6. Motion ─── */
+    .motion-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 20px;
+    }
+    .motion-item {
+      background: var(--bg-card);
+      border: 0.5px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 24px;
+      cursor: pointer;
+    }
+    .motion-ball {
+      width: 32px;
+      height: 32px;
+      border-radius: var(--radius-full);
+      background: linear-gradient(135deg, #0a84ff 0%, #5e5ce6 100%);
+      margin-bottom: 16px;
+      transition: transform 0.3s var(--ease-out);
+    }
+    .motion-item:hover .motion-ball { transform: translateX(120px); }
+    .motion-name {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .motion-easing {
+      font-size: 12px;
+      color: var(--text-tertiary);
+      font-family: 'SF Mono', 'Fira Code', monospace;
+    }
+
+    /* ─── Animations ─── */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .section { animation: fadeInUp 0.5s var(--ease-out) both; }
+    .section:nth-child(2) { animation-delay: 0.05s; }
+    .section:nth-child(3) { animation-delay: 0.1s; }
+    .section:nth-child(4) { animation-delay: 0.15s; }
+    .section:nth-child(5) { animation-delay: 0.2s; }
+    .section:nth-child(6) { animation-delay: 0.25s; }
+
+    /* Nav pills */
+    .section-nav {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 48px;
+    }
+    .nav-pill {
+      padding: 8px 16px;
+      border-radius: var(--radius-full);
+      background: var(--bg-elevated);
+      border: 0.5px solid var(--border-subtle);
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-soft);
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+    .nav-pill:hover {
+      background: var(--bg-elevated-2);
+      color: var(--text-primary);
+    }
+    .nav-pill.active {
+      background: linear-gradient(135deg, rgba(10, 132, 255, 0.15), rgba(94, 92, 230, 0.15));
+      border-color: rgba(10, 132, 255, 0.3);
+      color: var(--color-primary);
+    }
+
+    @media (max-width: 768px) {
+      .page-wrapper { padding: 24px 20px 80px; }
+      .page-title { font-size: 28px; }
+      .section-title { font-size: 22px; }
+      .color-grid { grid-template-columns: repeat(2, 1fr); }
+      .type-specimen { grid-template-columns: 1fr; gap: 8px; }
+      .spacing-row { grid-template-columns: 60px 80px 1fr; }
+      .spacing-desc { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-wrapper">
+    <!-- Header -->
+    <div class="page-header">
+      <div>
+        <h1 class="page-title"><span>Design System</span></h1>
+        <p class="page-subtitle">AI Platform — Apple-inspired design tokens, typography, spacing, and elevation</p>
+      </div>
+      <button class="theme-toggle" onclick="toggleTheme()">
+        <span class="theme-toggle-icon" id="themeIcon">☀️</span>
+        <span id="themeLabel">Light</span>
+      </button>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="section-nav">
+      <a href="#colors" class="nav-pill active">Color</a>
+      <a href="#typography" class="nav-pill">Typography</a>
+      <a href="#spacing" class="nav-pill">Spacing</a>
+      <a href="#radius" class="nav-pill">Radius</a>
+      <a href="#shadows" class="nav-pill">Shadows</a>
+      <a href="#motion" class="nav-pill">Motion</a>
+    </nav>
+
+    <!-- ═══════ 1. COLOR SYSTEM ═══════ -->
+    <section class="section" id="colors">
+      <div class="section-header">
+        <span class="section-number">1</span>
+        <h2 class="section-title">Color System</h2>
+        <p class="section-desc">Brand palette, semantic colors, surfaces, and neutral scale. Each color shows the hex value and its typical usage.</p>
+      </div>
+
+      <!-- Brand colors -->
+      <div class="color-group">
+        <div class="color-group-title">Brand Colors</div>
+        <div class="color-grid">
+          <div class="color-swatch">
+            <div class="color-preview" style="background: #0a84ff;"></div>
+            <div class="color-info">
+              <div class="color-name">Primary Blue</div>
+              <div class="color-hex">#0a84ff · #0071e3</div>
+              <div class="color-usage">主色调、按钮、链接</div>
+            </div>
+          </div>
+          <div class="color-swatch">
+            <div class="color-preview" style="background: #5e5ce6;"></div>
+            <div class="color-info">
+              <div class="color-name">Purple</div>
+              <div class="color-hex">#5e5ce6</div>
+              <div class="color-usage">渐变端点、高级强调</div>
+            </div>
+          </div>
+          <div class="color-swatch">
+            <div class="color-preview" style="background: #bf5af2;"></div>
+            <div class="color-info">
+              <div class="color-name">Violet</div>
+              <div class="color-hex">#bf5af2</div>
+              <div class="color-usage">Logo 渐变、创意功能</div>
+            </div>
+          </div>
+          <div class="color-swatch">
+            <div class="color-preview" style="background: #64d2ff;"></div>
+            <div class="color-info">
+              <div class="color-name">Teal</div>
+              <div class="color-hex">#64d2ff</div>
+              <div class="color-usage">信息、次要强调</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Semantic colors -->
+      <div class="color-group">
+        <div class="color-group-title">Semantic Colors</div>
+        <div class="color-grid">
+          <div class="color-swatch">
+            <div class="color-preview" style="background: #30d158;"></div>
+            <div class="color-info">
+              <div class="color-name">Success Green</div>
+              <div class="color-hex">#30d158 · #34c759</div>
+              <div class="color-usage">成功状态、健康指标</div>
+            </div>
+          </div>
+          <div class="color-swatch">
+            <div class="color-preview" style="background: #ffd60a;"></div>
+            <div class="color-info">
+              <div class="color-name">Warning Yellow</div>
+              <div class="color-hex">#ffd60a · #ff9f0a</div>
+              <div class="color-usage">警告状态、需要注意</div>
+            </div>
+          </div>
+          <div class="color-swatch">
+            <div class="color-preview" style="background: #ff453a;"></div>
+            <div class="color-info">
+              <div class="color-name">Error Red</div>
+              <div class="color-hex">#ff453a · #ff3b30</div>
+              <div class="color-usage">错误状态、危险操作</div>
+            </div>
+          </div>
+          <div class="color-swatch">
+            <div class="color-preview" style="background: #0a84ff;"></div>
+            <div class="color-info">
+              <div class="color-name">Info Blue</div>
+              <div class="color-hex">#0a84ff · #0071e3</div>
+              <div class="color-usage">信息提示、中性引导</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Neutral / Text -->
+      <div class="color-group">
+        <div class="color-group-title">Neutral / Text Scale</div>
+        <div class="color-grid">
+          <div class="color-swatch">
+            <div class="color-preview" style="background: #f5f5f7;"></div>
+            <div class="color-info">
+              <div class="color-name">Text Primary</div>
+              <div class="color-hex">#f5f5f7 · #1d1d1f</div>
+              <div class="color-usage">标题、正文重点</div>
+            </div>
+          </div>
+          <div class="color-swatch">
+            <div class="color-preview" style="background: rgba(255,255,255,0.45); border-bottom: 0.5px solid rgba(255,255,255,0.1);"></div>
+            <div class="color-info">
+              <div class="color-name">Text Secondary</div>
+              <div class="color-hex">rgba(255,255,255,0.45)</div>
+              <div class="color-usage">描述、标签</div>
+            </div>
+          </div>
+          <div class="color-swatch">
+            <div class="color-preview" style="background: rgba(255,255,255,0.25);"></div>
+            <div class="color-info">
+              <div class="color-name">Text Tertiary</div>
+              <div class="color-hex">rgba(255,255,255,0.25)</div>
+              <div class="color-usage">占位符、提示</div>
+            </div>
+          </div>
+          <div class="color-swatch">
+            <div class="color-preview" style="background: rgba(255,255,255,0.12);"></div>
+            <div class="color-info">
+              <div class="color-name">Border</div>
+              <div class="color-hex">rgba(255,255,255,0.12)</div>
+              <div class="color-usage">主边框</div>
+            </div>
+          </div>
+          <div class="color-swatch">
+            <div class="color-preview" style="background: rgba(255,255,255,0.06);"></div>
+            <div class="color-info">
+              <div class="color-name">Border Subtle</div>
+              <div class="color-hex">rgba(255,255,255,0.06)</div>
+              <div class="color-usage">分割线、次边框</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Surfaces -->
+      <div class="color-group">
+        <div class="color-group-title">Surface Colors</div>
+        <div class="color-grid">
+          <div class="color-swatch">
+            <div class="color-preview" style="background: #000000; border: 0.5px solid rgba(255,255,255,0.15);"></div>
+            <div class="color-info">
+              <div class="color-name">Canvas (Dark)</div>
+              <div class="color-hex">#000000</div>
+              <div class="color-usage">深色模式背景</div>
+            </div>
+          </div>
+          <div class="color-swatch">
+            <div class="color-preview" style="background: #f5f5f7;"></div>
+            <div class="color-info">
+              <div class="color-name">Canvas (Light)</div>
+              <div class="color-hex">#f5f5f7</div>
+              <div class="color-usage">浅色模式背景</div>
+            </div>
+          </div>
+          <div class="color-swatch">
+            <div class="color-preview" style="background: rgba(255,255,255,0.04);"></div>
+            <div class="color-info">
+              <div class="color-name">Card Surface</div>
+              <div class="color-hex">rgba(255,255,255,0.04)</div>
+              <div class="color-usage">玻璃拟态卡片</div>
+            </div>
+          </div>
+          <div class="color-swatch">
+            <div class="color-preview" style="background: rgba(255,255,255,0.08);"></div>
+            <div class="color-info">
+              <div class="color-name">Elevated</div>
+              <div class="color-hex">rgba(255,255,255,0.08)</div>
+              <div class="color-usage">弹出层、下拉菜单</div>
+            </div>
+          </div>
+          <div class="color-swatch">
+            <div class="color-preview" style="background: rgba(255,255,255,0.12);"></div>
+            <div class="color-info">
+              <div class="color-name">Spotlight</div>
+              <div class="color-hex">rgba(255,255,255,0.12)</div>
+              <div class="color-usage">高亮背景、Active 导航</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Gradients -->
+      <div class="color-group">
+        <div class="color-group-title">Gradients</div>
+        <div class="color-grid">
+          <div class="color-swatch">
+            <div class="gradient-preview" style="background: linear-gradient(135deg, #0a84ff 0%, #5e5ce6 100%);"></div>
+            <div class="color-info">
+              <div class="color-name">Primary</div>
+              <div class="color-hex">135deg · #0a84ff → #5e5ce6</div>
+              <div class="color-usage">主按钮、请求数卡片</div>
+            </div>
+          </div>
+          <div class="color-swatch">
+            <div class="gradient-preview" style="background: linear-gradient(135deg, #30d158 0%, #34c759 100%);"></div>
+            <div class="color-info">
+              <div class="color-name">Success</div>
+              <div class="color-hex">135deg · #30d158 → #34c759</div>
+              <div class="color-usage">Token、成功状态</div>
+            </div>
+          </div>
+          <div class="color-swatch">
+            <div class="gradient-preview" style="background: linear-gradient(135deg, #ffd60a 0%, #ff9f0a 100%);"></div>
+            <div class="color-info">
+              <div class="color-name">Warning</div>
+              <div class="color-hex">135deg · #ffd60a → #ff9f0a</div>
+              <div class="color-usage">成本卡片</div>
+            </div>
+          </div>
+          <div class="color-swatch">
+            <div class="gradient-preview" style="background: linear-gradient(135deg, #ff453a 0%, #ff6961 100%);"></div>
+            <div class="color-info">
+              <div class="color-name">Error</div>
+              <div class="color-hex">135deg · #ff453a → #ff6961</div>
+              <div class="color-usage">异常、危险操作</div>
+            </div>
+          </div>
+          <div class="color-swatch">
+            <div class="gradient-preview" style="background: linear-gradient(135deg, #0a84ff 0%, #5e5ce6 50%, #bf5af2 100%);"></div>
+            <div class="color-info">
+              <div class="color-name">Brand</div>
+              <div class="color-hex">135deg · 3-stop</div>
+              <div class="color-usage">Logo、品牌标识</div>
+            </div>
+          </div>
+          <div class="color-swatch">
+            <div class="gradient-preview" style="background: linear-gradient(135deg, #5e5ce6 0%, #bf5af2 100%);"></div>
+            <div class="color-info">
+              <div class="color-name">Purple</div>
+              <div class="color-hex">135deg · #5e5ce6 → #bf5af2</div>
+              <div class="color-usage">创意功能</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════ 2. TYPOGRAPHY ═══════ -->
+    <section class="section" id="typography">
+      <div class="section-header">
+        <span class="section-number">2</span>
+        <h2 class="section-title">Typography</h2>
+        <p class="section-desc">SF Pro system font stack. Each level shows the actual rendering plus its size, weight, and line height.</p>
+      </div>
+      <div class="glass-card">
+        <div class="type-specimen">
+          <div class="type-meta">
+            <strong>H1 · Page Title</strong>
+            40px · 700<br>
+            -0.04em · LH 1.2
+          </div>
+          <div class="type-sample-h1">仪表盘概览</div>
+        </div>
+        <div class="type-specimen">
+          <div class="type-meta">
+            <strong>H2 · Section</strong>
+            28px · 600<br>
+            -0.03em · LH 1.3
+          </div>
+          <div class="type-sample-h2">成本趋势分析</div>
+        </div>
+        <div class="type-specimen">
+          <div class="type-meta">
+            <strong>H3 · Sub-section</strong>
+            22px · 600<br>
+            -0.03em · LH 1.4
+          </div>
+          <div class="type-sample-h3">模型分布情况</div>
+        </div>
+        <div class="type-specimen">
+          <div class="type-meta">
+            <strong>H4 · Card Title</strong>
+            17px · 600<br>
+            -0.02em · LH 1.5
+          </div>
+          <div class="type-sample-h4">请求统计</div>
+        </div>
+        <div class="type-specimen">
+          <div class="type-meta">
+            <strong>H5 · Component</strong>
+            15px · 600<br>
+            -0.02em · LH 1.5
+          </div>
+          <div class="type-sample-h5">活跃代理</div>
+        </div>
+        <div class="type-specimen">
+          <div class="type-meta">
+            <strong>Body · Default</strong>
+            14px · 400<br>
+            -0.01em · LH 1.57
+          </div>
+          <div class="type-sample-body">The quick brown fox jumps over the lazy dog. 人工智能平台让团队轻松管理和监控 AI 服务的运行状态。</div>
+        </div>
+        <div class="type-specimen">
+          <div class="type-meta">
+            <strong>Caption</strong>
+            13px · 400<br>
+            0.00em · LH 1.5
+          </div>
+          <div class="type-sample-caption">上次更新于 3 分钟前 · 数据来源：API Gateway</div>
+        </div>
+        <div class="type-specimen">
+          <div class="type-meta">
+            <strong>Small / Micro</strong>
+            12px · 400<br>
+            0.00em · LH 1.5
+          </div>
+          <div class="type-sample-small">v1.0.0 · Build 2026.08.05 · Tabular nums: 123,456.78</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════ 3. SPACING ═══════ -->
+    <section class="section" id="spacing">
+      <div class="section-header">
+        <span class="section-number">3</span>
+        <h2 class="section-title">Spacing</h2>
+        <p class="section-desc">Based on a 4px fundamental unit. Each token shows the actual bar width proportional to its value.</p>
+      </div>
+      <div class="glass-card">
+        <div class="spacing-list">
+          <div class="spacing-row">
+            <span class="spacing-label">xs</span>
+            <span class="spacing-value">4px</span>
+            <div class="spacing-bar" style="width: 4px;"></div>
+            <span class="spacing-desc">最小内边距、图标间距</span>
+          </div>
+          <div class="spacing-row">
+            <span class="spacing-label">sm</span>
+            <span class="spacing-value">8px</span>
+            <div class="spacing-bar" style="width: 32px;"></div>
+            <span class="spacing-desc">小内边距、行间距</span>
+          </div>
+          <div class="spacing-row">
+            <span class="spacing-label">md</span>
+            <span class="spacing-value">12px</span>
+            <div class="spacing-bar" style="width: 48px;"></div>
+            <span class="spacing-desc">表单间距、组件间距</span>
+          </div>
+          <div class="spacing-row">
+            <span class="spacing-label">lg</span>
+            <span class="spacing-value">16px</span>
+            <div class="spacing-bar" style="width: 64px;"></div>
+            <span class="spacing-desc">标准内边距</span>
+          </div>
+          <div class="spacing-row">
+            <span class="spacing-label">xl</span>
+            <span class="spacing-value">24px</span>
+            <div class="spacing-bar" style="width: 96px;"></div>
+            <span class="spacing-desc">卡片内边距、区块间距</span>
+          </div>
+          <div class="spacing-row">
+            <span class="spacing-label">xxl</span>
+            <span class="spacing-value">32px</span>
+            <div class="spacing-bar" style="width: 128px;"></div>
+            <span class="spacing-desc">标题与内容间距</span>
+          </div>
+          <div class="spacing-row">
+            <span class="spacing-label">3xl</span>
+            <span class="spacing-value">48px</span>
+            <div class="spacing-bar" style="width: 192px;"></div>
+            <span class="spacing-desc">区块间大间距</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════ 4. BORDER RADIUS ═══════ -->
+    <section class="section" id="radius">
+      <div class="section-header">
+        <span class="section-number">4</span>
+        <h2 class="section-title">Border Radius</h2>
+        <p class="section-desc">From sharp tags to full circular avatars. Hover to see the shape highlighted.</p>
+      </div>
+      <div class="glass-card">
+        <div class="radius-grid">
+          <div class="radius-item">
+            <div class="radius-shape" style="border-radius: 6px;"></div>
+            <div class="radius-meta">
+              <div class="radius-name">xs</div>
+              <div class="radius-val">6px · Tags / Badges</div>
+            </div>
+          </div>
+          <div class="radius-item">
+            <div class="radius-shape" style="border-radius: 8px;"></div>
+            <div class="radius-meta">
+              <div class="radius-name">sm</div>
+              <div class="radius-val">8px · Inputs / Pills</div>
+            </div>
+          </div>
+          <div class="radius-item">
+            <div class="radius-shape" style="border-radius: 12px;"></div>
+            <div class="radius-meta">
+              <div class="radius-name">md</div>
+              <div class="radius-val">12px · Cards / Tooltips</div>
+            </div>
+          </div>
+          <div class="radius-item">
+            <div class="radius-shape" style="border-radius: 16px;"></div>
+            <div class="radius-meta">
+              <div class="radius-name">lg</div>
+              <div class="radius-val">16px · Glass Cards</div>
+            </div>
+          </div>
+          <div class="radius-item">
+            <div class="radius-shape" style="border-radius: 20px;"></div>
+            <div class="radius-meta">
+              <div class="radius-name">xl</div>
+              <div class="radius-val">20px · Modals</div>
+            </div>
+          </div>
+          <div class="radius-item">
+            <div class="radius-shape" style="border-radius: 999px;"></div>
+            <div class="radius-meta">
+              <div class="radius-name">full</div>
+              <div class="radius-val">999px · Avatars / Toggles</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════ 5. SHADOWS ═══════ -->
+    <section class="section" id="shadows">
+      <div class="section-header">
+        <span class="section-number">5</span>
+        <h2 class="section-title">Elevation & Shadows</h2>
+        <p class="section-desc">Shadow scale from subtle lift to hero cards. Dark mode shadows include a subtle white rim light.</p>
+      </div>
+      <div class="glass-card">
+        <div class="shadow-grid">
+          <div class="shadow-card">
+            <div class="shadow-name">Shadow SM</div>
+            <div class="shadow-demo" style="box-shadow: 0 2px 8px rgba(0,0,0,0.3);">Card level</div>
+            <div class="shadow-meta">0 2px 8px rgba(0,0,0,0.3)</div>
+          </div>
+          <div class="shadow-card">
+            <div class="shadow-name">Shadow MD</div>
+            <div class="shadow-demo" style="box-shadow: 0 8px 24px rgba(0,0,0,0.4);">Popover level</div>
+            <div class="shadow-meta">0 8px 24px rgba(0,0,0,0.4)</div>
+          </div>
+          <div class="shadow-card">
+            <div class="shadow-name">Shadow LG</div>
+            <div class="shadow-demo" style="box-shadow: 0 16px 48px rgba(0,0,0,0.5);">Modal level</div>
+            <div class="shadow-meta">0 16px 48px rgba(0,0,0,0.5)</div>
+          </div>
+          <div class="shadow-card">
+            <div class="shadow-name">Shadow XL</div>
+            <div class="shadow-demo" style="box-shadow: 0 24px 64px rgba(0,0,0,0.4);">Hero level</div>
+            <div class="shadow-meta">0 24px 64px rgba(0,0,0,0.4)</div>
+          </div>
+          <div class="shadow-card">
+            <div class="shadow-name">Glow Blue</div>
+            <div class="shadow-demo" style="box-shadow: 0 0 20px rgba(10,132,255,0.3), 0 0 60px rgba(10,132,255,0.1);">Glow effect</div>
+            <div class="shadow-meta">0 0 20px rgba(10,132,255,0.3)</div>
+          </div>
+          <div class="shadow-card">
+            <div class="shadow-name">Glow Green</div>
+            <div class="shadow-demo" style="box-shadow: 0 0 20px rgba(48,209,88,0.3), 0 0 60px rgba(48,209,88,0.1);">Glow effect</div>
+            <div class="shadow-meta">0 0 20px rgba(48,209,88,0.3)</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════ 6. MOTION ═══════ -->
+    <section class="section" id="motion">
+      <div class="section-header">
+        <span class="section-number">6</span>
+        <h2 class="section-title">Motion & Animation</h2>
+        <p class="section-desc">Easing curves for interactions. Hover each card to see the ball animate with that curve.</p>
+      </div>
+      <div class="glass-card">
+        <div class="motion-grid">
+          <div class="motion-item">
+            <div class="motion-ball" style="transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);"></div>
+            <div class="motion-name">Standard</div>
+            <div class="motion-easing">cubic-bezier(0.4, 0, 0.2, 1)</div>
+          </div>
+          <div class="motion-item">
+            <div class="motion-ball" style="transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);"></div>
+            <div class="motion-name">Decelerate (easeOut)</div>
+            <div class="motion-easing">cubic-bezier(0.16, 1, 0.3, 1)</div>
+          </div>
+          <div class="motion-item">
+            <div class="motion-ball" style="transition-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1);"></div>
+            <div class="motion-name">Spring</div>
+            <div class="motion-easing">cubic-bezier(0.34, 1.56, 0.64, 1)</div>
+          </div>
+          <div class="motion-item">
+            <div class="motion-ball" style="transition-timing-function: linear;"></div>
+            <div class="motion-name">Linear</div>
+            <div class="motion-easing">linear (spinners)</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <script>
+    function toggleTheme() {
+      const html = document.documentElement;
+      const isLight = html.classList.toggle('light');
+      document.getElementById('themeIcon').textContent = isLight ? '🌙' : '☀️';
+      document.getElementById('themeLabel').textContent = isLight ? 'Dark' : 'Light';
+    }
+
+    // Highlight active nav pill on scroll
+    const sections = document.querySelectorAll('.section[id]');
+    const navPills = document.querySelectorAll('.nav-pill');
+    window.addEventListener('scroll', () => {
+      let current = '';
+      sections.forEach(section => {
+        const top = section.offsetTop - 120;
+        if (window.scrollY >= top) current = section.id;
+      });
+      navPills.forEach(pill => {
+        pill.classList.remove('active');
+        if (pill.getAttribute('href') === '#' + current) pill.classList.add('active');
+      });
+    });
+  </script>
+</body>
+</html>

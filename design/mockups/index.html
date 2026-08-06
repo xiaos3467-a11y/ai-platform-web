@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Platform — Design Mockups</title>
+  <style>
+    :root {
+      --font-stack: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text',
+                    'Inter', 'Helvetica Neue', 'PingFang SC', 'Noto Sans SC', sans-serif;
+      --color-primary: #0a84ff;
+      --color-success: #30d158;
+      --color-purple:  #5e5ce6;
+      --color-violet:  #bf5af2;
+      --bg-body: #000000;
+      --bg-card: rgba(255, 255, 255, 0.04);
+      --bg-elevated: rgba(255, 255, 255, 0.06);
+      --bg-elevated-2: rgba(255, 255, 255, 0.08);
+      --text-primary: #f5f5f7;
+      --text-secondary: rgba(255, 255, 255, 0.45);
+      --text-tertiary: rgba(255, 255, 255, 0.25);
+      --text-soft: rgba(255, 255, 255, 0.5);
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --border-divider: rgba(255, 255, 255, 0.06);
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-xl: 20px;
+      --radius-full: 999px;
+      --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    html.light {
+      --bg-body: #f5f5f7;
+      --bg-card: rgba(255, 255, 255, 0.8);
+      --bg-elevated: rgba(0, 0, 0, 0.03);
+      --bg-elevated-2: rgba(0, 0, 0, 0.05);
+      --text-primary: #1d1d1f;
+      --text-secondary: rgba(0, 0, 0, 0.45);
+      --text-tertiary: rgba(0, 0, 0, 0.3);
+      --text-soft: rgba(0, 0, 0, 0.5);
+      --border-subtle: rgba(0, 0, 0, 0.08);
+      --border-divider: rgba(0, 0, 0, 0.06);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 16px; -webkit-font-smoothing: antialiased; scroll-behavior: smooth; }
+    body {
+      font-family: var(--font-stack);
+      background: var(--bg-body);
+      color: var(--text-primary);
+      line-height: 1.47;
+      letter-spacing: -0.022em;
+      min-height: 100vh;
+      transition: background 0.4s var(--ease-out), color 0.4s var(--ease-out);
+    }
+    ::selection { background: rgba(0, 122, 255, 0.3); }
+
+    .page {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 80px 40px 120px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+    .logo {
+      width: 72px; height: 72px;
+      border-radius: 22px;
+      background: linear-gradient(135deg, #0a84ff 0%, #5e5ce6 50%, #bf5af2 100%);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 32px; margin-bottom: 32px;
+      box-shadow: 0 8px 32px rgba(10, 132, 255, 0.25);
+      animation: float 3s ease-in-out infinite;
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+    }
+    .page-title {
+      font-size: 48px; font-weight: 700; letter-spacing: -0.04em; line-height: 1.1;
+      margin-bottom: 12px;
+    }
+    .page-title span {
+      background: linear-gradient(135deg, #0a84ff 0%, #5e5ce6 50%, #bf5af2 100%);
+      -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .page-desc {
+      font-size: 17px; color: var(--text-secondary); max-width: 480px;
+      line-height: 1.6; margin-bottom: 48px;
+    }
+
+    .theme-toggle {
+      position: fixed; top: 24px; right: 24px;
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 16px; border-radius: var(--radius-full);
+      background: var(--bg-elevated); border: 0.5px solid var(--border-subtle);
+      cursor: pointer; color: var(--text-soft);
+      font-size: 13px; font-weight: 500; font-family: var(--font-stack);
+      transition: all 0.2s ease; z-index: 10;
+    }
+    .theme-toggle:hover { background: var(--bg-elevated-2); color: var(--text-primary); }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
+      width: 100%;
+    }
+    .mockup-card {
+      background: var(--bg-card);
+      border: 0.5px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 32px 28px;
+      text-decoration: none;
+      color: inherit;
+      text-align: left;
+      transition: all 0.3s var(--ease-out);
+      backdrop-filter: saturate(180%) blur(20px);
+      -webkit-backdrop-filter: saturate(180%) blur(20px);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      position: relative;
+      overflow: hidden;
+    }
+    .mockup-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+      border-color: rgba(255,255,255,0.15);
+    }
+    .mockup-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      border-radius: 3px 3px 0 0;
+    }
+    .mockup-card:nth-child(1)::before { background: linear-gradient(90deg, #0a84ff, #5e5ce6); }
+    .mockup-card:nth-child(2)::before { background: linear-gradient(90deg, #30d158, #34c759); }
+    .mockup-card:nth-child(3)::before { background: linear-gradient(90deg, #ffd60a, #ff9f0a); }
+    .mockup-card:nth-child(4)::before { background: linear-gradient(90deg, #5e5ce6, #bf5af2); }
+    .mockup-card:nth-child(5)::before { background: linear-gradient(90deg, #64d2ff, #0a84ff); }
+
+    .mockup-icon {
+      font-size: 28px;
+      margin-bottom: 4px;
+    }
+    .mockup-title {
+      font-size: 17px; font-weight: 600; letter-spacing: -0.02em;
+    }
+    .mockup-desc {
+      font-size: 13px; color: var(--text-secondary); line-height: 1.5;
+    }
+    .mockup-tag {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 11px; font-weight: 600; letter-spacing: 0.04em;
+      text-transform: uppercase; color: var(--text-tertiary);
+      margin-top: auto; padding-top: 8px;
+    }
+    .mockup-arrow {
+      margin-left: auto;
+      font-size: 14px;
+      color: var(--text-tertiary);
+      transition: transform 0.2s ease, color 0.2s ease;
+    }
+    .mockup-card:hover .mockup-arrow {
+      transform: translateX(4px);
+      color: var(--color-primary);
+    }
+
+    .footer {
+      margin-top: 64px;
+      font-size: 13px;
+      color: var(--text-tertiary);
+    }
+    .footer a {
+      color: var(--text-soft);
+      text-decoration: none;
+      border-bottom: 0.5px solid var(--border-subtle);
+      transition: color 0.2s ease;
+    }
+    .footer a:hover { color: var(--color-primary); }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .logo { animation: float 3s ease-in-out infinite, fadeInUp 0.6s var(--ease-out); }
+    .page-title { animation: fadeInUp 0.6s var(--ease-out) 0.1s both; }
+    .page-desc { animation: fadeInUp 0.6s var(--ease-out) 0.15s both; }
+    .mockup-card { animation: fadeInUp 0.5s var(--ease-out) both; }
+    .mockup-card:nth-child(1) { animation-delay: 0.2s; }
+    .mockup-card:nth-child(2) { animation-delay: 0.25s; }
+    .mockup-card:nth-child(3) { animation-delay: 0.3s; }
+    .mockup-card:nth-child(4) { animation-delay: 0.35s; }
+    .mockup-card:nth-child(5) { animation-delay: 0.4s; }
+
+    @media (max-width: 640px) {
+      .page { padding: 48px 20px 80px; }
+      .page-title { font-size: 32px; }
+      .cards-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <button class="theme-toggle" onclick="toggleTheme()">
+    <span id="themeIcon">☀️</span>
+    <span id="themeLabel">Light</span>
+  </button>
+
+  <div class="page">
+    <div class="logo">🎨</div>
+    <h1 class="page-title"><span>Design Mockups</span></h1>
+    <p class="page-desc">AI Platform 视觉设计稿 — Apple 风格，支持深色 / 浅色模式切换。直接在浏览器中打开即可查看。</p>
+
+    <div class="cards-grid">
+      <a href="design-system.html" class="mockup-card">
+        <div class="mockup-icon">🎨</div>
+        <div class="mockup-title">Design System</div>
+        <div class="mockup-desc">色彩系统 · 排版规范 · 间距 · 圆角 · 阴影 · 动效曲线</div>
+        <div class="mockup-tag">
+          Foundation
+          <span class="mockup-arrow">→</span>
+        </div>
+      </a>
+
+      <a href="components.html" class="mockup-card">
+        <div class="mockup-icon">🧩</div>
+        <div class="mockup-title">Components</div>
+        <div class="mockup-desc">StatCard · SectionCard · Button · Input · Table · Modal · Tag · Status Pill</div>
+        <div class="mockup-tag">
+          Library
+          <span class="mockup-arrow">→</span>
+        </div>
+      </a>
+
+      <a href="dashboard.html" class="mockup-card">
+        <div class="mockup-icon">📊</div>
+        <div class="mockup-title">Dashboard</div>
+        <div class="mockup-desc">完整仪表盘页面 — 统计卡片 · 健康状态 · 折线图 · 饼图 · 柱状图 · 数据表格</div>
+        <div class="mockup-tag">
+          Page
+          <span class="mockup-arrow">→</span>
+        </div>
+      </a>
+    </div>
+
+    <div class="footer">
+      <p>AI Platform Design System v1.0 · Tokens from <code>design/specs/design-tokens.json</code></p>
+      <p style="margin-top: 8px;">Style reference: <a href="#">apple.com</a> · <a href="#">linear.app</a> · <a href="#">vercel.com</a></p>
+    </div>
+  </div>
+
+  <script>
+    function toggleTheme() {
+      const html = document.documentElement;
+      const isLight = html.classList.toggle('light');
+      document.getElementById('themeIcon').textContent = isLight ? '🌙' : '☀️';
+      document.getElementById('themeLabel').textContent = isLight ? 'Dark' : 'Light';
+    }
+  </script>
+</body>
+</html>

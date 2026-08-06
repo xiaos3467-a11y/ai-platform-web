@@ -1,18 +1,20 @@
 /** Knowledge Bases — Apple glass aesthetic */
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
+import { Table, Button, Modal, Form, Input, Upload, Space, Skeleton, Typography, App } from 'antd';
 import {
-  Table, Button, Modal, Form, Input, Upload, Space, Skeleton, Typography,
-  App,
-} from 'antd';
-import {
-  PlusOutlined, UploadOutlined, DeleteOutlined, FileTextOutlined,
-  BookOutlined, InboxOutlined,
+  PlusOutlined,
+  UploadOutlined,
+  DeleteOutlined,
+  FileTextOutlined,
+  BookOutlined,
+  InboxOutlined,
 } from '@ant-design/icons';
 import { api } from '@/api/client';
 import type { KnowledgeBase, Document } from '@/types';
 import { GlassCard, SectionCard, StatusPill, EmptyState, TableSkeleton } from '@/components';
 
+import { radius } from '@/styles/themeTokens';
 const { Title, Text } = Typography;
 
 /* ─── Main ────────────────────────────────────────────────────────── */
@@ -26,23 +28,55 @@ const KnowledgeBases: React.FC = () => {
   const [form] = Form.useForm();
   const { message, modal } = App.useApp();
 
-  const fetchKbs = async () => {
+  const fetchKbs = async (signal?: AbortSignal) => {
     setLoading(true);
     try {
-      const resp = await api.get<{ items: KnowledgeBase[]; total: number }>('/knowledge-bases/');
+      const resp = await api.get<{ items: KnowledgeBase[]; total: number }>(
+        '/knowledge-bases/',
+        undefined,
+        signal,
+      );
       setKbs(resp.data?.items || []);
-    } finally { setLoading(false); }
+    } catch (e: unknown) {
+      if (
+        e &&
+        typeof e === 'object' &&
+        'code' in e &&
+        (e as { code?: string }).code === 'ERR_CANCELED'
+      )
+        return;
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const fetchDocs = async (kbId: string) => {
+  const fetchDocs = async (kbId: string, signal?: AbortSignal) => {
     setDocsLoading(true);
     try {
-      const resp = await api.get<Document[]>(`/knowledge-bases/${kbId}/documents`);
+      const resp = await api.get<Document[]>(
+        `/knowledge-bases/${kbId}/documents`,
+        undefined,
+        signal,
+      );
       setDocs(resp.data || []);
-    } finally { setDocsLoading(false); }
+    } catch (e: unknown) {
+      if (
+        e &&
+        typeof e === 'object' &&
+        'code' in e &&
+        (e as { code?: string }).code === 'ERR_CANCELED'
+      )
+        return;
+    } finally {
+      setDocsLoading(false);
+    }
   };
 
-  useEffect(() => { fetchKbs(); }, []);
+  useEffect(() => {
+    const ctrl = new AbortController();
+    fetchKbs(ctrl.signal);
+    return () => ctrl.abort();
+  }, []);
 
   const handleCreate = async (values: { name: string; description?: string }) => {
     try {
@@ -51,7 +85,9 @@ const KnowledgeBases: React.FC = () => {
       setCreateOpen(false);
       form.resetFields();
       fetchKbs();
-    } catch { /* handled */ }
+    } catch {
+      /* handled */
+    }
   };
 
   const handleUpload = async (file: File) => {
@@ -61,7 +97,9 @@ const KnowledgeBases: React.FC = () => {
       message.success(`${file.name} 上传成功，正在处理...`);
       fetchDocs(selectedKb.id);
       fetchKbs();
-    } catch { /* handled */ }
+    } catch {
+      /* handled */
+    }
     return false;
   };
 
@@ -81,53 +119,163 @@ const KnowledgeBases: React.FC = () => {
     });
   };
 
-  const kbColumns = [
-    { title: '名称', dataIndex: 'name', render: (name: string, record: KnowledgeBase) => (
-      <a
-        onClick={() => { setSelectedKb(record); fetchDocs(record.id); }}
-        style={{ color: '#2997ff', fontWeight: 500 }}
-      >
-        <Space><BookOutlined />{name}</Space>
-      </a>
-    )},
-    { title: '模型', dataIndex: 'embedding_model', render: (v: string) => (
-      <span style={{ padding: '2px 8px', borderRadius: 6, background: 'var(--bg-elevated)', fontSize: 12, color: 'var(--text-muted)' }}>{v}</span>
-    )},
-    { title: '文档', dataIndex: 'doc_count', render: (v: number) => <span style={{ color: 'var(--text-muted)' }}>{v}</span> },
-    { title: '分块', dataIndex: 'chunk_count', render: (v: number) => <span style={{ color: 'var(--text-muted)' }}>{v}</span> },
-    { title: '创建时间', dataIndex: 'created_at', render: (v: string) => <span style={{ color: 'var(--text-muted)', fontSize: 13 }}>{new Date(v).toLocaleString()}</span> },
-    { title: '', width: 60, render: (_: unknown, record: KnowledgeBase) => (
-      <div
-        onClick={() => handleDelete(record.id)}
-        className="icon-action icon-action--muted icon-action--red"
-      >
-        <DeleteOutlined />
-      </div>
-    )},
-  ];
+  const kbColumns = useMemo(
+    () => [
+      {
+        title: '名称',
+        dataIndex: 'name',
+        render: (name: string, record: KnowledgeBase) => (
+          <a
+            onClick={() => {
+              setSelectedKb(record);
+              fetchDocs(record.id);
+            }}
+            style={{ color: '#2997ff', fontWeight: 500 }}
+          >
+            <Space>
+              <BookOutlined />
+              {name}
+            </Space>
+          </a>
+        ),
+      },
+      {
+        title: '模型',
+        dataIndex: 'embedding_model',
+        render: (v: string) => (
+          <span
+            style={{
+              padding: '2px 8px',
+              borderRadius: radius.sm,
+              background: 'var(--bg-elevated)',
+              fontSize: 12,
+              color: 'var(--text-muted)',
+            }}
+          >
+            {v}
+          </span>
+        ),
+      },
+      {
+        title: '文档',
+        dataIndex: 'doc_count',
+        render: (v: number) => <span style={{ color: 'var(--text-muted)' }}>{v}</span>,
+      },
+      {
+        title: '分块',
+        dataIndex: 'chunk_count',
+        render: (v: number) => <span style={{ color: 'var(--text-muted)' }}>{v}</span>,
+      },
+      {
+        title: '创建时间',
+        dataIndex: 'created_at',
+        render: (v: string) => (
+          <span style={{ color: 'var(--text-muted)', fontSize: 13 }}>
+            {new Date(v).toLocaleString()}
+          </span>
+        ),
+      },
+      {
+        title: '',
+        width: 60,
+        render: (_: unknown, record: KnowledgeBase) => (
+          <Button
+            type="text"
+            size="small"
+            icon={<DeleteOutlined />}
+            aria-label="删除"
+            danger
+            onClick={() => handleDelete(record.id)}
+          />
+        ),
+      },
+    ],
+    [],
+  );
 
-  const docColumns = [
-    { title: '文件名', dataIndex: 'filename', render: (v: string) => (
-      <span style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--text-primary)', fontWeight: 500 }}>
-        <FileTextOutlined style={{ color: '#0a84ff' }} />{v}
-      </span>
-    )},
-    { title: '类型', dataIndex: 'mime_type', render: (v: string) => <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{v || 'text'}</span> },
-    { title: '大小', dataIndex: 'file_size', render: (v: number) => <span style={{ color: 'var(--text-muted)' }}>{v ? `${(v / 1024).toFixed(1)} KB` : '-'}</span> },
-    { title: '分块', dataIndex: 'chunk_count', render: (v: number) => <span style={{ color: 'var(--text-muted)' }}>{v}</span> },
-    { title: '状态', dataIndex: 'status', render: (s: string) => <StatusPill status={s} /> },
-    { title: '上传时间', dataIndex: 'created_at', render: (v: string) => <span style={{ color: 'var(--text-muted)', fontSize: 13 }}>{new Date(v).toLocaleString()}</span> },
-  ];
+  const docColumns = useMemo(
+    () => [
+      {
+        title: '文件名',
+        dataIndex: 'filename',
+        render: (v: string) => (
+          <span
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              color: 'var(--text-primary)',
+              fontWeight: 500,
+            }}
+          >
+            <FileTextOutlined style={{ color: '#0a84ff' }} />
+            {v}
+          </span>
+        ),
+      },
+      {
+        title: '类型',
+        dataIndex: 'mime_type',
+        render: (v: string) => (
+          <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{v || 'text'}</span>
+        ),
+      },
+      {
+        title: '大小',
+        dataIndex: 'file_size',
+        render: (v: number) => (
+          <span style={{ color: 'var(--text-muted)' }}>
+            {v ? `${(v / 1024).toFixed(1)} KB` : '-'}
+          </span>
+        ),
+      },
+      {
+        title: '分块',
+        dataIndex: 'chunk_count',
+        render: (v: number) => <span style={{ color: 'var(--text-muted)' }}>{v}</span>,
+      },
+      { title: '状态', dataIndex: 'status', render: (s: string) => <StatusPill status={s} /> },
+      {
+        title: '上传时间',
+        dataIndex: 'created_at',
+        render: (v: string) => (
+          <span style={{ color: 'var(--text-muted)', fontSize: 13 }}>
+            {new Date(v).toLocaleString()}
+          </span>
+        ),
+      },
+    ],
+    [],
+  );
 
   return (
     <div>
       {/* Page title */}
-      <div className="animate-fade-in-up" style={{ marginBottom: 32, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+      <div
+        className="animate-fade-in-up"
+        style={{
+          marginBottom: 32,
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'flex-end',
+        }}
+      >
         <div>
-          <Title level={2} style={{ margin: 0, fontWeight: 700, fontSize: 34, letterSpacing: '-0.04em', color: 'var(--text-primary)' }}>
+          <Title
+            level={2}
+            style={{
+              margin: 0,
+              fontWeight: 700,
+              fontSize: 34,
+              letterSpacing: '-0.04em',
+              color: 'var(--text-primary)',
+            }}
+          >
             知识库
           </Title>
-          <Text style={{ fontSize: 17, color: 'var(--text-secondary)', marginTop: 6, display: 'block' }}>
+          <Text
+            style={{ fontSize: 17, color: 'var(--text-secondary)', marginTop: 6, display: 'block' }}
+          >
             管理文档与向量索引
           </Text>
         </div>
@@ -135,14 +283,16 @@ const KnowledgeBases: React.FC = () => {
           type="primary"
           icon={<PlusOutlined />}
           onClick={() => setCreateOpen(true)}
-          style={{ height: 44, paddingInline: 20, borderRadius: 12, fontWeight: 500 }}
+          style={{ height: 44, paddingInline: 20, borderRadius: radius.md, fontWeight: 500 }}
         >
           创建知识库
         </Button>
       </div>
 
       {/* Table */}
-      {loading ? <TableSkeleton /> : (
+      {loading ? (
+        <TableSkeleton />
+      ) : (
         <GlassCard animate styles={{ body: { padding: 0 } }}>
           {kbs.length === 0 ? (
             <EmptyState
@@ -171,38 +321,71 @@ const KnowledgeBases: React.FC = () => {
           styles={{ body: { padding: docsLoading ? 24 : 0 } }}
           title={
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <span style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)' }}>{selectedKb.name}</span>
+              <span style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)' }}>
+                {selectedKb.name}
+              </span>
               <span style={{ fontSize: 13, color: 'var(--text-subtle)' }}>文档列表</span>
             </div>
           }
           extra={
             <Upload beforeUpload={handleUpload} showUploadList={false}>
-              <Button icon={<UploadOutlined />} style={{ borderRadius: 10 }}>上传文档</Button>
+              <Button icon={<UploadOutlined />} style={{ borderRadius: radius.md }}>
+                上传文档
+              </Button>
             </Upload>
           }
         >
-          <div style={{ padding: '16px 24px', borderBottom: '0.5px solid var(--border-divider)', display: 'flex', gap: 24 }}>
+          <div
+            style={{
+              padding: '16px 24px',
+              borderBottom: '0.5px solid var(--border-divider)',
+              display: 'flex',
+              gap: 24,
+            }}
+          >
             {[
               { label: '文档数', value: selectedKb.doc_count },
               { label: '分块数', value: selectedKb.chunk_count },
               { label: 'Embedding', value: selectedKb.embedding_model },
             ].map((item) => (
               <div key={item.label}>
-                <div style={{ fontSize: 11, color: 'var(--text-subtle)', fontWeight: 500, letterSpacing: '0.02em', marginBottom: 4 }}>{item.label}</div>
-                <div style={{ fontSize: 14, color: 'var(--text-primary)', fontWeight: 500 }}>{item.value}</div>
+                <div
+                  style={{
+                    fontSize: 11,
+                    color: 'var(--text-subtle)',
+                    fontWeight: 500,
+                    letterSpacing: '0.02em',
+                    marginBottom: 4,
+                  }}
+                >
+                  {item.label}
+                </div>
+                <div style={{ fontSize: 14, color: 'var(--text-primary)', fontWeight: 500 }}>
+                  {item.value}
+                </div>
               </div>
             ))}
           </div>
 
-          {docsLoading ? <Skeleton active paragraph={{ rows: 4 }} style={{ padding: 24 }} /> : (
-            docs.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '60px 24px' }}>
-                <InboxOutlined style={{ fontSize: 36, color: 'var(--text-faint)', marginBottom: 12 }} />
-                <div style={{ fontSize: 14, color: 'var(--text-subtle)' }}>暂无文档，点击上方按钮上传</div>
+          {docsLoading ? (
+            <Skeleton active paragraph={{ rows: 4 }} style={{ padding: 24 }} />
+          ) : docs.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '60px 24px' }}>
+              <InboxOutlined
+                style={{ fontSize: 36, color: 'var(--text-faint)', marginBottom: 12 }}
+              />
+              <div style={{ fontSize: 14, color: 'var(--text-subtle)' }}>
+                暂无文档，点击上方按钮上传
               </div>
-            ) : (
-              <Table dataSource={docs} columns={docColumns} rowKey="id" size="small" pagination={false} />
-            )
+            </div>
+          ) : (
+            <Table
+              dataSource={docs}
+              columns={docColumns}
+              rowKey="id"
+              size="small"
+              pagination={false}
+            />
           )}
         </SectionCard>
       )}

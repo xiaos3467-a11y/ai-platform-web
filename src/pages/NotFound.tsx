@@ -5,6 +5,7 @@ import { Button, Typography } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { HomeOutlined } from '@ant-design/icons';
 
+import { radius } from '@/styles/themeTokens';
 const { Title, Text } = Typography;
 
 const NotFound: React.FC = () => {
@@ -42,7 +43,12 @@ const NotFound: React.FC = () => {
 
       <Title
         level={3}
-        style={{ margin: 0, fontWeight: 600, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}
+        style={{
+          margin: 0,
+          fontWeight: 600,
+          color: 'var(--text-primary)',
+          letterSpacing: '-0.02em',
+        }}
       >
         页面未找到
       </Title>
@@ -68,7 +74,7 @@ const NotFound: React.FC = () => {
         style={{
           height: 48,
           paddingInline: 28,
-          borderRadius: 14,
+          borderRadius: radius.md,
           fontWeight: 600,
           fontSize: 15,
         }}

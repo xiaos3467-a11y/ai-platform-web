@@ -30,7 +30,15 @@ export interface LoginUserPayload {
 
 export interface LoginResponse {
   token: string;
+  refresh_token: string;
+  expires_in: number;
   user: LoginUserPayload;
+}
+
+export interface RefreshResponse {
+  token: string;
+  refresh_token: string;
+  expires_in: number;
 }
 
 export interface UserInfo {
@@ -38,6 +46,110 @@ export interface UserInfo {
   username: string;
   tenant_id: string;
   role: string;
+  roles?: string[];
+  permissions?: string[];
+}
+
+// --- Audit Log ---
+export interface AuditLogEntry {
+  id: string;
+  tenant_id: string | null;
+  app_id: string | null;
+  user_id: string | null;
+  api_key_prefix: string | null;
+  action: string;
+  resource_type: string | null;
+  resource_id: string | null;
+  response_code: number | null;
+  latency_ms: number | null;
+  ip_address: string | null;
+  trace_id: string | null;
+  created_at: string;
+}
+
+// --- SSO Provider ---
+export interface SsoProvider {
+  id: string;
+  provider_type: string; // oidc | saml | oauth2
+  name: string;
+  display_name: string;
+  client_id: string;
+  issuer_url: string | null;
+  is_enabled: boolean;
+  created_at: string;
+}
+
+export interface SsoProviderCreateRequest {
+  provider_type: string;
+  name: string;
+  display_name: string;
+  client_id: string;
+  client_secret: string;
+  issuer_url?: string;
+  redirect_uri?: string;
+  scopes?: string[];
+}
+
+// --- API Key ---
+export interface ApiKeyItem {
+  id: string;
+  app_id: string;
+  name: string | null;
+  key_prefix: string;
+  permissions: string[];
+  rate_limit: number;
+  expires_at: string | null;
+  last_used_at: string | null;
+  created_at: string;
+  is_enabled: boolean;
+}
+
+export interface ApiKeyCreateRequest {
+  app_id: string;
+  name?: string;
+  permissions?: string[];
+  rate_limit?: number;
+  expires_at?: string | null;
+}
+
+export interface ApiKeyCreateResponse {
+  id: string;
+  key: string; // only returned on creation
+  key_prefix: string;
+  name: string | null;
+}
+
+// --- Metrics ---
+export interface SystemMetrics {
+  cpu_usage_percent: number;
+  memory_usage_percent: number;
+  memory_total_bytes: number;
+  memory_used_bytes: number;
+  disk_usage_percent: number;
+  disk_total_bytes: number;
+  disk_used_bytes: number;
+  uptime_seconds: number;
+  timestamp: string;
+}
+
+export interface ApiMetrics {
+  qps: number;
+  avg_latency_ms: number;
+  p95_latency_ms: number;
+  error_rate_percent: number;
+  total_requests: number;
+  period: string;
+}
+
+export interface ModelMetrics {
+  model: string;
+  provider: string;
+  total_requests: number;
+  success_rate: number;
+  avg_latency_ms: number;
+  total_input_tokens: number;
+  total_output_tokens: number;
+  estimated_cost_usd: number;
 }
 
 // --- Providers ---
@@ -182,12 +294,15 @@ export interface CostSummary {
   total_input_tokens: number;
   total_output_tokens: number;
   total_requests: number;
-  by_model: Record<string, {
-    input_tokens: number;
-    output_tokens: number;
-    requests: number;
-    cost_usd: number;
-  }>;
+  by_model: Record<
+    string,
+    {
+      input_tokens: number;
+      output_tokens: number;
+      requests: number;
+      cost_usd: number;
+    }
+  >;
   period_start: string;
   period_end: string;
 }
@@ -243,3 +358,6 @@ export interface Tool {
   category: string;
   parameters: Record<string, unknown>;
 }
+
+// Re-export tenant types
+export * from './tenant';

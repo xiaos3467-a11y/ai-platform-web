@@ -5,6 +5,20 @@
  * swap between them on the fly.
  */
 
+/**
+ * Radius scale — use these instead of hardcoded borderRadius values.
+ * Maps to CSS variables --radius-* defined in global.css.
+ */
+export const radius = {
+  sm: '8px',
+  md: '12px',
+  lg: '16px',
+  xl: '20px',
+  full: '999px',
+} as const;
+
+export type RadiusKey = keyof typeof radius;
+
 export const darkTokens = {
   token: {
     // ─── Core palette ──────────────────────────────────────────
@@ -48,10 +62,10 @@ export const darkTokens = {
     fontWeightStrong: 600,
     lineHeight: 1.5714,
 
-    // ─── Shapes — generous rounding ────────────────────────────
-    borderRadius: 12,
-    borderRadiusLG: 16,
-    borderRadiusSM: 8,
+    // ─── Shapes — generous rounding (reference radius tokens) ────
+    borderRadius: parseInt(radius.md, 10), // 12
+    borderRadiusLG: parseInt(radius.lg, 10), // 16
+    borderRadiusSM: parseInt(radius.sm, 10), // 8
     borderRadiusXS: 6,
 
     // ─── Spacing — airy ────────────────────────────────────────
@@ -64,8 +78,7 @@ export const darkTokens = {
 
     // ─── Shadows — subtle glows on dark ────────────────────────
     boxShadow: '0 2px 8px rgba(0, 0, 0, 0.4), 0 0 1px rgba(255, 255, 255, 0.05)',
-    boxShadowSecondary:
-      '0 8px 32px rgba(0, 0, 0, 0.5), 0 0 1px rgba(255, 255, 255, 0.08)',
+    boxShadowSecondary: '0 8px 32px rgba(0, 0, 0, 0.5), 0 0 1px rgba(255, 255, 255, 0.08)',
 
     // ─── Motion — Apple spring curves ──────────────────────────
     motionDurationMid: '0.3s',
@@ -79,7 +92,7 @@ export const darkTokens = {
       bodyBg: '#000000',
     },
     Menu: {
-      itemBorderRadius: 10,
+      itemBorderRadius: parseInt(radius.sm, 10),
       itemMarginInline: 8,
       itemPaddingInline: 12,
       itemHeight: 40,
@@ -103,14 +116,14 @@ export const darkTokens = {
     },
     Card: {
       paddingLG: 24,
-      borderRadiusLG: 16,
+      borderRadiusLG: parseInt(radius.lg, 10),
       colorBgContainer: 'rgba(255, 255, 255, 0.04)',
       colorBorderSecondary: 'rgba(255, 255, 255, 0.08)',
     },
     Button: {
-      borderRadius: 10,
-      borderRadiusLG: 12,
-      borderRadiusSM: 8,
+      borderRadius: parseInt(radius.md, 10),
+      borderRadiusLG: parseInt(radius.md, 10),
+      borderRadiusSM: parseInt(radius.sm, 10),
       controlHeight: 40,
       controlHeightLG: 48,
       fontWeight: 500,
@@ -120,7 +133,7 @@ export const darkTokens = {
       defaultColor: '#f5f5f7',
     },
     Input: {
-      borderRadius: 10,
+      borderRadius: parseInt(radius.md, 10),
       controlHeight: 40,
       controlHeightLG: 48,
       colorBgContainer: 'rgba(255, 255, 255, 0.06)',
@@ -130,13 +143,13 @@ export const darkTokens = {
       activeShadow: '0 0 0 3px rgba(10, 132, 255, 0.15)',
     },
     Select: {
-      borderRadius: 10,
+      borderRadius: parseInt(radius.md, 10),
       controlHeight: 40,
       colorBgContainer: 'rgba(255, 255, 255, 0.06)',
       colorBorder: 'rgba(255, 255, 255, 0.1)',
     },
     Table: {
-      borderRadius: 12,
+      borderRadius: parseInt(radius.md, 10),
       headerBg: 'rgba(255, 255, 255, 0.03)',
       headerColor: '#a1a1a6',
       headerSplitColor: 'transparent',
@@ -161,7 +174,7 @@ export const darkTokens = {
       contentColor: '#f5f5f7',
     },
     Modal: {
-      borderRadiusLG: 20,
+      borderRadiusLG: parseInt(radius.xl, 10),
       paddingContentHorizontalLG: 28,
       titleFontSize: 18,
       headerBg: 'rgba(28, 28, 30, 0.95)',
@@ -174,7 +187,7 @@ export const darkTokens = {
     Tooltip: {
       colorBgSpotlight: 'rgba(44, 44, 46, 0.95)',
       colorTextLightSolid: '#f5f5f7',
-      borderRadius: 8,
+      borderRadius: parseInt(radius.sm, 10),
     },
     Popover: {
       colorBgElevated: 'rgba(44, 44, 46, 0.95)',
@@ -189,10 +202,10 @@ export const darkTokens = {
       inkBarColor: '#0a84ff',
     },
     Alert: {
-      borderRadiusLG: 12,
+      borderRadiusLG: parseInt(radius.md, 10),
     },
     Pagination: {
-      borderRadius: 8,
+      borderRadius: parseInt(radius.sm, 10),
     },
     Skeleton: {
       colorFill: 'rgba(255, 255, 255, 0.06)',
@@ -203,31 +216,69 @@ export const darkTokens = {
 
 export const lightTokens = {
   token: {
+    // ─── Core palette ──────────────────────────────────────────
     colorPrimary: '#0071e3',
     colorSuccess: '#34c759',
     colorWarning: '#ff9f0a',
     colorError: '#ff3b30',
     colorInfo: '#0071e3',
+
+    // ─── Fills ────────────────────────────────────────────────
+    colorFill: '#f5f5f7',
+    colorFillSecondary: '#e8e8ed',
+    colorFillTertiary: '#fafafa',
+    colorFillQuaternary: '#ffffff',
+
+    // ─── Surface layers ────────────────────────────────────────
     colorBgBase: '#ffffff',
     colorBgLayout: '#f5f5f7',
     colorBgContainer: '#ffffff',
     colorBgElevated: '#ffffff',
+    colorBgSpotlight: '#f5f5f7',
+
+    // ─── Borders ───────────────────────────────────────────────
     colorBorder: '#d2d2d7',
     colorBorderSecondary: '#e8e8ed',
+
+    // ─── Text hierarchy ────────────────────────────────────────
     colorText: '#1d1d1f',
     colorTextSecondary: '#6e6e73',
     colorTextTertiary: '#86868b',
+    colorTextQuaternary: '#86868b',
+
+    // ─── Typography ────────────────────────────────────────────
     fontFamily: `-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Inter', 'Helvetica Neue', 'PingFang SC', sans-serif`,
     fontSize: 14,
     fontSizeHeading1: 40,
     fontSizeHeading2: 28,
     fontSizeHeading3: 22,
     fontSizeHeading4: 17,
-    borderRadius: 12,
-    borderRadiusLG: 16,
-    borderRadiusSM: 8,
+    fontSizeHeading5: 15,
+    fontWeightStrong: 600,
+    lineHeight: 1.5714,
+
+    // ─── Shapes ────────────────────────────────────────────────
+    borderRadius: parseInt(radius.md, 10),
+    borderRadiusLG: parseInt(radius.lg, 10),
+    borderRadiusSM: parseInt(radius.sm, 10),
+    borderRadiusXS: 6,
+
+    // ─── Spacing ───────────────────────────────────────────────
+    padding: 16,
+    paddingLG: 24,
+    paddingSM: 12,
+    paddingXS: 8,
+    margin: 16,
+    marginLG: 24,
+
+    // ─── Shadows ───────────────────────────────────────────────
+    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+    boxShadowSecondary: '0 8px 24px rgba(0, 0, 0, 0.12)',
+
+    // ─── Motion ────────────────────────────────────────────────
     motionDurationMid: '0.3s',
     motionEaseInOut: 'cubic-bezier(0.4, 0, 0.2, 1)',
+    motionEaseOut: 'cubic-bezier(0.16, 1, 0.3, 1)',
   },
   components: {
     Layout: {
@@ -236,38 +287,57 @@ export const lightTokens = {
       bodyBg: '#f5f5f7',
     },
     Menu: {
-      itemBorderRadius: 10,
+      itemBorderRadius: parseInt(radius.sm, 10),
       itemMarginInline: 8,
       itemPaddingInline: 12,
       itemHeight: 40,
+      itemBg: 'transparent',
       itemHoverBg: 'rgba(0, 113, 227, 0.06)',
       itemSelectedBg: 'rgba(0, 113, 227, 0.1)',
       itemSelectedColor: '#0071e3',
       itemColor: '#1d1d1f',
       itemHoverColor: '#0071e3',
+      itemActiveBg: 'rgba(0, 113, 227, 0.14)',
       subMenuItemBg: 'transparent',
       iconSize: 18,
       fontSize: 14,
     },
     Card: {
       paddingLG: 24,
-      borderRadiusLG: 16,
+      borderRadiusLG: parseInt(radius.lg, 10),
+      colorBgContainer: '#ffffff',
+      colorBorderSecondary: '#e8e8ed',
     },
     Button: {
-      borderRadius: 10,
-      borderRadiusLG: 12,
+      borderRadius: parseInt(radius.md, 10),
+      borderRadiusLG: parseInt(radius.md, 10),
+      borderRadiusSM: parseInt(radius.sm, 10),
       controlHeight: 40,
       controlHeightLG: 48,
       fontWeight: 500,
       primaryShadow: '0 1px 3px rgba(0, 113, 227, 0.3)',
+      defaultBg: '#ffffff',
+      defaultBorderColor: '#d2d2d7',
+      defaultColor: '#1d1d1f',
     },
     Input: {
-      borderRadius: 10,
+      borderRadius: parseInt(radius.md, 10),
       controlHeight: 40,
       controlHeightLG: 48,
+      colorBgContainer: '#ffffff',
+      colorBorder: '#d2d2d7',
+      activeBorderColor: '#0071e3',
+      hoverBorderColor: '#86868b',
+      activeShadow: '0 0 0 3px rgba(0, 113, 227, 0.12)',
+    },
+    Select: {
+      borderRadius: parseInt(radius.md, 10),
+      controlHeight: 40,
+      colorBgContainer: '#ffffff',
+      colorBorder: '#d2d2d7',
     },
     Table: {
-      borderRadius: 12,
+      borderRadius: parseInt(radius.md, 10),
       headerBg: '#fafafa',
       headerColor: '#6e6e73',
       headerSplitColor: 'transparent',
@@ -275,6 +345,59 @@ export const lightTokens = {
       borderColor: '#f0f0f2',
       cellPaddingBlock: 14,
       cellPaddingInline: 16,
+      fontSize: 14,
+      colorBgContainer: '#ffffff',
+    },
+    Tag: {
+      borderRadiusSM: 6,
+      defaultBg: '#f5f5f7',
+      defaultColor: '#6e6e73',
+    },
+    Statistic: {
+      titleFontSize: 13,
+      contentFontSize: 32,
+    },
+    Descriptions: {
+      titleColor: '#6e6e73',
+      contentColor: '#1d1d1f',
+    },
+    Modal: {
+      borderRadiusLG: parseInt(radius.xl, 10),
+      paddingContentHorizontalLG: 28,
+      titleFontSize: 18,
+      headerBg: '#ffffff',
+      contentBg: '#ffffff',
+    },
+    Drawer: {
+      paddingLG: 24,
+      colorBgElevated: '#ffffff',
+    },
+    Tooltip: {
+      colorBgSpotlight: 'rgba(44, 44, 46, 0.95)',
+      colorTextLightSolid: '#f5f5f7',
+      borderRadius: parseInt(radius.sm, 10),
+    },
+    Popover: {
+      colorBgElevated: '#ffffff',
+    },
+    Dropdown: {
+      controlItemBgHover: 'rgba(0, 0, 0, 0.04)',
+      colorBgElevated: '#ffffff',
+    },
+    Tabs: {
+      itemSelectedColor: '#1d1d1f',
+      itemHoverColor: '#6e6e73',
+      inkBarColor: '#0071e3',
+    },
+    Alert: {
+      borderRadiusLG: parseInt(radius.md, 10),
+    },
+    Pagination: {
+      borderRadius: parseInt(radius.sm, 10),
+    },
+    Skeleton: {
+      colorFill: 'rgba(0, 0, 0, 0.06)',
+      colorFillContent: 'rgba(0, 0, 0, 0.1)',
     },
   },
 };

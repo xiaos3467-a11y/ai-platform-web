@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Platform — Components</title>
+  <style>
+    /* ─── Same tokens as design-system.html ─── */
+    :root {
+      --font-stack: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text',
+                    'Inter', 'Helvetica Neue', 'PingFang SC', 'Noto Sans SC', sans-serif;
+      --color-primary: #0a84ff;
+      --color-success: #30d158;
+      --color-warning: #ffd60a;
+      --color-error:   #ff453a;
+      --color-purple:  #5e5ce6;
+      --color-violet:  #bf5af2;
+      --color-teal:    #64d2ff;
+      --bg-body: #000000;
+      --bg-card: rgba(255, 255, 255, 0.04);
+      --bg-elevated: rgba(255, 255, 255, 0.06);
+      --bg-elevated-2: rgba(255, 255, 255, 0.08);
+      --bg-spotlight: rgba(255, 255, 255, 0.12);
+      --text-primary: #f5f5f7;
+      --text-secondary: rgba(255, 255, 255, 0.45);
+      --text-tertiary: rgba(255, 255, 255, 0.25);
+      --text-muted: rgba(255, 255, 255, 0.35);
+      --text-soft: rgba(255, 255, 255, 0.5);
+      --text-label: rgba(255, 255, 255, 0.7);
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --border-divider: rgba(255, 255, 255, 0.06);
+      --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4), 0 0 1px rgba(255, 255, 255, 0.05);
+      --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 1px rgba(255, 255, 255, 0.08);
+      --radius-xs: 6px;
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-xl: 20px;
+      --radius-full: 999px;
+      --space-xs: 4px;
+      --space-sm: 8px;
+      --space-md: 12px;
+      --space-lg: 16px;
+      --space-xl: 24px;
+      --space-xxl: 32px;
+      --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+      --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+      --gradient-primary: linear-gradient(135deg, #0a84ff 0%, #5e5ce6 100%);
+      --gradient-success: linear-gradient(135deg, #30d158 0%, #34c759 100%);
+      --gradient-warning: linear-gradient(135deg, #ffd60a 0%, #ff9f0a 100%);
+      --gradient-error: linear-gradient(135deg, #ff453a 0%, #ff6961 100%);
+      --gradient-purple: linear-gradient(135deg, #5e5ce6 0%, #bf5af2 100%);
+    }
+    html.light {
+      --color-primary: #0071e3;
+      --color-success: #34c759;
+      --color-warning: #ff9f0a;
+      --color-error:   #ff3b30;
+      --bg-body: #f5f5f7;
+      --bg-card: rgba(255, 255, 255, 0.8);
+      --bg-elevated: rgba(0, 0, 0, 0.03);
+      --bg-elevated-2: rgba(0, 0, 0, 0.05);
+      --bg-spotlight: rgba(0, 0, 0, 0.04);
+      --text-primary: #1d1d1f;
+      --text-secondary: rgba(0, 0, 0, 0.45);
+      --text-tertiary: rgba(0, 0, 0, 0.3);
+      --text-muted: rgba(0, 0, 0, 0.35);
+      --text-soft: rgba(0, 0, 0, 0.5);
+      --text-label: rgba(0, 0, 0, 0.75);
+      --border-subtle: rgba(0, 0, 0, 0.08);
+      --border-divider: rgba(0, 0, 0, 0.06);
+      --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+      --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 16px; -webkit-font-smoothing: antialiased; scroll-behavior: smooth; }
+    body {
+      font-family: var(--font-stack);
+      background: var(--bg-body);
+      color: var(--text-primary);
+      line-height: 1.47;
+      letter-spacing: -0.022em;
+      min-height: 100vh;
+      transition: background 0.4s var(--ease-out), color 0.4s var(--ease-out);
+    }
+    ::selection { background: rgba(0, 122, 255, 0.3); color: inherit; }
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 4px; }
+    html.light ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); }
+
+    .page-wrapper { max-width: 1320px; margin: 0 auto; padding: 48px 40px 120px; }
+    .page-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 48px; padding-bottom: 32px;
+      border-bottom: 0.5px solid var(--border-divider);
+    }
+    .page-title { font-size: 40px; font-weight: 700; letter-spacing: -0.04em; line-height: 1.1; }
+    .page-title span {
+      background: linear-gradient(135deg, #0a84ff 0%, #5e5ce6 50%, #bf5af2 100%);
+      -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .page-subtitle { font-size: 17px; color: var(--text-secondary); margin-top: 8px; }
+
+    .theme-toggle {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 16px; border-radius: var(--radius-full);
+      background: var(--bg-elevated); border: 0.5px solid var(--border-subtle);
+      cursor: pointer; color: var(--text-soft);
+      font-size: 13px; font-weight: 500; font-family: var(--font-stack);
+      transition: all 0.2s ease;
+    }
+    .theme-toggle:hover { background: var(--bg-elevated-2); color: var(--text-primary); }
+
+    .section { margin-bottom: 72px; }
+    .section-title {
+      font-size: 22px; font-weight: 600; letter-spacing: -0.03em;
+      margin-bottom: 8px; display: flex; align-items: center; gap: 12px;
+    }
+    .section-badge {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 32px; height: 32px; border-radius: var(--radius-sm);
+      background: var(--gradient-primary); color: #fff;
+      font-size: 14px; font-weight: 700; flex-shrink: 0;
+    }
+    .section-desc {
+      font-size: 14px; color: var(--text-secondary); margin-bottom: 28px; max-width: 640px;
+    }
+
+    .component-row {
+      display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start;
+    }
+    .component-group {
+      background: var(--bg-card); border: 0.5px solid var(--border-subtle);
+      border-radius: var(--radius-lg); padding: var(--space-xl);
+      flex: 1; min-width: 280px;
+    }
+    .component-group-title {
+      font-size: 13px; font-weight: 600; color: var(--text-tertiary);
+      text-transform: uppercase; letter-spacing: 0.06em;
+      margin-bottom: 20px;
+    }
+
+    /* ─── StatCard ─── */
+    .stat-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 20px;
+    }
+    .stat-card {
+      background: var(--bg-card);
+      border: 0.5px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 24px 28px;
+      display: flex; align-items: flex-start; justify-content: space-between;
+      transition: transform 0.3s var(--ease-out), box-shadow 0.3s var(--ease-out), border-color 0.3s var(--ease-out);
+      cursor: default;
+    }
+    .stat-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+      border-color: rgba(255,255,255,0.12);
+    }
+    .stat-content { display: flex; flex-direction: column; gap: 8px; }
+    .stat-title {
+      font-size: 13px; font-weight: 500; color: var(--text-secondary);
+      letter-spacing: 0.02em; text-transform: uppercase;
+    }
+    .stat-value {
+      font-size: 36px; font-weight: 700; letter-spacing: -0.04em; line-height: 1;
+      font-variant-numeric: tabular-nums;
+    }
+    .stat-suffix { font-size: 16px; font-weight: 500; color: var(--text-soft); margin-left: 2px; }
+    .stat-trend {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 12px; font-weight: 600; border-radius: var(--radius-xs);
+      padding: 2px 8px;
+    }
+    .stat-trend.up { color: var(--color-success); background: rgba(48,209,88,0.1); }
+    .stat-trend.down { color: var(--color-error); background: rgba(255,69,58,0.1); }
+    .stat-icon-badge {
+      width: 44px; height: 44px; border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; flex-shrink: 0;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+    }
+
+    /* ─── SectionCard ─── */
+    .section-card {
+      background: var(--bg-card); border: 0.5px solid var(--border-subtle);
+      border-radius: var(--radius-lg); overflow: hidden;
+    }
+    .section-card-header {
+      padding: 16px 24px;
+      border-bottom: 0.5px solid var(--border-divider);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .section-card-header-left { display: flex; align-items: center; gap: 12px; }
+    .section-card-icon { color: var(--color-primary); font-size: 18px; }
+    .section-card-title { font-size: 17px; font-weight: 600; letter-spacing: -0.02em; }
+    .section-card-subtitle { font-size: 13px; color: var(--text-tertiary); margin-top: 2px; }
+    .section-card-body { padding: 24px; }
+    .section-card-placeholder {
+      height: 120px; border-radius: var(--radius-md);
+      background: var(--bg-elevated); border: 1px dashed var(--border-subtle);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; color: var(--text-tertiary);
+    }
+
+    /* ─── Buttons ─── */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      font-family: var(--font-stack); font-size: 14px; font-weight: 500;
+      border: none; cursor: pointer; border-radius: 10px;
+      transition: all 0.2s var(--ease-out);
+      letter-spacing: -0.01em;
+    }
+    .btn:active { transform: scale(0.97); }
+
+    .btn-primary {
+      background: var(--gradient-primary); color: #fff;
+      height: 40px; padding: 12px 24px;
+    }
+    .btn-primary:hover { box-shadow: 0 4px 16px rgba(10,132,255,0.3); filter: brightness(1.08); }
+
+    .btn-secondary {
+      background: var(--bg-elevated); color: var(--text-primary);
+      height: 40px; padding: 12px 24px;
+      border: 0.5px solid var(--border-subtle);
+    }
+    .btn-secondary:hover { background: var(--bg-elevated-2); }
+
+    .btn-ghost {
+      background: transparent; color: var(--text-secondary);
+      height: 40px; padding: 12px 24px;
+    }
+    .btn-ghost:hover { background: var(--bg-elevated); color: var(--text-primary); }
+
+    .btn-danger {
+      background: var(--gradient-error); color: #fff;
+      height: 40px; padding: 12px 24px;
+    }
+    .btn-danger:hover { box-shadow: 0 4px 16px rgba(255,69,58,0.3); filter: brightness(1.08); }
+
+    .btn-sm { height: 32px; padding: 8px 16px; font-size: 13px; border-radius: 8px; }
+    .btn-lg { height: 48px; padding: 16px 32px; font-size: 15px; border-radius: 12px; }
+
+    .btn-loading { opacity: 0.7; pointer-events: none; }
+    .btn-disabled { opacity: 0.4; pointer-events: none; cursor: not-allowed; }
+
+    .spinner {
+      width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff; border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ─── Inputs ─── */
+    .input-field {
+      display: flex; flex-direction: column; gap: 6px;
+    }
+    .input-label {
+      font-size: 13px; font-weight: 500; color: var(--text-label);
+    }
+    .input-wrapper {
+      position: relative; display: flex; align-items: center;
+    }
+    .input {
+      width: 100%; height: 40px;
+      font-family: var(--font-stack); font-size: 14px; color: var(--text-primary);
+      background: var(--bg-elevated); border: 0.5px solid var(--border-subtle);
+      border-radius: 10px; padding: 12px 16px;
+      outline: none;
+      transition: all 0.25s var(--ease-out);
+    }
+    .input::placeholder { color: var(--text-tertiary); }
+    .input:focus {
+      border-color: var(--color-primary);
+      box-shadow: 0 0 0 3px rgba(10,132,255,0.15);
+    }
+    .input-error {
+      border-color: var(--color-error);
+    }
+    .input-error:focus {
+      box-shadow: 0 0 0 3px rgba(255,69,58,0.1);
+    }
+    .input-icon {
+      position: absolute; left: 14px; color: var(--text-tertiary); font-size: 14px;
+      pointer-events: none;
+    }
+    .input-with-icon { padding-left: 38px; }
+    .input-error-msg {
+      font-size: 12px; color: var(--color-error); margin-top: 2px;
+    }
+    .input:disabled, .input-disabled {
+      opacity: 0.4; pointer-events: none;
+    }
+
+    /* ─── Tags ─── */
+    .tag {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 12px; font-weight: 600; letter-spacing: 0.02em;
+      padding: 4px 10px; border-radius: var(--radius-xs);
+    }
+    .tag-blue { color: var(--color-primary); background: rgba(10,132,255,0.1); border: 0.5px solid rgba(10,132,255,0.2); }
+    .tag-green { color: var(--color-success); background: rgba(48,209,88,0.1); border: 0.5px solid rgba(48,209,88,0.2); }
+    .tag-yellow { color: var(--color-warning); background: rgba(255,214,10,0.1); border: 0.5px solid rgba(255,214,10,0.2); }
+    .tag-red { color: var(--color-error); background: rgba(255,69,58,0.1); border: 0.5px solid rgba(255,69,58,0.2); }
+    .tag-purple { color: var(--color-purple); background: rgba(94,92,230,0.1); border: 0.5px solid rgba(94,92,230,0.2); }
+    .tag-gray { color: var(--text-soft); background: var(--bg-elevated); border: 0.5px solid var(--border-subtle); }
+
+    /* ─── Status Pills ─── */
+    .pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 12px; font-weight: 600; letter-spacing: 0.02em;
+      padding: 6px 12px; border-radius: var(--radius-sm);
+      transition: transform 0.2s ease;
+    }
+    .pill:hover { transform: translateY(-1px); }
+    .pill-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+    }
+    .pill-healthy { color: var(--color-success); background: rgba(48,209,88,0.08); border: 0.5px solid rgba(48,209,88,0.2); }
+    .pill-healthy .pill-dot { background: var(--color-success); box-shadow: 0 0 6px var(--color-success); }
+    .pill-warning { color: var(--color-warning); background: rgba(255,214,10,0.08); border: 0.5px solid rgba(255,214,10,0.2); }
+    .pill-warning .pill-dot { background: var(--color-warning); box-shadow: 0 0 6px var(--color-warning); }
+    .pill-error { color: var(--color-error); background: rgba(255,69,58,0.08); border: 0.5px solid rgba(255,69,58,0.2); }
+    .pill-error .pill-dot { background: var(--color-error); box-shadow: 0 0 6px var(--color-error); }
+    .pill-info { color: var(--color-primary); background: rgba(10,132,255,0.08); border: 0.5px solid rgba(10,132,255,0.2); }
+    .pill-info .pill-dot { background: var(--color-primary); box-shadow: 0 0 6px var(--color-primary); }
+
+    /* ─── Table ─── */
+    .table-wrapper {
+      background: var(--bg-card); border: 0.5px solid var(--border-subtle);
+      border-radius: var(--radius-md); overflow: hidden;
+    }
+    .table { width: 100%; border-collapse: collapse; }
+    .table th {
+      text-align: left; padding: 14px 16px;
+      font-size: 12px; font-weight: 600; color: var(--text-tertiary);
+      text-transform: uppercase; letter-spacing: 0.06em;
+      background: var(--bg-elevated); border-bottom: 0.5px solid var(--border-divider);
+    }
+    .table td {
+      padding: 14px 16px; font-size: 14px; color: var(--text-primary);
+      border-bottom: 0.5px solid var(--border-divider);
+    }
+    .table tr:last-child td { border-bottom: none; }
+    .table tr:hover td { background: var(--bg-elevated); }
+    .table-model {
+      display: flex; align-items: center; gap: 10px;
+    }
+    .table-model-icon {
+      width: 28px; height: 28px; border-radius: 9px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; flex-shrink: 0;
+    }
+    .table-num { font-variant-numeric: tabular-nums; font-weight: 500; }
+    .table-actions {
+      display: flex; gap: 4px;
+    }
+    .table-action-btn {
+      padding: 4px; border-radius: 6px; cursor: pointer;
+      color: var(--text-muted); font-size: 14px;
+      transition: all 0.2s ease; background: none; border: none;
+    }
+    .table-action-btn:hover { color: var(--color-primary); background: rgba(10,132,255,0.1); }
+    .table-action-btn.danger:hover { color: var(--color-error); background: rgba(255,69,58,0.1); }
+
+    /* ─── Modal ─── */
+    .modal-overlay {
+      background: var(--bg-card); border: 0.5px solid var(--border-subtle);
+      border-radius: var(--radius-xl); padding: 28px;
+      max-width: 480px; width: 100%;
+      box-shadow: var(--shadow-lg);
+    }
+    .modal-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .modal-title { font-size: 17px; font-weight: 600; letter-spacing: -0.02em; }
+    .modal-close {
+      width: 28px; height: 28px; border-radius: var(--radius-full);
+      background: var(--bg-elevated); border: none; cursor: pointer;
+      color: var(--text-tertiary); font-size: 14px;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.2s ease;
+    }
+    .modal-close:hover { background: var(--bg-elevated-2); color: var(--text-primary); }
+    .modal-body { font-size: 14px; color: var(--text-secondary); line-height: 1.57; margin-bottom: 24px; }
+    .modal-footer { display: flex; gap: 12px; justify-content: flex-end; }
+
+    /* ─── Animations ─── */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .section { animation: fadeInUp 0.5s var(--ease-out) both; }
+    .section:nth-child(2) { animation-delay: 0.05s; }
+    .section:nth-child(3) { animation-delay: 0.1s; }
+    .section:nth-child(4) { animation-delay: 0.15s; }
+    .section:nth-child(5) { animation-delay: 0.2s; }
+    .section:nth-child(6) { animation-delay: 0.25s; }
+    .section:nth-child(7) { animation-delay: 0.3s; }
+
+    /* Mode toggle label */
+    .mode-label {
+      display: inline-flex; padding: 4px 12px; border-radius: var(--radius-full);
+      font-size: 11px; font-weight: 600; letter-spacing: 0.04em;
+      text-transform: uppercase; margin-bottom: 16px;
+    }
+    .mode-dark { color: var(--text-soft); background: var(--bg-elevated); }
+    .mode-light { color: var(--color-primary); background: rgba(10,132,255,0.1); }
+
+    @media (max-width: 768px) {
+      .page-wrapper { padding: 24px 20px 80px; }
+      .page-title { font-size: 28px; }
+      .stat-cards-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-wrapper">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title"><span>Components</span></h1>
+        <p class="page-subtitle">StatCard · SectionCard · Button · Input · Table · Modal · Tag · Status Pill</p>
+      </div>
+      <button class="theme-toggle" onclick="toggleTheme()">
+        <span id="themeIcon">☀️</span>
+        <span id="themeLabel">Light</span>
+      </button>
+    </div>
+
+    <!-- ═══════ 1. StatCard ═══════ -->
+    <section class="section">
+      <h2 class="section-title">
+        <span class="section-badge">1</span>
+        StatCard
+      </h2>
+      <p class="section-desc">Core metric display component. Glass card with gradient icon badge, tabular number, trend indicator. Hover to see lift effect.</p>
+
+      <div class="mode-label mode-dark">Dark Mode</div>
+      <div class="stat-cards-grid" style="margin-bottom: 32px;">
+        <!-- Requests -->
+        <div class="stat-card">
+          <div class="stat-content">
+            <div class="stat-title">总请求数</div>
+            <div>
+              <span class="stat-value">1,284,503</span>
+            </div>
+            <span class="stat-trend up">↑ 12.5%</span>
+          </div>
+          <div class="stat-icon-badge" style="background: linear-gradient(135deg, #0a84ff 0%, #5e5ce6 100%);">📊</div>
+        </div>
+        <!-- Tokens -->
+        <div class="stat-card">
+          <div class="stat-content">
+            <div class="stat-title">Token 消耗</div>
+            <div>
+              <span class="stat-value">8.42</span><span class="stat-suffix">M</span>
+            </div>
+            <span class="stat-trend up">↑ 8.3%</span>
+          </div>
+          <div class="stat-icon-badge" style="background: linear-gradient(135deg, #30d158 0%, #34c759 100%);">⚡</div>
+        </div>
+        <!-- Cost -->
+        <div class="stat-card">
+          <div class="stat-content">
+            <div class="stat-title">总成本</div>
+            <div>
+              <span class="stat-value">¥</span><span class="stat-value">2,847</span>
+            </div>
+            <span class="stat-trend down">↓ 3.2%</span>
+          </div>
+          <div class="stat-icon-badge" style="background: linear-gradient(135deg, #ffd60a 0%, #ff9f0a 100%);">💰</div>
+        </div>
+        <!-- Health -->
+        <div class="stat-card">
+          <div class="stat-content">
+            <div class="stat-title">健康状态</div>
+            <div>
+              <span class="stat-value">99.8</span><span class="stat-suffix">%</span>
+            </div>
+            <span class="stat-trend up">↑ 0.2%</span>
+          </div>
+          <div class="stat-icon-badge" style="background: linear-gradient(135deg, #ff453a 0%, #ff6961 100%);">❤️</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════ 2. SectionCard ═══════ -->
+    <section class="section">
+      <h2 class="section-title">
+        <span class="section-badge">2</span>
+        SectionCard
+      </h2>
+      <p class="section-desc">Container card with header (title + optional icon/subtitle) and body area. Used for grouping related content.</p>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 20px;">
+        <div class="section-card">
+          <div class="section-card-header">
+            <div class="section-card-header-left">
+              <span class="section-card-icon">📈</span>
+              <div>
+                <div class="section-card-title">成本趋势</div>
+                <div class="section-card-subtitle">最近 7 天</div>
+              </div>
+            </div>
+          </div>
+          <div class="section-card-body">
+            <div class="section-card-placeholder">Chart Area — 折线图</div>
+          </div>
+        </div>
+        <div class="section-card">
+          <div class="section-card-header">
+            <div class="section-card-header-left">
+              <span class="section-card-icon">🤖</span>
+              <div>
+                <div class="section-card-title">模型使用分布</div>
+                <div class="section-card-subtitle">按 Token 消耗</div>
+              </div>
+            </div>
+          </div>
+          <div class="section-card-body">
+            <div class="section-card-placeholder">Chart Area — 饼图 / 环形图</div>
+          </div>
+        </div>
+        <div class="section-card">
+          <div class="section-card-header">
+            <div class="section-card-header-left">
+              <span class="section-card-icon">⚙️</span>
+              <div>
+                <div class="section-card-title">系统设置</div>
+              </div>
+            </div>
+          </div>
+          <div class="section-card-body">
+            <div style="font-size: 14px; color: var(--text-secondary); line-height: 1.7;">
+              内容区域可以放置任意组件。支持标题 + 副标题模式，也支持纯标题模式。<br>
+              <span style="color: var(--text-tertiary); font-size: 13px;">Header padding: 16px 24px · Body padding: 24px</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════ 3. Buttons ═══════ -->
+    <section class="section">
+      <h2 class="section-title">
+        <span class="section-badge">3</span>
+        Button
+      </h2>
+      <p class="section-desc">Four variants × three sizes. Active press uses scale(0.97). Gradient variants show glow on hover.</p>
+
+      <div class="component-row">
+        <div class="component-group" style="flex: 2;">
+          <div class="component-group-title">Variants</div>
+          <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center;">
+            <button class="btn btn-primary">Primary</button>
+            <button class="btn btn-secondary">Secondary</button>
+            <button class="btn btn-ghost">Ghost</button>
+            <button class="btn btn-danger">Danger</button>
+          </div>
+        </div>
+        <div class="component-group">
+          <div class="component-group-title">Sizes</div>
+          <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center;">
+            <button class="btn btn-primary btn-sm">Small</button>
+            <button class="btn btn-primary">Medium</button>
+            <button class="btn btn-primary btn-lg">Large</button>
+          </div>
+        </div>
+      </div>
+      <div class="component-row" style="margin-top: 20px;">
+        <div class="component-group">
+          <div class="component-group-title">States</div>
+          <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center;">
+            <button class="btn btn-primary btn-loading">
+              <span class="spinner"></span>
+              Loading...
+            </button>
+            <button class="btn btn-primary btn-disabled">Disabled</button>
+            <button class="btn btn-secondary btn-disabled">Disabled</button>
+          </div>
+        </div>
+        <div class="component-group">
+          <div class="component-group-title">With Icons</div>
+          <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center;">
+            <button class="btn btn-primary">＋ 新建</button>
+            <button class="btn btn-secondary">⬇ 导出</button>
+            <button class="btn btn-ghost">⚙ 设置</button>
+            <button class="btn btn-danger">🗑 删除</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════ 4. Inputs ═══════ -->
+    <section class="section">
+      <h2 class="section-title">
+        <span class="section-badge">4</span>
+        Input
+      </h2>
+      <p class="section-desc">Text input states — default, focus (click to test), error, disabled, and with leading icon.</p>
+
+      <div class="component-row">
+        <div class="component-group">
+          <div class="component-group-title">States</div>
+          <div style="display: flex; flex-direction: column; gap: 16px;">
+            <div class="input-field">
+              <label class="input-label">Default</label>
+              <input class="input" type="text" placeholder="请输入关键词...">
+            </div>
+            <div class="input-field">
+              <label class="input-label">Focus (click me)</label>
+              <input class="input" type="text" placeholder="Focus 状态 — 蓝色边框 + glow">
+            </div>
+            <div class="input-field">
+              <label class="input-label">Error</label>
+              <input class="input input-error" type="text" value="invalid@email">
+              <span class="input-error-msg">请输入有效的邮箱地址</span>
+            </div>
+            <div class="input-field">
+              <label class="input-label">Disabled</label>
+              <input class="input" type="text" value="不可编辑" disabled>
+            </div>
+          </div>
+        </div>
+        <div class="component-group">
+          <div class="component-group-title">With Icons</div>
+          <div style="display: flex; flex-direction: column; gap: 16px;">
+            <div class="input-field">
+              <label class="input-label">Search</label>
+              <div class="input-wrapper">
+                <span class="input-icon">🔍</span>
+                <input class="input input-with-icon" type="text" placeholder="搜索模型、Agent...">
+              </div>
+            </div>
+            <div class="input-field">
+              <label class="input-label">URL</label>
+              <div class="input-wrapper">
+                <span class="input-icon">🔗</span>
+                <input class="input input-with-icon" type="text" placeholder="https://api.example.com">
+              </div>
+            </div>
+            <div class="input-field">
+              <label class="input-label">Password</label>
+              <div class="input-wrapper">
+                <span class="input-icon">🔒</span>
+                <input class="input input-with-icon" type="password" value="secretpassword">
+              </div>
+            </div>
+            <div class="input-field">
+              <label class="input-label">Large (48px)</label>
+              <div class="input-wrapper">
+                <span class="input-icon">📧</span>
+                <input class="input input-with-icon" type="email" placeholder="email@example.com" style="height: 48px; font-size: 15px;">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════ 5. Tags & Status Pills ═══════ -->
+    <section class="section">
+      <h2 class="section-title">
+        <span class="section-badge">5</span>
+        Tag & Status Pill
+      </h2>
+      <p class="section-desc">Tags for categorization, Status Pills for health states with animated glow dots.</p>
+
+      <div class="component-row">
+        <div class="component-group">
+          <div class="component-group-title">Tags</div>
+          <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+            <span class="tag tag-blue">GPT-4o</span>
+            <span class="tag tag-green">Claude 3.5</span>
+            <span class="tag tag-yellow">Gemini Pro</span>
+            <span class="tag tag-red">已废弃</span>
+            <span class="tag tag-purple">DeepSeek</span>
+            <span class="tag tag-gray">默认</span>
+          </div>
+        </div>
+        <div class="component-group">
+          <div class="component-group-title">Status Pills</div>
+          <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+            <span class="pill pill-healthy">
+              <span class="pill-dot"></span>
+              服务正常
+            </span>
+            <span class="pill pill-warning">
+              <span class="pill-dot"></span>
+              响应缓慢
+            </span>
+            <span class="pill pill-error">
+              <span class="pill-dot"></span>
+              服务中断
+            </span>
+            <span class="pill pill-info">
+              <span class="pill-dot"></span>
+              维护中
+            </span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════ 6. Table ═══════ -->
+    <section class="section">
+      <h2 class="section-title">
+        <span class="section-badge">6</span>
+        Table
+      </h2>
+      <p class="section-desc">Data table with hover highlight, icon action buttons, and status indicators.</p>
+
+      <div class="table-wrapper">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>模型</th>
+              <th>提供商</th>
+              <th>请求数</th>
+              <th>Token</th>
+              <th>成本</th>
+              <th>状态</th>
+              <th style="width: 80px;">操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                <div class="table-model">
+                  <div class="table-model-icon" style="background: linear-gradient(135deg, #0a84ff, #5e5ce6);">🧠</div>
+                  <div>
+                    <div style="font-weight: 500;">GPT-4o</div>
+                    <div style="font-size: 12px; color: var(--text-tertiary);">gpt-4o-2024-08-06</div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="tag tag-blue">OpenAI</span></td>
+              <td class="table-num">524,301</td>
+              <td class="table-num">3.2M</td>
+              <td class="table-num">¥1,247.50</td>
+              <td><span class="pill pill-healthy"><span class="pill-dot"></span>正常</span></td>
+              <td>
+                <div class="table-actions">
+                  <button class="table-action-btn" title="编辑">✏️</button>
+                  <button class="table-action-btn danger" title="删除">🗑️</button>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <div class="table-model">
+                  <div class="table-model-icon" style="background: linear-gradient(135deg, #30d158, #34c759);">🤖</div>
+                  <div>
+                    <div style="font-weight: 500;">Claude 3.5 Sonnet</div>
+                    <div style="font-size: 12px; color: var(--text-tertiary);">claude-3-5-sonnet</div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="tag tag-green">Anthropic</span></td>
+              <td class="table-num">412,887</td>
+              <td class="table-num">2.8M</td>
+              <td class="table-num">¥987.30</td>
+              <td><span class="pill pill-healthy"><span class="pill-dot"></span>正常</span></td>
+              <td>
+                <div class="table-actions">
+                  <button class="table-action-btn" title="编辑">✏️</button>
+                  <button class="table-action-btn danger" title="删除">🗑️</button>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <div class="table-model">
+                  <div class="table-model-icon" style="background: linear-gradient(135deg, #ffd60a, #ff9f0a);">✨</div>
+                  <div>
+                    <div style="font-weight: 500;">Gemini 1.5 Pro</div>
+                    <div style="font-size: 12px; color: var(--text-tertiary);">gemini-1.5-pro</div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="tag tag-yellow">Google</span></td>
+              <td class="table-num">198,422</td>
+              <td class="table-num">1.4M</td>
+              <td class="table-num">¥423.80</td>
+              <td><span class="pill pill-warning"><span class="pill-dot"></span>缓慢</span></td>
+              <td>
+                <div class="table-actions">
+                  <button class="table-action-btn" title="编辑">✏️</button>
+                  <button class="table-action-btn danger" title="删除">🗑️</button>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <div class="table-model">
+                  <div class="table-model-icon" style="background: linear-gradient(135deg, #ff453a, #ff6961);">🔥</div>
+                  <div>
+                    <div style="font-weight: 500;">DeepSeek V3</div>
+                    <div style="font-size: 12px; color: var(--text-tertiary);">deepseek-v3</div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="tag tag-red">DeepSeek</span></td>
+              <td class="table-num">148,893</td>
+              <td class="table-num">0.98M</td>
+              <td class="table-num">¥189.20</td>
+              <td><span class="pill pill-error"><span class="pill-dot"></span>中断</span></td>
+              <td>
+                <div class="table-actions">
+                  <button class="table-action-btn" title="编辑">✏️</button>
+                  <button class="table-action-btn danger" title="删除">🗑️</button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ═══════ 7. Modal ═══════ -->
+    <section class="section">
+      <h2 class="section-title">
+        <span class="section-badge">7</span>
+        Modal
+      </h2>
+      <p class="section-desc">Dialog with glass card surface, 20px radius, and footer actions. Shown inline for preview.</p>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); gap: 24px;">
+        <div class="modal-overlay">
+          <div class="modal-header">
+            <div class="modal-title">确认删除</div>
+            <button class="modal-close">✕</button>
+          </div>
+          <div class="modal-body">
+            确定要删除模型 <strong style="color: var(--text-primary);">GPT-4o</strong> 吗？此操作不可恢复，所有关联的配置和日志将被永久删除。
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary">取消</button>
+            <button class="btn btn-danger">确认删除</button>
+          </div>
+        </div>
+        <div class="modal-overlay">
+          <div class="modal-header">
+            <div class="modal-title">添加新模型</div>
+            <button class="modal-close">✕</button>
+          </div>
+          <div class="modal-body">
+            <div style="display: flex; flex-direction: column; gap: 14px;">
+              <div class="input-field">
+                <label class="input-label">模型名称</label>
+                <input class="input" type="text" placeholder="e.g. GPT-4o">
+              </div>
+              <div class="input-field">
+                <label class="input-label">API Endpoint</label>
+                <input class="input" type="text" placeholder="https://api.openai.com/v1">
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-ghost">取消</button>
+            <button class="btn btn-primary">保存</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <script>
+    function toggleTheme() {
+      const html = document.documentElement;
+      const isLight = html.classList.toggle('light');
+      document.getElementById('themeIcon').textContent = isLight ? '🌙' : '☀️';
+      document.getElementById('themeLabel').textContent = isLight ? 'Dark' : 'Light';
+    }
+  </script>
+</body>
+</html>

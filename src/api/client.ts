@@ -1,10 +1,48 @@
-/** API client — axios wrapper with auth and error handling */
+/** API client — axios wrapper with auth, silent refresh and error handling */
 
 import axios, { type AxiosInstance, type AxiosError } from 'axios';
 import { message } from 'antd';
 import type { ApiResponse } from '@/types';
+import { useAuthStore } from '@/contexts/auth';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api/v1';
+
+// ---------------------------------------------------------------------------
+// Refresh token queue — prevent concurrent refresh calls
+// ---------------------------------------------------------------------------
+let isRefreshing = false;
+let refreshSubscribers: ((token: string) => void)[] = [];
+
+function onTokenRefreshed(newToken: string) {
+  refreshSubscribers.forEach((cb) => cb(newToken));
+  refreshSubscribers = [];
+}
+
+function addRefreshSubscriber(cb: (token: string) => void) {
+  refreshSubscribers.push(cb);
+}
+
+// ---------------------------------------------------------------------------
+// Silent token refresh
+// ---------------------------------------------------------------------------
+async function refreshAccessToken(): Promise<string | null> {
+  const refreshToken = useAuthStore.getState().getRefreshToken();
+  if (!refreshToken) return null;
+
+  try {
+    const resp = await axios.post(`${API_BASE}/auth/refresh`, {
+      refresh_token: refreshToken,
+    });
+    const data = resp.data?.data;
+    if (data?.token && data?.refresh_token) {
+      useAuthStore.getState().updateTokens(data.token, data.refresh_token);
+      return data.token as string;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
 
 class ApiClient {
   private client: AxiosInstance;
@@ -25,18 +63,57 @@ class ApiClient {
       return config;
     });
 
-    // Response interceptor — handle errors globally
+    // Response interceptor — handle errors + silent refresh on 401
     this.client.interceptors.response.use(
       (response) => response,
-      (error: AxiosError) => {
+      async (error: AxiosError) => {
         const status = error.response?.status;
+        const originalRequest = error.config as typeof error.config & {
+          _retry?: boolean;
+        };
 
-        if (status === 401) {
-          // Only clear token and redirect if we haven't already
+        // On 401, try silent refresh (once per request)
+        if (
+          status === 401 &&
+          originalRequest &&
+          !originalRequest._retry &&
+          !originalRequest.url?.includes('/auth/')
+        ) {
+          const refreshToken = useAuthStore.getState().getRefreshToken();
+          if (refreshToken) {
+            originalRequest._retry = true;
+
+            if (isRefreshing) {
+              // Queue this request until refresh completes
+              return new Promise((resolve) => {
+                addRefreshSubscriber((newToken: string) => {
+                  originalRequest.headers.Authorization = `Bearer ${newToken}`;
+                  resolve(this.client(originalRequest));
+                });
+              });
+            }
+
+            isRefreshing = true;
+            try {
+              const newToken = await refreshAccessToken();
+              if (newToken) {
+                isRefreshing = false;
+                onTokenRefreshed(newToken);
+                originalRequest.headers.Authorization = `Bearer ${newToken}`;
+                return this.client(originalRequest);
+              }
+            } catch {
+              // fall through to logout
+            } finally {
+              isRefreshing = false;
+            }
+          }
+
+          // Refresh failed or no refresh token — log out
           const token = localStorage.getItem('ai_platform_token');
           if (token) {
             localStorage.removeItem('ai_platform_token');
-            // Avoid redirect loop — only redirect if not already on login page
+            localStorage.removeItem('ai_platform_refresh_token');
             if (!window.location.pathname.includes('/login')) {
               message.warning('登录已过期，请重新登录');
               window.location.href = '/login';
@@ -72,8 +149,17 @@ class ApiClient {
 
   // --- Generic methods ---
 
-  async get<T>(url: string, params?: Record<string, unknown>): Promise<ApiResponse<T>> {
-    const resp = await this.client.get<ApiResponse<T>>(url, { params });
+  async get<T>(
+    url: string,
+    params?: Record<string, unknown>,
+    signal?: AbortSignal,
+  ): Promise<ApiResponse<T>> {
+    const resp = await this.client.get<ApiResponse<T>>(url, { params, signal });
+    return resp.data;
+  }
+
+  async getRaw<T>(url: string, params?: Record<string, unknown>, signal?: AbortSignal): Promise<T> {
+    const resp = await this.client.get<T>(url, { params, signal });
     return resp.data;
   }
 
@@ -109,9 +195,24 @@ class ApiClient {
     onChunk: (content: string) => void,
     onDone: () => void,
     onError?: (error: string) => void,
+    externalSignal?: AbortSignal,
   ): Promise<void> {
+    const ctrl = new AbortController();
+    const signal = externalSignal ?? ctrl.signal;
+
+    const onAbort = () => ctrl.abort();
+    externalSignal?.addEventListener('abort', onAbort);
+
     const token = localStorage.getItem('ai_platform_token');
     let resp: Response;
+    let doneCalled = false;
+    const markDone = () => {
+      if (!doneCalled) {
+        doneCalled = true;
+        onDone();
+      }
+    };
+
     try {
       resp = await fetch(`${API_BASE}/chat/completions`, {
         method: 'POST',
@@ -120,28 +221,34 @@ class ApiClient {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ model, messages, stream: true }),
+        signal,
       });
     } catch (err) {
-      onError?.('网络连接失败');
-      onDone();
+      if ((err as Error)?.name !== 'AbortError') {
+        onError?.('网络连接失败');
+      }
+      markDone();
       return;
+    } finally {
+      externalSignal?.removeEventListener('abort', onAbort);
     }
 
     if (!resp.ok) {
-      const errMsg = resp.status === 401
-        ? '登录已过期'
-        : resp.status === 429
-          ? '请求过于频繁，请稍后重试'
-          : `请求失败 (${resp.status})`;
+      const errMsg =
+        resp.status === 401
+          ? '登录已过期'
+          : resp.status === 429
+            ? '请求过于频繁，请稍后重试'
+            : `请求失败 (${resp.status})`;
       onError?.(errMsg);
-      onDone();
+      markDone();
       return;
     }
 
     const reader = resp.body?.getReader();
     if (!reader) {
       onError?.('无法读取响应流');
-      onDone();
+      markDone();
       return;
     }
 
@@ -161,7 +268,7 @@ class ApiClient {
           if (line.startsWith('data: ')) {
             const payload = line.slice(6);
             if (payload === '[DONE]') {
-              onDone();
+              markDone();
               return;
             }
             try {
@@ -174,12 +281,14 @@ class ApiClient {
           }
         }
       }
-    } catch {
-      onError?.('读取响应流时出错');
+    } catch (err) {
+      if ((err as Error)?.name !== 'AbortError') {
+        onError?.('读取响应流时出错');
+      }
     } finally {
       reader.releaseLock();
     }
-    onDone();
+    markDone();
   }
 }
 
