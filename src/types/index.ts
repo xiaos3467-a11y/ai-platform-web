@@ -48,6 +48,7 @@ export interface UserInfo {
   tenant_id: string;
   role: string;
   roles?: string[];
+  active_role?: string;
   permissions?: string[];
 }
 
@@ -190,6 +191,7 @@ export interface KnowledgeBase {
   doc_count: number;
   chunk_count: number;
   status: string;
+  group_id: string | null;
   created_at: string;
 }
 
@@ -201,7 +203,48 @@ export interface Document {
   chunk_count: number;
   status: string;
   error_message: string | null;
+  file_hash?: string;
+  parse_result_path?: string;
+  processing_progress?: {
+    stage: string;
+    percent: number;
+    message: string;
+  };
   created_at: string;
+}
+
+// --- Knowledge Group ---
+export interface KnowledgeGroup {
+  id: string;
+  name: string;
+  description: string | null;
+  icon: string | null;
+  parent_id: string | null;
+  sort_order: number;
+  kb_count: number;
+  children: KnowledgeGroup[];
+}
+
+export interface KnowledgeGroupCreateRequest {
+  name: string;
+  description?: string;
+  icon?: string;
+  parent_id?: string | null;
+  sort_order?: number;
+}
+
+// --- Knowledge Base Query (RAG) ---
+export interface QuerySource {
+  content: string;
+  score: number;
+  source: string;
+  document_id?: string;
+  filename?: string;
+}
+
+export interface QueryResponse {
+  answer: string;
+  sources: QuerySource[];
 }
 
 // --- Agent ---

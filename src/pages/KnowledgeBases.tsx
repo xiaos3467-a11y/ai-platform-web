@@ -1,413 +1,227 @@
-/** Knowledge Bases — Apple glass aesthetic */
+/**
+ * KnowledgeBases — main knowledge management page (refactored).
+ *
+ * Layout:
+ *   ┌─────────────────────────────────────────────────────────┐
+ *   │ ┌────────┐ ┌─────────────────────────────────────────┐ │
+ *   │ │ Group  │ │ Header: "知识库" + "创建知识库"          │ │
+ *   │ │ Tree   │ │                                         │ │
+ *   │ │(240px) │ │ KB Cards grid (filtered by group)       │ │
+ *   │ │        │ │                                         │ │
+ *   │ │        │ │ Document panel (when KB selected)       │ │
+ *   │ │        │ │ Query panel (toggle)                    │ │
+ *   │ └────────┘ └─────────────────────────────────────────┘ │
+ *   └─────────────────────────────────────────────────────────┘
+ */
 
-import React, { useEffect, useState, useMemo } from 'react';
-import { Table, Button, Modal, Form, Input, Upload, Space, Skeleton, Typography, App } from 'antd';
-import {
-  PlusOutlined,
-  UploadOutlined,
-  DeleteOutlined,
-  FileTextOutlined,
-  BookOutlined,
-  InboxOutlined,
-} from '@ant-design/icons';
-import { api } from '@/api/client';
-import type { KnowledgeBase, Document } from '@/types';
-import { GlassCard, SectionCard, StatusPill, EmptyState, TableSkeleton } from '@/components';
-
+import React, { useState, useMemo } from 'react';
+import { Button, Typography, Row, Col } from 'antd';
+import { PlusOutlined, BookOutlined, MenuOutlined } from '@ant-design/icons';
+import { useApiListQuery, useApiQuery } from '@/hooks/useApiQuery';
+import type { KnowledgeBase, KnowledgeGroup } from '@/types';
+import { EmptyState, TableSkeleton } from '@/components';
 import { radius } from '@/styles/themeTokens';
+import GroupTree from '@/components/knowledge/GroupTree';
+import KBCard from '@/components/knowledge/KBCard';
+import DocumentList from '@/components/knowledge/DocumentList';
+import QueryPanel from '@/components/knowledge/QueryPanel';
+import CreateKBModal from '@/components/knowledge/CreateKBModal';
+
 const { Title, Text } = Typography;
 
-/* ─── Main ────────────────────────────────────────────────────────── */
+/** Virtual key used by GroupTree for the "未分组" node. */
+const UNGROUPED_KEY = 'ungrouped';
+
 const KnowledgeBases: React.FC = () => {
-  const [kbs, setKbs] = useState<KnowledgeBase[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [createOpen, setCreateOpen] = useState(false);
+  const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
   const [selectedKb, setSelectedKb] = useState<KnowledgeBase | null>(null);
-  const [docs, setDocs] = useState<Document[]>([]);
-  const [docsLoading, setDocsLoading] = useState(false);
-  const [form] = Form.useForm();
-  const { message, modal } = App.useApp();
+  const [showQuery, setShowQuery] = useState(false);
+  const [createOpen, setCreateOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
-  const fetchKbs = async (signal?: AbortSignal) => {
-    setLoading(true);
-    try {
-      const resp = await api.get<{ items: KnowledgeBase[]; total: number }>(
-        '/knowledge-bases/',
-        undefined,
-        signal,
-      );
-      setKbs(resp.data?.items || []);
-    } catch (e: unknown) {
-      if (
-        e &&
-        typeof e === 'object' &&
-        'code' in e &&
-        (e as { code?: string }).code === 'ERR_CANCELED'
-      )
-        return;
-    } finally {
-      setLoading(false);
+  // Fetch groups for the tree (used by CreateKBModal's group Select too)
+  const { data: groups = [] } = useApiQuery<KnowledgeGroup[]>({
+    queryKey: ['knowledge-groups'],
+    endpoint: '/knowledge-groups',
+  });
+
+  // Fetch KBs — pass group_id when a real group is selected
+  const queryParams = useMemo(() => {
+    if (!selectedGroupId || selectedGroupId === UNGROUPED_KEY) return undefined;
+    return { group_id: selectedGroupId };
+  }, [selectedGroupId]);
+
+  const {
+    data: kbData,
+    isLoading,
+    refetch: refetchKbs,
+  } = useApiListQuery<KnowledgeBase>({
+    queryKey: ['knowledge-bases', selectedGroupId ?? 'all'],
+    endpoint: '/knowledge-bases/',
+    params: queryParams,
+  });
+
+  // Client-side filter for "未分组" (group_id is null)
+  const kbs = useMemo(() => {
+    const items = kbData?.items ?? [];
+    if (selectedGroupId === UNGROUPED_KEY) {
+      return items.filter((kb) => !kb.group_id);
+    }
+    return items;
+  }, [kbData, selectedGroupId]);
+
+  const handleSelectKb = (kb: KnowledgeBase) => {
+    if (selectedKb?.id === kb.id) {
+      setSelectedKb(null);
+      setShowQuery(false);
+    } else {
+      setSelectedKb(kb);
+      setShowQuery(false);
     }
   };
-
-  const fetchDocs = async (kbId: string, signal?: AbortSignal) => {
-    setDocsLoading(true);
-    try {
-      const resp = await api.get<Document[]>(
-        `/knowledge-bases/${kbId}/documents`,
-        undefined,
-        signal,
-      );
-      setDocs(resp.data || []);
-    } catch (e: unknown) {
-      if (
-        e &&
-        typeof e === 'object' &&
-        'code' in e &&
-        (e as { code?: string }).code === 'ERR_CANCELED'
-      )
-        return;
-    } finally {
-      setDocsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    const ctrl = new AbortController();
-    fetchKbs(ctrl.signal);
-    return () => ctrl.abort();
-  }, []);
-
-  const handleCreate = async (values: { name: string; description?: string }) => {
-    try {
-      await api.post('/knowledge-bases/', { ...values, embedding_model: 'text-embedding-3-small' });
-      message.success('知识库创建成功');
-      setCreateOpen(false);
-      form.resetFields();
-      fetchKbs();
-    } catch {
-      /* handled */
-    }
-  };
-
-  const handleUpload = async (file: File) => {
-    if (!selectedKb) return false;
-    try {
-      await api.upload(`/knowledge-bases/${selectedKb.id}/documents`, file);
-      message.success(`${file.name} 上传成功，正在处理...`);
-      fetchDocs(selectedKb.id);
-      fetchKbs();
-    } catch {
-      /* handled */
-    }
-    return false;
-  };
-
-  const handleDelete = (id: string) => {
-    modal.confirm({
-      title: '删除知识库',
-      content: '删除后不可恢复，相关文档也会被清除。确认继续？',
-      okText: '删除',
-      okButtonProps: { danger: true },
-      cancelText: '取消',
-      onOk: async () => {
-        await api.delete(`/knowledge-bases/${id}`);
-        message.success('已删除');
-        if (selectedKb?.id === id) setSelectedKb(null);
-        fetchKbs();
-      },
-    });
-  };
-
-  const kbColumns = useMemo(
-    () => [
-      {
-        title: '名称',
-        dataIndex: 'name',
-        render: (name: string, record: KnowledgeBase) => (
-          <a
-            onClick={() => {
-              setSelectedKb(record);
-              fetchDocs(record.id);
-            }}
-            style={{ color: '#2997ff', fontWeight: 500 }}
-          >
-            <Space>
-              <BookOutlined />
-              {name}
-            </Space>
-          </a>
-        ),
-      },
-      {
-        title: '模型',
-        dataIndex: 'embedding_model',
-        render: (v: string) => (
-          <span
-            style={{
-              padding: '2px 8px',
-              borderRadius: radius.sm,
-              background: 'var(--bg-elevated)',
-              fontSize: 12,
-              color: 'var(--text-muted)',
-            }}
-          >
-            {v}
-          </span>
-        ),
-      },
-      {
-        title: '文档',
-        dataIndex: 'doc_count',
-        render: (v: number) => <span style={{ color: 'var(--text-muted)' }}>{v}</span>,
-      },
-      {
-        title: '分块',
-        dataIndex: 'chunk_count',
-        render: (v: number) => <span style={{ color: 'var(--text-muted)' }}>{v}</span>,
-      },
-      {
-        title: '创建时间',
-        dataIndex: 'created_at',
-        render: (v: string) => (
-          <span style={{ color: 'var(--text-muted)', fontSize: 13 }}>
-            {new Date(v).toLocaleString()}
-          </span>
-        ),
-      },
-      {
-        title: '',
-        width: 60,
-        render: (_: unknown, record: KnowledgeBase) => (
-          <Button
-            type="text"
-            size="small"
-            icon={<DeleteOutlined />}
-            aria-label="删除"
-            danger
-            onClick={() => handleDelete(record.id)}
-          />
-        ),
-      },
-    ],
-    [],
-  );
-
-  const docColumns = useMemo(
-    () => [
-      {
-        title: '文件名',
-        dataIndex: 'filename',
-        render: (v: string) => (
-          <span
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 8,
-              color: 'var(--text-primary)',
-              fontWeight: 500,
-            }}
-          >
-            <FileTextOutlined style={{ color: '#0a84ff' }} />
-            {v}
-          </span>
-        ),
-      },
-      {
-        title: '类型',
-        dataIndex: 'mime_type',
-        render: (v: string) => (
-          <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{v || 'text'}</span>
-        ),
-      },
-      {
-        title: '大小',
-        dataIndex: 'file_size',
-        render: (v: number) => (
-          <span style={{ color: 'var(--text-muted)' }}>
-            {v ? `${(v / 1024).toFixed(1)} KB` : '-'}
-          </span>
-        ),
-      },
-      {
-        title: '分块',
-        dataIndex: 'chunk_count',
-        render: (v: number) => <span style={{ color: 'var(--text-muted)' }}>{v}</span>,
-      },
-      { title: '状态', dataIndex: 'status', render: (s: string) => <StatusPill status={s} /> },
-      {
-        title: '上传时间',
-        dataIndex: 'created_at',
-        render: (v: string) => (
-          <span style={{ color: 'var(--text-muted)', fontSize: 13 }}>
-            {new Date(v).toLocaleString()}
-          </span>
-        ),
-      },
-    ],
-    [],
-  );
 
   return (
-    <div>
-      {/* Page title */}
+    <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start' }}>
+      {/* ─── Left: Group tree (hidden on small screens) ─────────── */}
       <div
-        className="animate-fade-in-up"
         style={{
-          marginBottom: 32,
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'flex-end',
+          display: sidebarOpen ? 'block' : 'none',
+          flexShrink: 0,
         }}
+        className="knowledge-sidebar"
       >
-        <div>
-          <Title
-            level={2}
-            style={{
-              margin: 0,
-              fontWeight: 700,
-              fontSize: 34,
-              letterSpacing: '-0.04em',
-              color: 'var(--text-primary)',
-            }}
-          >
-            知识库
-          </Title>
-          <Text
-            style={{ fontSize: 17, color: 'var(--text-secondary)', marginTop: 6, display: 'block' }}
-          >
-            管理文档与向量索引
-          </Text>
-        </div>
-        <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          onClick={() => setCreateOpen(true)}
-          style={{ height: 44, paddingInline: 20, borderRadius: radius.md, fontWeight: 500 }}
-        >
-          创建知识库
-        </Button>
+        <GroupTree selectedGroupId={selectedGroupId} onSelect={setSelectedGroupId} />
       </div>
 
-      {/* Table */}
-      {loading ? (
-        <TableSkeleton />
-      ) : (
-        <GlassCard animate styles={{ body: { padding: 0 } }}>
-          {kbs.length === 0 ? (
-            <EmptyState
-              icon={<BookOutlined />}
-              title="还没有知识库"
-              description="创建知识库后，可上传文档用于 RAG 检索"
-              actionText="创建第一个知识库"
-              onAction={() => setCreateOpen(true)}
-            />
-          ) : (
-            <Table
-              dataSource={kbs}
-              columns={kbColumns}
-              rowKey="id"
-              pagination={{ pageSize: 10 }}
-              style={{ borderRadius: 0 }}
-            />
-          )}
-        </GlassCard>
-      )}
-
-      {/* Document panel */}
-      {selectedKb && (
-        <SectionCard
-          style={{ marginTop: 20 }}
-          styles={{ body: { padding: docsLoading ? 24 : 0 } }}
-          title={
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <span style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)' }}>
-                {selectedKb.name}
-              </span>
-              <span style={{ fontSize: 13, color: 'var(--text-subtle)' }}>文档列表</span>
-            </div>
-          }
-          extra={
-            <Upload beforeUpload={handleUpload} showUploadList={false}>
-              <Button icon={<UploadOutlined />} style={{ borderRadius: radius.md }}>
-                上传文档
-              </Button>
-            </Upload>
-          }
+      {/* ─── Right: Main content ────────────────────────────────── */}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        {/* Header */}
+        <div
+          className="animate-fade-in-up"
+          style={{
+            marginBottom: 24,
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'flex-end',
+            gap: 12,
+            flexWrap: 'wrap',
+          }}
         >
-          <div
-            style={{
-              padding: '16px 24px',
-              borderBottom: '0.5px solid var(--border-divider)',
-              display: 'flex',
-              gap: 24,
-            }}
-          >
-            {[
-              { label: '文档数', value: selectedKb.doc_count },
-              { label: '分块数', value: selectedKb.chunk_count },
-              { label: 'Embedding', value: selectedKb.embedding_model },
-            ].map((item) => (
-              <div key={item.label}>
-                <div
-                  style={{
-                    fontSize: 11,
-                    color: 'var(--text-subtle)',
-                    fontWeight: 500,
-                    letterSpacing: '0.02em',
-                    marginBottom: 4,
-                  }}
-                >
-                  {item.label}
-                </div>
-                <div style={{ fontSize: 14, color: 'var(--text-primary)', fontWeight: 500 }}>
-                  {item.value}
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {docsLoading ? (
-            <Skeleton active paragraph={{ rows: 4 }} style={{ padding: 24 }} />
-          ) : docs.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '60px 24px' }}>
-              <InboxOutlined
-                style={{ fontSize: 36, color: 'var(--text-faint)', marginBottom: 12 }}
-              />
-              <div style={{ fontSize: 14, color: 'var(--text-subtle)' }}>
-                暂无文档，点击上方按钮上传
-              </div>
-            </div>
-          ) : (
-            <Table
-              dataSource={docs}
-              columns={docColumns}
-              rowKey="id"
-              size="small"
-              pagination={false}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            {/* Mobile toggle */}
+            <Button
+              type="text"
+              icon={<MenuOutlined />}
+              onClick={() => setSidebarOpen((v) => !v)}
+              aria-label="切换侧栏"
+              className="knowledge-sidebar-toggle"
+              style={{ display: 'none' }}
             />
-          )}
-        </SectionCard>
-      )}
+            <div>
+              <Title
+                level={2}
+                style={{
+                  margin: 0,
+                  fontWeight: 700,
+                  fontSize: 34,
+                  letterSpacing: '-0.04em',
+                  color: 'var(--text-primary)',
+                }}
+              >
+                知识库
+              </Title>
+              <Text
+                style={{
+                  fontSize: 17,
+                  color: 'var(--text-secondary)',
+                  marginTop: 6,
+                  display: 'block',
+                }}
+              >
+                管理文档与向量索引
+              </Text>
+            </div>
+          </div>
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={() => setCreateOpen(true)}
+            style={{ height: 44, paddingInline: 20, borderRadius: radius.md, fontWeight: 500 }}
+          >
+            创建知识库
+          </Button>
+        </div>
 
-      {/* Create Modal */}
-      <Modal
-        title="创建知识库"
+        {/* KB Cards grid */}
+        {isLoading ? (
+          <TableSkeleton />
+        ) : kbs.length === 0 ? (
+          <EmptyState
+            icon={<BookOutlined />}
+            title={
+              selectedGroupId === UNGROUPED_KEY
+                ? '没有未分组的知识库'
+                : selectedGroupId
+                  ? '该分组暂无知识库'
+                  : '还没有知识库'
+            }
+            description="创建知识库后，可上传文档用于 RAG 检索"
+            actionText="创建第一个知识库"
+            onAction={() => setCreateOpen(true)}
+          />
+        ) : (
+          <Row gutter={[16, 16]}>
+            {kbs.map((kb) => (
+              <Col key={kb.id} xs={24} sm={12} lg={8} xl={6}>
+                <KBCard kb={kb} onClick={handleSelectKb} selected={selectedKb?.id === kb.id} />
+              </Col>
+            ))}
+          </Row>
+        )}
+
+        {/* Document panel — appears when a KB is selected */}
+        {selectedKb && (
+          <DocumentList
+            key={selectedKb.id}
+            kbId={selectedKb.id}
+            kbName={selectedKb.name}
+            onQueryClick={() => setShowQuery((v) => !v)}
+            onChange={() => {
+              refetchKbs();
+            }}
+          />
+        )}
+
+        {/* Query panel — appears when "查询测试" is clicked */}
+        {showQuery && selectedKb && (
+          <QueryPanel
+            key={`query-${selectedKb.id}`}
+            kbId={selectedKb.id}
+            kbName={selectedKb.name}
+            onClose={() => setShowQuery(false)}
+          />
+        )}
+      </div>
+
+      {/* Create KB modal */}
+      <CreateKBModal
         open={createOpen}
         onCancel={() => setCreateOpen(false)}
-        onOk={() => form.submit()}
-        okText="创建"
-        cancelText="取消"
-      >
-        <Form form={form} layout="vertical" onFinish={handleCreate}>
-          <Form.Item name="name" label="名称" rules={[{ required: true }]}>
-            <Input placeholder="如：公司产品文档" />
-          </Form.Item>
-          <Form.Item name="description" label="描述">
-            <Input.TextArea rows={3} placeholder="简要描述知识库用途..." />
-          </Form.Item>
-        </Form>
-      </Modal>
+        groups={groups}
+        defaultGroupId={selectedGroupId}
+      />
+
+      {/* Responsive CSS — hide sidebar on small screens, show toggle */}
+      <style>{`
+        @media (max-width: 768px) {
+          .knowledge-sidebar {
+            display: none !important;
+          }
+          .knowledge-sidebar-toggle {
+            display: inline-flex !important;
+          }
+        }
+      `}</style>
     </div>
   );
 };

@@ -68,6 +68,8 @@ interface AuthState {
   hasRole: (role: string) => boolean;
   /** Check if user has a specific permission */
   hasPermission: (permission: string) => boolean;
+  /** Switch the active role (multi-role support) */
+  switchRole: (activeRole: string, permissions: string[]) => void;
 }
 
 const initialToken = localStorage.getItem(TOKEN_KEY);
@@ -102,6 +104,17 @@ const LEGACY_ROLE_MAP: Record<string, string[]> = {
 
 function getUserRoles(user: UserInfo | null): string[] {
   if (!user) return [];
+
+  // When a multi-role user has selected an active role, use ONLY that role
+  // for menu/permission gating so the UI reflects the current context.
+  // Legacy names are still expanded for backward compatibility.
+  if (user.active_role) {
+    const expanded = new Set<string>([user.active_role]);
+    const aliases = LEGACY_ROLE_MAP[user.active_role];
+    if (aliases) aliases.forEach((a) => expanded.add(a));
+    return [...expanded];
+  }
+
   // Filter out undefined/null entries (can happen from stale localStorage after migration)
   const raw: string[] = (
     user.roles && user.roles.length > 0 ? user.roles : user.role ? [user.role] : []
@@ -172,6 +185,15 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     const user = get().user;
     if (!user?.permissions) return false;
     return user.permissions.includes(permission);
+  },
+
+  switchRole: (activeRole: string, permissions: string[]) => {
+    const user = get().user;
+    if (user) {
+      const updated = { ...user, active_role: activeRole, permissions };
+      localStorage.setItem(USER_KEY, JSON.stringify(updated));
+      set({ user: updated });
+    }
   },
 }));
 

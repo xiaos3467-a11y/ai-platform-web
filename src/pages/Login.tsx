@@ -27,6 +27,15 @@ const LoginPage: React.FC = () => {
       const resp = await api.post<LoginResponse>('/auth/login', values);
       const { token, refresh_token, user } = resp.data;
 
+      const rolesList =
+        user.roles
+          ?.map((r: unknown) =>
+            typeof r === 'string'
+              ? r
+              : (r as { code?: string; name?: string })?.code || (r as { name?: string })?.name,
+          )
+          .filter((r): r is string => Boolean(r)) || [];
+
       login(token, refresh_token, {
         id: user.id,
         username: user.username,
@@ -35,14 +44,11 @@ const LoginPage: React.FC = () => {
           (typeof user.roles?.[0] === 'string' ? user.roles[0] : user.roles?.[0]?.code) ||
           user.roles?.[0]?.name ||
           'user',
-        roles:
-          user.roles
-            ?.map((r: unknown) =>
-              typeof r === 'string'
-                ? r
-                : (r as { code?: string; name?: string })?.code || (r as { name?: string })?.name,
-            )
-            .filter(Boolean) || [],
+        roles: rolesList,
+        active_role:
+          (user as { active_role?: string }).active_role ||
+          (rolesList[0] as string | undefined) ||
+          'user',
         permissions: user.permissions || [],
       });
       message.success(t('auth.loginTitle'));

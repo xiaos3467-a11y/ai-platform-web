@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useMemo } from 'react';
-import { Layout, Menu, Avatar, Dropdown, Typography } from 'antd';
+import { Layout, Menu, Avatar, Dropdown, Typography, message } from 'antd';
 import {
   DashboardOutlined,
   RobotOutlined,
@@ -22,24 +22,38 @@ import {
   TeamOutlined,
   SafetyOutlined,
   AppstoreOutlined,
+  SwapOutlined,
+  CheckOutlined,
 } from '@ant-design/icons';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { useAuthStore } from '@/contexts/auth';
 import { useTheme } from '@/contexts/theme';
+import { api } from '@/api/client';
 import ThemeToggle from '@/components/ThemeToggle';
 
 import { radius } from '@/styles/themeTokens';
 const { Header, Sider, Content } = Layout;
 const { Text } = Typography;
 
+// Role code → Chinese display label
+const ROLE_LABELS: Record<string, string> = {
+  super_admin: '超级管理员',
+  platform_ops: '平台运营员',
+  tenant_admin: '租户管理员',
+  tenant_developer: '租户开发者',
+  tenant_viewer: '租户观察者',
+  // Legacy names pass through as-is (no mapping needed — they're already Chinese)
+};
+
 const AppLayout: React.FC = () => {
   const [collapsed, setCollapsed] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const { logout, user, hasRole } = useAuthStore((s) => ({
+  const { logout, user, hasRole, switchRole } = useAuthStore((s) => ({
     logout: s.logout,
     user: s.user,
     hasRole: s.hasRole,
+    switchRole: s.switchRole,
   }));
   const { isDark } = useTheme();
 
@@ -61,6 +75,34 @@ const AppLayout: React.FC = () => {
     hasRole('tenant_developer') ||
     hasRole('开发者');
   const canManagePlatform = hasSuperAdmin || hasPlatformOps;
+
+  // Active role + all role codes for the role switcher
+  const activeRole = user?.active_role || user?.role;
+  const allRoles = (
+    user?.roles && user.roles.length > 0 ? user.roles : user?.role ? [user.role] : []
+  ).filter(Boolean);
+  const activeRoleLabel = ROLE_LABELS[activeRole || ''] || activeRole || '';
+
+  const handleSwitchRole = async (roleCode: string) => {
+    if (roleCode === activeRole) return;
+    try {
+      const resp = await api.post<{ active_role: string; permissions: string[] }>(
+        '/auth/switch-role',
+        { role_code: roleCode },
+      );
+      const { active_role, permissions } = resp.data;
+
+      // Update auth store + localStorage
+      switchRole(active_role, permissions);
+
+      message.success(`已切换到 ${ROLE_LABELS[active_role] || active_role}`);
+
+      // Refresh the page so the menu re-renders under the new role context
+      window.location.reload();
+    } catch {
+      // The global error handler already displayed a toast; nothing else to do.
+    }
+  };
 
   // Dynamic menu based on user roles — matches RBAC matrix
   const menuItems = useMemo(() => {
@@ -183,6 +225,29 @@ const AppLayout: React.FC = () => {
         label: '个人设置',
         onClick: () => navigate('/settings'),
       },
+      // Role switcher — only when the user holds more than one role
+      ...(allRoles.length > 1
+        ? [
+            { type: 'divider' as const },
+            {
+              key: 'switch-role',
+              icon: <SwapOutlined />,
+              label: '切换角色',
+              children: allRoles.map((role: string) => ({
+                key: role,
+                label: (
+                  <span style={{ display: 'inline-flex', alignItems: 'center' }}>
+                    {ROLE_LABELS[role] || role}
+                    {role === activeRole && (
+                      <CheckOutlined style={{ marginLeft: 8, color: '#0a84ff', fontSize: 11 }} />
+                    )}
+                  </span>
+                ),
+                onClick: () => handleSwitchRole(role),
+              })),
+            },
+          ]
+        : []),
       { type: 'divider' as const },
       {
         key: 'logout',
@@ -430,16 +495,37 @@ const AppLayout: React.FC = () => {
                 >
                   {displayInitial}
                 </Avatar>
-                <span
-                  style={{
-                    fontSize: 14,
-                    fontWeight: 500,
-                    color: palette.userNameColor,
-                    transition: 'color 0.3s ease',
-                  }}
-                >
-                  {displayName}
-                </span>
+                <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.2 }}>
+                  <span
+                    style={{
+                      fontSize: 14,
+                      fontWeight: 500,
+                      color: palette.userNameColor,
+                      transition: 'color 0.3s ease',
+                    }}
+                  >
+                    {displayName}
+                  </span>
+                  {activeRoleLabel && (
+                    <span
+                      style={{
+                        fontSize: 11,
+                        color: 'var(--text-secondary)',
+                        background: 'var(--bg-subtle)',
+                        padding: '1px 8px',
+                        borderRadius: radius.full,
+                        fontWeight: 500,
+                        letterSpacing: '0.01em',
+                        marginTop: 2,
+                        alignSelf: 'flex-start',
+                        border: '0.5px solid var(--border-subtle)',
+                        transition: 'background 0.3s ease, color 0.3s ease',
+                      }}
+                    >
+                      {activeRoleLabel}
+                    </span>
+                  )}
+                </div>
               </div>
             </Dropdown>
           </div>

@@ -28,6 +28,7 @@ const Roles = lazy(() => import('@/pages/Roles'));
 
 // Admin pages
 const AdminTenants = lazy(() => import('@/pages/admin/Tenants'));
+const AdminAuditLogs = lazy(() => import('@/pages/admin/AuditLogs'));
 
 // Tenant self-service pages
 const TenantDashboard = lazy(() => import('@/pages/tenant/Dashboard'));
@@ -227,6 +228,14 @@ const App: React.FC = () => {
               element={
                 <ProtectedRoute requiredRole="super_admin">
                   <Roles />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="audit-logs"
+              element={
+                <ProtectedRoute requiredRole="super_admin|platform_ops">
+                  <AdminAuditLogs />
                 </ProtectedRoute>
               }
             />
