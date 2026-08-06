@@ -22,6 +22,45 @@ import '@/i18n';
 // Initialize Sentry as early as possible
 initSentry();
 
+// ─── Global chunk loading error handler ───────────────────────────────────
+// When Vercel deploys a new build, old chunk filenames are removed from the
+// server. If the browser still has old HTML referencing old chunks, the
+// dynamic import fails with "Failed to fetch dynamically imported module".
+// Auto-reload the page (with a retry counter to prevent infinite loops).
+const CHUNK_RELOAD_KEY = 'chunk_reload_count';
+function isChunkError(msg: string): boolean {
+  return (
+    msg.includes('Failed to fetch dynamically imported module') ||
+    msg.includes('Importing a module script failed') ||
+    msg.includes('Loading chunk')
+  );
+}
+
+window.addEventListener('unhandledrejection', (event) => {
+  const msg = String(event.reason?.message || event.reason || '');
+  if (isChunkError(msg)) {
+    const count = parseInt(sessionStorage.getItem(CHUNK_RELOAD_KEY) || '0', 10);
+    if (count < 2) {
+      console.warn('[chunk] Dynamic import failed, reloading page...', count + 1);
+      sessionStorage.setItem(CHUNK_RELOAD_KEY, String(count + 1));
+      window.location.reload();
+    }
+  }
+});
+
+window.addEventListener('error', (event) => {
+  const msg = event.message || '';
+  if (isChunkError(msg)) {
+    const count = parseInt(sessionStorage.getItem(CHUNK_RELOAD_KEY) || '0', 10);
+    if (count < 2) {
+      console.warn('[chunk] Script load error, reloading page...', count + 1);
+      sessionStorage.setItem(CHUNK_RELOAD_KEY, String(count + 1));
+      event.preventDefault();
+      window.location.reload();
+    }
+  }
+});
+
 // Shared React Query client — configured once, used everywhere
 const queryClient = new QueryClient({
   defaultOptions: {
