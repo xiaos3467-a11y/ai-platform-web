@@ -29,19 +29,16 @@ export default defineConfig({
     port: 3001,
     proxy: {
       '/api': {
-        target: 'https://ai-platform-api-production-19cb.up.railway.app',
+        target: 'http://localhost:8000',
         changeOrigin: true,
-        secure: true,
       },
       '/health': {
-        target: 'https://ai-platform-api-production-19cb.up.railway.app',
+        target: 'http://localhost:8000',
         changeOrigin: true,
-        secure: true,
       },
       '/live': {
-        target: 'https://ai-platform-api-production-19cb.up.railway.app',
+        target: 'http://localhost:8000',
         changeOrigin: true,
-        secure: true,
       },
     },
   },

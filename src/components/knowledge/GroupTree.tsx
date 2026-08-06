@@ -64,7 +64,7 @@ const GroupTree: React.FC<GroupTreeProps> = ({ selectedGroupId, onSelect }) => {
   // Fetch the group tree
   const { data, refetch } = useApiQuery<KnowledgeGroup[]>({
     queryKey: ['knowledge-groups'],
-    endpoint: '/knowledge-groups',
+    endpoint: '/knowledge-groups/',
   });
 
   const groups = data ?? EMPTY_GROUPS;

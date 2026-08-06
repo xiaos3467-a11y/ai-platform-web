@@ -72,7 +72,7 @@ const DocumentList: React.FC<DocumentListProps> = ({ kbId, kbName, onQueryClick,
     refetch,
   } = useApiQuery<Document[]>({
     queryKey: ['kb-documents', kbId],
-    endpoint: `/knowledge-bases/${kbId}/documents`,
+    endpoint: `/knowledge-bases/${kbId}/documents/`,
     refetchInterval: shouldPoll ? 3000 : false,
   });
 
@@ -92,7 +92,7 @@ const DocumentList: React.FC<DocumentListProps> = ({ kbId, kbName, onQueryClick,
         okButtonProps: { danger: true },
         cancelText: '取消',
         onOk: async () => {
-          await api.delete(`/knowledge-bases/${kbId}/documents/${doc.id}`);
+          await api.delete(`/knowledge-bases/${kbId}/documents/${doc.id}/`);
           message.success('文档已删除');
           refetch();
           onChange?.();
@@ -121,7 +121,7 @@ const DocumentList: React.FC<DocumentListProps> = ({ kbId, kbName, onQueryClick,
     beforeUpload: async (file) => {
       setUploading(true);
       try {
-        await api.upload(`/knowledge-bases/${kbId}/documents`, file);
+        await api.upload(`/knowledge-bases/${kbId}/documents/`, file);
         message.success(`${file.name} 上传成功，正在处理...`);
         refetch();
         onChange?.();

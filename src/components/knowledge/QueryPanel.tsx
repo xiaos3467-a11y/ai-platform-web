@@ -57,7 +57,7 @@ const QueryPanel: React.FC<QueryPanelProps> = ({ kbId, kbName, onClose }) => {
     setLoading(true);
 
     try {
-      const resp = await api.post<QueryResponse>(`/knowledge-bases/${kbId}/query`, {
+      const resp = await api.post<QueryResponse>(`/knowledge-bases/${kbId}/query/`, {
         question: q,
         top_k: 5,
       });
@@ -69,10 +69,15 @@ const QueryPanel: React.FC<QueryPanelProps> = ({ kbId, kbName, onClose }) => {
             : t,
         ),
       );
-    } catch {
+    } catch (err: unknown) {
+      const detail =
+        err && typeof err === 'object' && 'response' in err
+          ? (err as { response?: { data?: { detail?: string } } }).response?.data?.detail
+          : undefined;
+      const errorMsg = detail || (err instanceof Error ? err.message : '查询失败，请稍后重试');
       setHistory((prev) =>
         prev.map((t, i) =>
-          i === prev.length - 1 ? { ...t, error: '查询失败，请稍后重试', loading: false } : t,
+          i === prev.length - 1 ? { ...t, error: errorMsg, loading: false } : t,
         ),
       );
     } finally {
