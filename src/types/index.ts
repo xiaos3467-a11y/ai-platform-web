@@ -224,6 +224,22 @@ export interface Provider {
   is_enabled: boolean;
   priority: number;
   created_at: string;
+  /** True when api_base_url/api_key changed server-side and a re-test is required. */
+  needs_retest?: boolean;
+  /** ISO timestamp of the last connectivity test. */
+  last_test_at?: string | null;
+  /** Whether the last connectivity test succeeded. */
+  last_test_success?: boolean | null;
+  /** Latency of the last successful connectivity test (ms). */
+  last_test_latency_ms?: number | null;
+}
+
+/** Response from POST /models/providers/:id/test */
+export interface ConnectivityTestResult {
+  success: boolean;
+  latency_ms: number;
+  model: string;
+  message: string;
 }
 
 export interface ProviderCreateRequest {

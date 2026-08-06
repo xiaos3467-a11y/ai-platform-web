@@ -5,7 +5,8 @@
  * enable/disable toggles, and cost tracking.
  */
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
+import dayjs from 'dayjs';
 import {
   Table,
   Button,
@@ -21,6 +22,7 @@ import {
   Tooltip,
   Tag,
   Divider,
+  Alert,
 } from 'antd';
 import {
   PlusOutlined,
@@ -30,9 +32,19 @@ import {
   EyeInvisibleOutlined,
   ApiOutlined,
   EditOutlined,
+  CheckCircleOutlined,
+  CloseCircleOutlined,
+  LoadingOutlined,
+  SafetyOutlined,
 } from '@ant-design/icons';
 import { useQueryClient } from '@tanstack/react-query';
-import type { Provider, ProviderCreateRequest, ModelConfig, ModelPurpose } from '@/types';
+import type {
+  Provider,
+  ProviderCreateRequest,
+  ModelConfig,
+  ModelPurpose,
+  ConnectivityTestResult,
+} from '@/types';
 import { PURPOSE_META, ALL_PURPOSES } from '@/types';
 import { GlassCard, EmptyState, TableSkeleton } from '@/components';
 import { useApiQuery, useApiMutation } from '@/hooks';
@@ -310,6 +322,8 @@ const ModelProviders: React.FC = () => {
   const [editTarget, setEditTarget] = useState<Provider | null>(null);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [showKeys, setShowKeys] = useState<Record<string, boolean>>({});
+  const [testPassed, setTestPassed] = useState(false);
+  const [testResult, setTestResult] = useState<ConnectivityTestResult | null>(null);
   const [form] = Form.useForm();
   const [editForm] = Form.useForm();
   const { message, modal } = App.useApp();
@@ -330,7 +344,14 @@ const ModelProviders: React.FC = () => {
 
   const updateMutation = useApiMutation<
     Provider,
-    { id: string; display_name?: string; api_base_url?: string; models?: ModelConfig[]; priority?: number }
+    {
+      id: string;
+      display_name?: string;
+      api_base_url?: string;
+      api_key?: string;
+      models?: ModelConfig[];
+      priority?: number;
+    }
   >({
     method: 'put',
     endpoint: (v) => `/models/providers/${v.id}`,
@@ -360,7 +381,43 @@ const ModelProviders: React.FC = () => {
     invalidateKeys: [PROVIDERS_KEY],
   });
 
+  const connectivityTestMutation = useApiMutation<
+    ConnectivityTestResult,
+    { id: string }
+  >({
+    method: 'post',
+    endpoint: ({ id }) => `/models/providers/${id}/test`,
+  });
+
   // ─── Handlers ──────────────────────────────────────────────────
+  const handleTestConnectivity = useCallback(() => {
+    if (!editTarget) return;
+    setTestResult(null);
+    connectivityTestMutation.mutate({ id: editTarget.id }, {
+      onSuccess: (data) => {
+        setTestResult(data);
+        if (data.success) {
+          setTestPassed(true);
+          message.success(`连接成功 (${data.latency_ms}ms)`);
+        } else {
+          setTestPassed(false);
+          message.error(data.message || '连通性测试失败');
+        }
+        // Refresh providers so table shows updated last_test_* fields
+        queryClient.invalidateQueries({ queryKey: PROVIDERS_KEY });
+      },
+      onError: (err) => {
+        setTestPassed(false);
+        setTestResult({
+          success: false,
+          latency_ms: 0,
+          model: '',
+          message: err.message || '网络错误',
+        });
+      },
+    });
+  }, [editTarget, connectivityTestMutation, message, queryClient]);
+
   const handleCreate = async (values: ProviderCreateRequest) => {
     createMutation.mutate(values, {
       onSuccess: () => {
@@ -373,12 +430,15 @@ const ModelProviders: React.FC = () => {
 
   const openEdit = (record: Provider) => {
     setEditTarget(record);
+    setTestResult(null);
+    setTestPassed(false);
     setEditModalOpen(true);
   };
 
   const handleEdit = async (values: {
     display_name?: string;
     api_base_url?: string;
+    api_key?: string;
     models?: ModelConfig[];
     priority?: number;
   }) => {
@@ -388,12 +448,20 @@ const ModelProviders: React.FC = () => {
         id: editTarget.id,
         display_name: values.display_name,
         api_base_url: values.api_base_url,
+        ...(values.api_key ? { api_key: values.api_key } : {}),
         models: values.models,
         priority: values.priority,
       },
       {
-        onSuccess: () => {
-          message.success('Provider 更新成功');
+        onSuccess: (updatedProvider) => {
+          const needsRetest = updatedProvider?.needs_retest;
+          if (needsRetest) {
+            message.warning('配置已更新，请重新测试连通性');
+          } else {
+            message.success('Provider 更新成功');
+          }
+          setTestResult(null);
+          setTestPassed(false);
           setEditModalOpen(false);
           setEditTarget(null);
           editForm.resetFields();
@@ -568,15 +636,34 @@ const ModelProviders: React.FC = () => {
         title: '状态',
         dataIndex: 'is_enabled',
         width: 80,
-        render: (enabled: boolean, record: Provider) => (
-          <Switch checked={enabled} onChange={(v) => handleToggle(record.id, v)} size="small" />
-        ),
+        render: (enabled: boolean, record: Provider) => {
+          const needsTest = !enabled && !record.last_test_success;
+          return (
+            <Tooltip title={needsTest ? '请先通过连通性测试' : undefined}>
+              <Switch
+                checked={enabled}
+                disabled={needsTest}
+                onChange={(v) => handleToggle(record.id, v)}
+                size="small"
+              />
+            </Tooltip>
+          );
+        },
       },
       {
         title: '',
-        width: 90,
+        width: 120,
         render: (_: unknown, record: Provider) => (
-          <div style={{ display: 'flex', gap: 4 }}>
+          <div style={{ display: 'flex', gap: 2 }}>
+            <Tooltip title="连通性测试">
+              <Button
+                type="text"
+                size="small"
+                icon={<ApiOutlined />}
+                onClick={() => openEdit(record)}
+                style={{ color: 'var(--text-subtle)' }}
+              />
+            </Tooltip>
             <Button
               type="text"
               size="small"
@@ -767,10 +854,31 @@ const ModelProviders: React.FC = () => {
 
       {/* ─── Edit Modal ──────────────────────────────────────────── */}
       <Modal
-        title="编辑模型提供商"
+        title={
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span>编辑模型提供商</span>
+            <Button
+              icon={
+                connectivityTestMutation.isPending ? (
+                  <LoadingOutlined />
+                ) : (
+                  <ApiOutlined />
+                )
+              }
+              onClick={handleTestConnectivity}
+              loading={connectivityTestMutation.isPending}
+              size="small"
+              style={{ borderRadius: radius.sm }}
+            >
+              连通性测试
+            </Button>
+          </div>
+        }
         open={editModalOpen}
         onCancel={() => {
           setEditModalOpen(false);
+          setTestResult(null);
+          setTestPassed(false);
           setEditTarget(null);
           editForm.resetFields();
         }}
@@ -803,6 +911,17 @@ const ModelProviders: React.FC = () => {
           <Form.Item name="api_base_url" label="API Base URL">
             <Input placeholder="留空使用默认地址" style={{ fontFamily: 'monospace' }} />
           </Form.Item>
+          <Form.Item
+            name="api_key"
+            label={
+              <Space>
+                <span>API Key</span>
+                <SafetyOutlined style={{ fontSize: 12, color: 'var(--text-subtle)' }} />
+              </Space>
+            }
+          >
+            <Input.Password placeholder="输入新的 API Key（留空保持原值）" />
+          </Form.Item>
           <Form.Item name="priority" label="优先级">
             <InputNumber min={0} max={100} style={{ width: '100%' }} />
           </Form.Item>
@@ -834,6 +953,95 @@ const ModelProviders: React.FC = () => {
               </>
             )}
           </Form.List>
+
+          {/* ─── 连通性测试 ─────────────────────────────────────── */}
+          <Divider style={{ margin: '20px 0 12px' }}>
+            <Text style={{ color: 'var(--text-secondary)', fontSize: 13 }}>连通性测试</Text>
+          </Divider>
+
+          {/* 本次测试结果 / 上次测试历史 */}
+          {testResult ? (
+            <div
+              style={{
+                padding: '10px 14px',
+                borderRadius: radius.sm,
+                background: testResult.success
+                  ? 'rgba(48, 209, 88, 0.08)'
+                  : 'rgba(255, 69, 58, 0.08)',
+                border: `0.5px solid ${
+                  testResult.success
+                    ? 'rgba(48, 209, 88, 0.2)'
+                    : 'rgba(255, 69, 58, 0.2)'
+                }`,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+              }}
+            >
+              {testResult.success ? (
+                <CheckCircleOutlined style={{ color: '#30d158', fontSize: 15 }} />
+              ) : (
+                <CloseCircleOutlined style={{ color: '#ff453a', fontSize: 15 }} />
+              )}
+              <Text
+                style={{
+                  fontSize: 13,
+                  color: testResult.success
+                    ? 'var(--color-success, #30d158)'
+                    : 'var(--color-error, #ff453a)',
+                }}
+              >
+                {testResult.success
+                  ? `${testResult.latency_ms}ms · 连接成功`
+                  : testResult.message || '连接失败'}
+              </Text>
+            </div>
+          ) : editTarget?.last_test_at ? (
+            <Text style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+              上次测试:{' '}
+              {dayjs(editTarget.last_test_at).format('YYYY-MM-DD HH:mm')}{' '}
+              {editTarget.last_test_success ? (
+                <span style={{ color: 'var(--color-success, #30d158)' }}>
+                  <CheckCircleOutlined /> {editTarget.last_test_latency_ms}ms
+                </span>
+              ) : (
+                <span style={{ color: 'var(--color-error, #ff453a)' }}>
+                  <CloseCircleOutlined /> 失败
+                </span>
+              )}
+            </Text>
+          ) : (
+            <Text style={{ fontSize: 12, color: 'var(--text-faint)' }}>尚未测试</Text>
+          )}
+
+          {/* 配置已更改提示 + 启用开关 */}
+          <div style={{ marginTop: 16 }}>
+            {editTarget?.needs_retest && (
+              <Alert
+                type="warning"
+                showIcon
+                message="配置已更改，需要重新测试连通性"
+                style={{ marginBottom: 12, borderRadius: radius.sm }}
+              />
+            )}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <Text style={{ fontSize: 13, color: 'var(--text-secondary)' }}>启用此提供商</Text>
+              <Tooltip title={!testPassed ? '请先通过连通性测试' : undefined}>
+                <Switch
+                  checked={testPassed || editTarget?.is_enabled || false}
+                  disabled={!testPassed && !editTarget?.is_enabled}
+                  size="small"
+                />
+              </Tooltip>
+              {testPassed ? (
+                <Text style={{ fontSize: 11, color: 'var(--color-success, #30d158)' }}>
+                  测试通过 ✓
+                </Text>
+              ) : (
+                <Text style={{ fontSize: 11, color: 'var(--text-faint)' }}>需要测试</Text>
+              )}
+            </div>
+          </div>
         </Form>
       </Modal>
     </div>
