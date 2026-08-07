@@ -54,8 +54,12 @@ class ApiClient {
       headers: { 'Content-Type': 'application/json' },
     });
 
-    // Request interceptor — inject auth token
+    // Request interceptor — inject auth token + force HTTPS
     this.client.interceptors.request.use((config) => {
+      // Belt-and-suspenders: if somehow the URL resolves to http://, force https
+      if (config.url?.startsWith('http://')) {
+        config.url = config.url.replace('http://', 'https://');
+      }
       const token = localStorage.getItem('ai_platform_token');
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
