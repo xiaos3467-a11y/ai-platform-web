@@ -60,6 +60,11 @@ class ApiClient {
       if (config.url?.startsWith('http://')) {
         config.url = config.url.replace('http://', 'https://');
       }
+      // Belt-and-suspenders #2: strip trailing slashes on relative URLs to avoid
+      // FastAPI 307 redirects that expose the Railway origin and drop Authorization.
+      if (config.url && !config.url.startsWith('http')) {
+        config.url = config.url.replace(/\/+$/, '');
+      }
       const token = localStorage.getItem('ai_platform_token');
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
