@@ -361,7 +361,7 @@ const ModelProviders: React.FC = () => {
   /** Toggle an individual model within a provider. */
   const toggleModelMutation = useApiMutation<
     unknown,
-    { providerId: string; modelName: string; enabled: boolean }
+    { provider_id: string; model_name: string; enabled: boolean }
   >({
     endpoint: '/models/providers/models/toggle',
     invalidateKeys: [PROVIDERS_KEY],
@@ -495,7 +495,7 @@ const ModelProviders: React.FC = () => {
   const handleModelToggle = useCallback(
     (providerId: string, modelName: string, enabled: boolean) => {
       toggleModelMutation.mutate(
-        { providerId, modelName, enabled },
+        { provider_id: providerId, model_name: modelName, enabled },
         {
           onSuccess: () => message.success(enabled ? `已启用 ${modelName}` : `已禁用 ${modelName}`),
         },
