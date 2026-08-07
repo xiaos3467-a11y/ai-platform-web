@@ -25,9 +25,9 @@ const Workflows: React.FC = () => {
   const fetchWorkflows = async (signal?: AbortSignal) => {
     setLoading(true);
     try {
-      const resp = await api.get<{ items: Workflow[]; total: number }>(
-        '/workflows/',
-        undefined,
+      const resp = await api.post<{ items: Workflow[]; total: number }>(
+        '/workflows/list',
+        {},
         signal,
       );
       setWorkflows(resp.data?.items || []);
@@ -68,7 +68,7 @@ const Workflows: React.FC = () => {
           { source: 'llm_1', target: 'end' },
         ],
       };
-      await api.post('/workflows/', body);
+      await api.post('/workflows/create', body);
       message.success('工作流创建成功');
       setCreateOpen(false);
       form.resetFields();
@@ -80,7 +80,7 @@ const Workflows: React.FC = () => {
 
   const handlePublish = async (id: string) => {
     try {
-      await api.post(`/workflows/${id}/publish`);
+      await api.post(`/workflows/publish`, { id });
       message.success('已发布');
       fetchWorkflows();
     } catch {
@@ -92,7 +92,8 @@ const Workflows: React.FC = () => {
     if (!selectedWf) return;
     try {
       const inputs = JSON.parse(execInput);
-      const resp = await api.post<WorkflowExecution>(`/workflows/${selectedWf.id}/execute`, {
+      const resp = await api.post<WorkflowExecution>(`/workflows/execute`, {
+        id: selectedWf.id,
         inputs,
       });
       setExecResult(resp.data);

@@ -135,8 +135,8 @@ const Costs: React.FC = () => {
     const fetchData = async () => {
       try {
         const [summaryResp, dailyResp] = await Promise.allSettled([
-          api.get<CostSummary>('/costs/summary', undefined, ctrl.signal),
-          api.get<DailyCost[]>('/costs/daily?days=30', undefined, ctrl.signal),
+          api.post<CostSummary>('/costs/summary', {}, ctrl.signal),
+          api.post<DailyCost[]>('/costs/daily', { days: 30 }, ctrl.signal),
         ]);
         if (summaryResp.status === 'fulfilled') setSummary(summaryResp.value.data);
         if (dailyResp.status === 'fulfilled') setDaily(dailyResp.value.data || []);

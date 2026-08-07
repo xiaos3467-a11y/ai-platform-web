@@ -132,7 +132,7 @@ const AppLayout: React.FC = () => {
       queryClient.prefetchQuery({
         queryKey: key,
         queryFn: async ({ signal }) => {
-          const resp = await api.get(`/${key.join('/')}/`, undefined, signal);
+          const resp = await api.post(`/${key.join('/')}/list`, {}, signal);
           return resp.data;
         },
         staleTime: 30_000,

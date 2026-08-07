@@ -1,13 +1,12 @@
 /**
- * useApiMutation — React Query wrapper for API mutations.
+ * useApiMutation — React Query wrapper for API mutations (POST-only).
  *
  * Provides optimistic update support, automatic query invalidation,
  * and consistent error handling via the existing API client interceptor.
  *
  * Usage:
  *   const mutation = useApiMutation<User>({
- *     method: 'post',
- *     endpoint: '/users/',
+ *     endpoint: '/users/create',
  *     invalidateKeys: [['users']],
  *   });
  *
@@ -25,10 +24,7 @@ import {
 import { api } from '@/api/client';
 import type { ApiResponse } from '@/types';
 
-type HttpMethod = 'post' | 'put' | 'patch' | 'delete';
-
 export interface UseApiMutationOptions<TData = unknown, TVariables = unknown> {
-  method: HttpMethod;
   endpoint: string | ((variables: TVariables) => string);
   invalidateKeys?: QueryKey[];
   onSuccess?: (data: TData, variables: TVariables) => void | Promise<void>;
@@ -43,23 +39,7 @@ export function useApiMutation<TData = unknown, TVariables = unknown>(
   return useMutation<TData, Error, TVariables>({
     mutationFn: async (variables: TVariables) => {
       const url = typeof opts.endpoint === 'function' ? opts.endpoint(variables) : opts.endpoint;
-
-      let resp: ApiResponse<TData>;
-      switch (opts.method) {
-        case 'post':
-          resp = await api.post<TData>(url, variables);
-          break;
-        case 'put':
-          resp = await api.put<TData>(url, variables);
-          break;
-        case 'patch':
-          // No patch method on our client — fall back to put
-          resp = await api.put<TData>(url, variables);
-          break;
-        case 'delete':
-          resp = await api.delete<TData>(url);
-          break;
-      }
+      const resp: ApiResponse<TData> = await api.post<TData>(url, variables);
       return resp.data;
     },
     onSuccess: async (data, variables) => {

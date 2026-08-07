@@ -44,17 +44,16 @@ const TenantApiKeys: React.FC = () => {
 
   const { data: keys, isLoading } = useApiListQuery<TenantApiKey>({
     queryKey: ['tenant', 'api-keys'],
-    endpoint: '/tenant/self/api-keys',
+    endpoint: '/tenant/self/api-keys/list',
   });
 
   const { data: availableModels } = useApiListQuery<TenantAvailableModel>({
     queryKey: ['tenant', 'models'],
-    endpoint: '/tenant/self/models',
+    endpoint: '/tenant/self/models/list',
   });
 
   const createMutation = useApiMutation<{ id: string; key: string }, Record<string, unknown>>({
-    method: 'post',
-    endpoint: '/tenant/self/api-keys',
+    endpoint: '/tenant/self/api-keys/create',
     invalidateKeys: [['tenant', 'api-keys']],
     onSuccess: (data) => {
       message.success('API Key 创建成功');
@@ -66,8 +65,7 @@ const TenantApiKeys: React.FC = () => {
   });
 
   const updateMutation = useApiMutation<TenantApiKey, Record<string, unknown>>({
-    method: 'put',
-    endpoint: (vars) => `/tenant/self/api-keys/${vars.id as string}`,
+    endpoint: '/tenant/self/api-keys/update',
     invalidateKeys: [['tenant', 'api-keys']],
     onSuccess: () => {
       message.success('API Key 已更新');
@@ -76,8 +74,7 @@ const TenantApiKeys: React.FC = () => {
   });
 
   const deleteMutation = useApiMutation<void, { id: string }>({
-    method: 'delete',
-    endpoint: (vars) => `/tenant/self/api-keys/${vars.id}`,
+    endpoint: '/tenant/self/api-keys/delete',
     invalidateKeys: [['tenant', 'api-keys']],
     onSuccess: () => {
       message.success('API Key 已删除');
@@ -85,8 +82,7 @@ const TenantApiKeys: React.FC = () => {
   });
 
   const rotateMutation = useApiMutation<{ new_key: string }, { id: string }>({
-    method: 'post',
-    endpoint: (vars) => `/tenant/self/api-keys/${vars.id}/rotate`,
+    endpoint: '/tenant/self/api-keys/rotate',
     invalidateKeys: [['tenant', 'api-keys']],
     onSuccess: (data) => {
       message.success('API Key 已轮换，旧 Key 将在 24 小时后失效');

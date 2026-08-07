@@ -66,7 +66,8 @@ const ModelSelector: React.FC<ModelSelectorProps> = ({
 }) => {
   const { data: models, isLoading } = useApiQuery<AvailableModel[]>({
     queryKey: ['models', 'available', purpose],
-    endpoint: `/models/available?purpose=${purpose}`,
+    endpoint: '/models/available/list',
+    params: { purpose },
   });
 
   // Sort by priority descending

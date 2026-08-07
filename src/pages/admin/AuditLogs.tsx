@@ -139,7 +139,7 @@ const AdminAuditLogs: React.FC = () => {
       resourceTypeFilter,
       userFilter,
     ],
-    endpoint: '/audit-logs',
+    endpoint: '/audit-logs/list',
     params: queryParams,
   });
 
@@ -166,7 +166,7 @@ const AdminAuditLogs: React.FC = () => {
 
   const { data: actionsList } = useApiQuery<string[]>({
     queryKey: ['admin', 'audit-logs', 'actions'],
-    endpoint: '/audit-logs/actions',
+    endpoint: '/audit-logs/actions/list',
     staleTime: 5 * 60_000,
   });
 

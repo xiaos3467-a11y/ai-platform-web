@@ -43,9 +43,8 @@ const EditKBModal: React.FC<EditKBModalProps> = ({ open, kb, groups, onCancel, o
   const [form] = Form.useForm<KBUpdateValues>();
   const { message } = App.useApp();
 
-  const mutation = useApiMutation<KnowledgeBase, KBUpdateValues>({
-    method: 'put',
-    endpoint: () => `/knowledge-bases/${kb?.id}`,
+  const mutation = useApiMutation<KnowledgeBase, { id: string } & KBUpdateValues>({
+    endpoint: '/knowledge-bases/update',
     invalidateKeys: [['knowledge-bases']],
   });
 
@@ -53,8 +52,8 @@ const EditKBModal: React.FC<EditKBModalProps> = ({ open, kb, groups, onCancel, o
     if (kb && open) {
       form.setFieldsValue({
         name: kb.name,
-        description: kb.description,
-        group_id: kb.group_id,
+        description: kb.description ?? undefined,
+        group_id: kb.group_id ?? undefined,
       });
     }
   }, [kb, open, form]);
@@ -62,7 +61,7 @@ const EditKBModal: React.FC<EditKBModalProps> = ({ open, kb, groups, onCancel, o
   const handleOk = async () => {
     try {
       const values = await form.validateFields();
-      mutation.mutate(values, {
+      mutation.mutate({ id: kb?.id || '', ...values }, {
         onSuccess: () => {
           message.success('知识库已更新');
           form.resetFields();

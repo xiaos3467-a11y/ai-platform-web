@@ -65,8 +65,8 @@ const Roles: React.FC = () => {
     setLoading(true);
     try {
       const [rolesResp, permsResp] = await Promise.allSettled([
-        api.get<RoleItem[]>('/roles/', undefined, signal),
-        api.get<PermissionItem[]>('/roles/permissions', undefined, signal),
+        api.post<RoleItem[]>('/roles/list', {}, signal),
+        api.post<PermissionItem[]>('/roles/permissions', {}, signal),
       ]);
       if (rolesResp.status === 'fulfilled') setRoles(rolesResp.value.data || []);
       if (permsResp.status === 'fulfilled') setPermissions(permsResp.value.data || []);
@@ -91,7 +91,7 @@ const Roles: React.FC = () => {
 
   const handleCreate = async (values: { name: string; description?: string }) => {
     try {
-      await api.post('/roles/', { ...values, permission_ids: selectedPermIds });
+      await api.post('/roles/create', { ...values, permission_ids: selectedPermIds });
       message.success('角色创建成功');
       setCreateOpen(false);
       setSelectedPermIds([]);
@@ -105,7 +105,7 @@ const Roles: React.FC = () => {
   const handleEdit = async (values: { name?: string; description?: string }) => {
     if (!editRole) return;
     try {
-      await api.put(`/roles/${editRole.id}`, { ...values, permission_ids: selectedPermIds });
+      await api.post('/roles/update', { id: editRole.id, ...values, permission_ids: selectedPermIds });
       message.success('角色更新成功');
       setEditRole(null);
       setSelectedPermIds([]);
@@ -124,7 +124,7 @@ const Roles: React.FC = () => {
       okButtonProps: { danger: true },
       cancelText: '取消',
       onOk: async () => {
-        await api.delete(`/roles/${id}`);
+        await api.post('/roles/delete', { id });
         message.success('角色已删除');
         fetchData();
       },

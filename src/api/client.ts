@@ -156,40 +156,19 @@ class ApiClient {
     );
   }
 
-  // --- Generic methods ---
+  // --- Generic methods (POST-only) ---
 
-  async get<T>(
-    url: string,
-    params?: Record<string, unknown>,
-    signal?: AbortSignal,
-  ): Promise<ApiResponse<T>> {
-    const resp = await this.client.get<ApiResponse<T>>(url, { params, signal });
+  async post<T>(url: string, data?: unknown, signal?: AbortSignal): Promise<ApiResponse<T>> {
+    const resp = await this.client.post<ApiResponse<T>>(url, data, { signal });
     return resp.data;
   }
 
-  async getRaw<T>(url: string, params?: Record<string, unknown>, signal?: AbortSignal): Promise<T> {
-    const resp = await this.client.get<T>(url, { params, signal });
-    return resp.data;
-  }
-
-  async post<T>(url: string, data?: unknown): Promise<ApiResponse<T>> {
-    const resp = await this.client.post<ApiResponse<T>>(url, data);
-    return resp.data;
-  }
-
-  async put<T>(url: string, data?: unknown): Promise<ApiResponse<T>> {
-    const resp = await this.client.put<ApiResponse<T>>(url, data);
-    return resp.data;
-  }
-
-  async delete<T>(url: string): Promise<ApiResponse<T>> {
-    const resp = await this.client.delete<ApiResponse<T>>(url);
-    return resp.data;
-  }
-
-  async upload<T>(url: string, file: File): Promise<ApiResponse<T>> {
+  async upload<T>(url: string, file: File, extraFields?: Record<string, string>): Promise<ApiResponse<T>> {
     const formData = new FormData();
     formData.append('file', file);
+    if (extraFields) {
+      Object.entries(extraFields).forEach(([key, value]) => formData.append(key, value));
+    }
     const resp = await this.client.post<ApiResponse<T>>(url, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });

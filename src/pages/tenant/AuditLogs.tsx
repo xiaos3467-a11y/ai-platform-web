@@ -48,7 +48,7 @@ const TenantAuditLogs: React.FC = () => {
 
   const { data: logs, isLoading } = useApiListQuery<TenantAuditLog>({
     queryKey: ['tenant', 'audit-logs', page, dateRange, actionFilter],
-    endpoint: '/tenant/self/audit-logs',
+    endpoint: '/tenant/self/audit-logs/list',
     params: queryParams,
   });
 

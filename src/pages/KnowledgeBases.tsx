@@ -47,7 +47,7 @@ const KnowledgeBases: React.FC = () => {
   // Fetch groups for the tree (used by CreateKBModal's group Select too)
   const { data: groups = [] } = useApiQuery<KnowledgeGroup[]>({
     queryKey: ['knowledge-groups'],
-    endpoint: '/knowledge-groups',
+    endpoint: '/knowledge-groups/list',
   });
 
   // Fetch KBs — pass group_id when a real group is selected
@@ -62,7 +62,7 @@ const KnowledgeBases: React.FC = () => {
     refetch: refetchKbs,
   } = useApiListQuery<KnowledgeBase>({
     queryKey: ['knowledge-bases', selectedGroupId ?? 'all'],
-    endpoint: '/knowledge-bases/',
+    endpoint: '/knowledge-bases/list',
     params: queryParams,
   });
 
@@ -90,9 +90,8 @@ const KnowledgeBases: React.FC = () => {
     setEditOpen(true);
   };
 
-  const deleteMutation = useApiMutation<void, string>({
-    method: 'delete',
-    endpoint: (kbId) => `/knowledge-bases/${kbId}`,
+  const deleteMutation = useApiMutation<void, { id: string }>({
+    endpoint: '/knowledge-bases/delete',
     invalidateKeys: [['knowledge-bases']],
   });
 
@@ -105,7 +104,7 @@ const KnowledgeBases: React.FC = () => {
         okButtonProps: { danger: true },
         cancelText: '取消',
         onOk: async () => {
-          deleteMutation.mutate(kb.id, {
+          deleteMutation.mutate({ id: kb.id }, {
             onSuccess: () => {
               message.success('知识库已删除');
               if (selectedKb?.id === kb.id) {

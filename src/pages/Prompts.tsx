@@ -93,9 +93,9 @@ const Prompts: React.FC = () => {
   const fetchPrompts = async (signal?: AbortSignal) => {
     setLoading(true);
     try {
-      const resp = await api.get<{ items: PromptTemplate[]; total: number }>(
-        '/prompts/',
-        undefined,
+      const resp = await api.post<{ items: PromptTemplate[]; total: number }>(
+        '/prompts/list',
+        {},
         signal,
       );
       setPrompts(resp.data?.items || []);
@@ -120,7 +120,7 @@ const Prompts: React.FC = () => {
 
   const handleCreate = async (values: { name: string; content: string; description?: string }) => {
     try {
-      await api.post('/prompts/', values);
+      await api.post('/prompts/create', values);
       message.success('Prompt 模板创建成功');
       setCreateOpen(false);
       form.resetFields();
@@ -133,7 +133,8 @@ const Prompts: React.FC = () => {
   const handleCreateVersion = async (values: { content: string; change_note?: string }) => {
     if (!selectedPrompt) return;
     try {
-      await api.post(`/prompts/${selectedPrompt.id}/versions`, {
+      await api.post(`/prompts/versions/create`, {
+        prompt_id: selectedPrompt.id,
         content: values.content,
         change_note: values.change_note || '从管理后台更新',
       });
@@ -149,7 +150,7 @@ const Prompts: React.FC = () => {
 
   const fetchVersions = async (promptId: string) => {
     try {
-      const resp = await api.get<PromptVersion[]>(`/prompts/${promptId}/versions`);
+      const resp = await api.post<PromptVersion[]>(`/prompts/versions/list`, { prompt_id: promptId });
       setVersions(resp.data || []);
     } catch {
       /* */
@@ -161,7 +162,8 @@ const Prompts: React.FC = () => {
     try {
       const vars = JSON.parse(renderVars);
       setRenderLoading(true);
-      const resp = await api.post<{ rendered: string }>(`/prompts/${selectedPrompt.id}/render`, {
+      const resp = await api.post<{ rendered: string }>(`/prompts/render`, {
+        prompt_id: selectedPrompt.id,
         variables: vars,
       });
       setRendered(resp.data?.rendered || '');

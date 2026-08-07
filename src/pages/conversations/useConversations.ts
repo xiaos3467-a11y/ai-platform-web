@@ -12,9 +12,9 @@ export function useConversations() {
   return useQuery<{ items: Conversation[]; total: number }>({
     queryKey: CONVERSATIONS_KEY,
     queryFn: async ({ signal }) => {
-      const resp = await api.get<{ items: Conversation[]; total: number }>(
-        '/conversations/',
-        undefined,
+      const resp = await api.post<{ items: Conversation[]; total: number }>(
+        '/conversations/list',
+        {},
         signal,
       );
       return resp.data ?? { items: [], total: 0 };
@@ -28,7 +28,7 @@ export function useConversationMessages(convId: string | null) {
     queryKey: ['conversations', convId, 'messages'],
     queryFn: async ({ signal }) => {
       if (!convId) return [];
-      const resp = await api.get<Message[]>(`/conversations/${convId}/messages`, undefined, signal);
+      const resp = await api.post<Message[]>(`/conversations/messages/list`, { conversation_id: convId }, signal);
       return resp.data || [];
     },
     enabled: !!convId,

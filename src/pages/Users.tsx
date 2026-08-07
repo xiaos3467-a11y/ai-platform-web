@@ -64,8 +64,8 @@ const Users: React.FC = () => {
     setLoading(true);
     try {
       const [usersResp, rolesResp] = await Promise.allSettled([
-        api.get<{ items: UserItem[]; total: number }>('/users/', undefined, signal),
-        api.get<RoleItem[]>('/roles/', undefined, signal),
+        api.post<{ items: UserItem[]; total: number }>('/users/list', {}, signal),
+        api.post<RoleItem[]>('/roles/list', {}, signal),
       ]);
       if (usersResp.status === 'fulfilled') setUsers(usersResp.value.data?.items || []);
       if (rolesResp.status === 'fulfilled') setRoles(rolesResp.value.data || []);
@@ -97,7 +97,7 @@ const Users: React.FC = () => {
     role_ids?: string[];
   }) => {
     try {
-      await api.post('/users/', values);
+      await api.post('/users/create', values);
       message.success('用户创建成功');
       setCreateOpen(false);
       form.resetFields();
@@ -116,7 +116,7 @@ const Users: React.FC = () => {
   }) => {
     if (!editUser) return;
     try {
-      await api.put(`/users/${editUser.id}`, values);
+      await api.post('/users/update', { id: editUser.id, ...values });
       message.success('用户更新成功');
       setEditUser(null);
       editForm.resetFields();
@@ -134,7 +134,7 @@ const Users: React.FC = () => {
       okButtonProps: { danger: true },
       cancelText: '取消',
       onOk: async () => {
-        await api.delete(`/users/${id}`);
+        await api.post('/users/delete', { id });
         message.success('用户已删除');
         fetchData();
       },
@@ -143,7 +143,7 @@ const Users: React.FC = () => {
 
   const handleToggleActive = async (user: UserItem) => {
     try {
-      await api.put(`/users/${user.id}`, { is_active: !user.is_active });
+      await api.post('/users/update', { id: user.id, is_active: !user.is_active });
       message.success(user.is_active ? '已禁用' : '已启用');
       fetchData();
     } catch {
@@ -161,7 +161,8 @@ const Users: React.FC = () => {
       return;
     }
     try {
-      await api.post(`/users/${resetPwdUser.id}/reset-password`, {
+      await api.post(`/users/reset-password`, {
+        id: resetPwdUser.id,
         new_password: values.new_password,
       });
       message.success('密码已重置');

@@ -57,7 +57,8 @@ const QueryPanel: React.FC<QueryPanelProps> = ({ kbId, kbName, onClose }) => {
     setLoading(true);
 
     try {
-      const resp = await api.post<QueryResponse>(`/knowledge-bases/${kbId}/query/`, {
+      const resp = await api.post<QueryResponse>('/knowledge-bases/query', {
+        knowledge_base_id: kbId,
         question: q,
         top_k: 5,
       });

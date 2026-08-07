@@ -13,7 +13,7 @@ const { Title, Text } = Typography;
 const TenantModels: React.FC = () => {
   const { data: models, isLoading } = useApiListQuery<TenantAvailableModel>({
     queryKey: ['tenant', 'models'],
-    endpoint: '/tenant/self/models',
+    endpoint: '/tenant/self/models/list',
   });
 
   if (isLoading) {

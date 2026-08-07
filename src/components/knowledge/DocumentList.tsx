@@ -72,7 +72,8 @@ const DocumentList: React.FC<DocumentListProps> = ({ kbId, kbName, onQueryClick,
     refetch,
   } = useApiQuery<Document[]>({
     queryKey: ['kb-documents', kbId],
-    endpoint: `/knowledge-bases/${kbId}/documents`,
+    endpoint: '/knowledge-bases/documents/list',
+    params: { knowledge_base_id: kbId },
     refetchInterval: shouldPoll ? 3000 : false,
   });
 
@@ -92,7 +93,7 @@ const DocumentList: React.FC<DocumentListProps> = ({ kbId, kbName, onQueryClick,
         okButtonProps: { danger: true },
         cancelText: '取消',
         onOk: async () => {
-          await api.delete(`/knowledge-bases/${kbId}/documents/${doc.id}`);
+          await api.post('/knowledge-bases/documents/delete', { knowledge_base_id: kbId, document_id: doc.id });
           message.success('文档已删除');
           refetch();
           onChange?.();
@@ -103,9 +104,8 @@ const DocumentList: React.FC<DocumentListProps> = ({ kbId, kbName, onQueryClick,
   );
 
   // Retry mutation
-  const retryMutation = useApiMutation<unknown, string>({
-    method: 'post',
-    endpoint: (docId) => `/knowledge-bases/${kbId}/documents/${docId}/retry`,
+  const retryMutation = useApiMutation<unknown, { knowledge_base_id: string; document_id: string }>({
+    endpoint: '/knowledge-bases/documents/retry',
     onSuccess: () => {
       message.success('已重新提交处理');
       refetch();
@@ -121,7 +121,7 @@ const DocumentList: React.FC<DocumentListProps> = ({ kbId, kbName, onQueryClick,
     beforeUpload: async (file) => {
       setUploading(true);
       try {
-        await api.upload(`/knowledge-bases/${kbId}/documents`, file);
+        await api.upload('/knowledge-bases/documents/upload', file, { knowledge_base_id: kbId });
         message.success(`${file.name} 上传成功，正在处理...`);
         refetch();
         onChange?.();
@@ -209,7 +209,7 @@ const DocumentList: React.FC<DocumentListProps> = ({ kbId, kbName, onQueryClick,
                   size="small"
                   icon={<ReloadOutlined />}
                   loading={retryMutation.isPending}
-                  onClick={() => retryMutation.mutate(record.id)}
+                  onClick={() => retryMutation.mutate({ knowledge_base_id: kbId, document_id: record.id })}
                 />
               </Tooltip>
             )}

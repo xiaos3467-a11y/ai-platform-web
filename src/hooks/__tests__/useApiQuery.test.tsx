@@ -19,8 +19,7 @@ import { useApiQuery, useApiListQuery, useApiRawQuery } from '../useApiQuery';
 // Mock the API client
 vi.mock('@/api/client', () => ({
   api: {
-    get: vi.fn(),
-    getRaw: vi.fn(),
+    post: vi.fn(),
   },
 }));
 
@@ -67,7 +66,7 @@ function TestQueryComponent({
 describe('useApiQuery', () => {
   it('fetches data and returns it', async () => {
     const { api } = await import('@/api/client');
-    vi.mocked(api.get).mockResolvedValue({
+    vi.mocked(api.post).mockResolvedValue({
       code: 0,
       message: 'ok',
       data: 'hello world',
@@ -81,7 +80,7 @@ describe('useApiQuery', () => {
       expect(screen.getByTestId('data')).toHaveTextContent('hello world');
     });
 
-    expect(api.get).toHaveBeenCalledWith('/test', undefined, expect.any(Object));
+    expect(api.post).toHaveBeenCalledWith('/test', {}, expect.any(Object));
   });
 
   it('does not fetch when enabled=false', async () => {
@@ -92,7 +91,7 @@ describe('useApiQuery', () => {
     // Wait a tick to ensure no fetch happens
     await new Promise((r) => setTimeout(r, 50));
 
-    expect(api.get).not.toHaveBeenCalled();
+    expect(api.post).not.toHaveBeenCalled();
     // When disabled, React Query doesn't run queryFn; component stays in idle state
     expect(screen.getByTestId('idle')).toBeInTheDocument();
     expect(screen.queryByTestId('data')).not.toBeInTheDocument();
@@ -100,7 +99,7 @@ describe('useApiQuery', () => {
 
   it('passes params to the API client', async () => {
     const { api } = await import('@/api/client');
-    vi.mocked(api.get).mockResolvedValue({
+    vi.mocked(api.post).mockResolvedValue({
       code: 0,
       message: 'ok',
       data: 'filtered',
@@ -112,7 +111,7 @@ describe('useApiQuery', () => {
       expect(screen.getByTestId('data')).toHaveTextContent('filtered');
     });
 
-    expect(api.get).toHaveBeenCalledWith(
+    expect(api.post).toHaveBeenCalledWith(
       '/test',
       { status: 'active' },
       expect.any(Object),
@@ -121,7 +120,7 @@ describe('useApiQuery', () => {
 
   it('handles API errors', async () => {
     const { api } = await import('@/api/client');
-    vi.mocked(api.get).mockRejectedValue(new Error('Network failure'));
+    vi.mocked(api.post).mockRejectedValue(new Error('Network failure'));
 
     renderWithQuery(<TestQueryComponent />);
 
@@ -151,7 +150,7 @@ function TestListComponent() {
 describe('useApiListQuery', () => {
   it('fetches paginated data and returns { items, total }', async () => {
     const { api } = await import('@/api/client');
-    vi.mocked(api.get).mockResolvedValue({
+    vi.mocked(api.post).mockResolvedValue({
       code: 0,
       message: 'ok',
       data: {
@@ -172,7 +171,7 @@ describe('useApiListQuery', () => {
 
   it('returns empty items when data is null', async () => {
     const { api } = await import('@/api/client');
-    vi.mocked(api.get).mockResolvedValue({
+    vi.mocked(api.post).mockResolvedValue({
       code: 0,
       message: 'ok',
       data: undefined,
@@ -199,9 +198,13 @@ function TestRawComponent() {
 }
 
 describe('useApiRawQuery', () => {
-  it('calls api.getRaw and returns data directly', async () => {
+  it('calls api.post and returns data directly', async () => {
     const { api } = await import('@/api/client');
-    vi.mocked(api.getRaw).mockResolvedValue({ raw: true });
+    vi.mocked(api.post).mockResolvedValue({
+      code: 0,
+      message: 'ok',
+      data: { raw: true },
+    });
 
     renderWithQuery(<TestRawComponent />);
 
@@ -209,6 +212,6 @@ describe('useApiRawQuery', () => {
       expect(screen.getByTestId('data')).toHaveTextContent('raw-yes');
     });
 
-    expect(api.getRaw).toHaveBeenCalledWith('/raw', undefined, expect.any(Object));
+    expect(api.post).toHaveBeenCalledWith('/raw', {}, expect.any(Object));
   });
 });

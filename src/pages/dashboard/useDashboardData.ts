@@ -10,7 +10,7 @@ import type { CostSummary, DailyCost, HealthStatus } from '@/types';
 export function useDashboardData() {
   const healthQuery = useQuery<HealthStatus>({
     queryKey: ['health'],
-    queryFn: () => api.getRaw<HealthStatus>('../../health'),
+    queryFn: () => api.post<HealthStatus>('/health').then(r => r.data),
     staleTime: 15_000,
     retry: 2,
   });
@@ -18,7 +18,7 @@ export function useDashboardData() {
   const costSummaryQuery = useQuery<CostSummary>({
     queryKey: ['costs', 'summary'],
     queryFn: async ({ signal }) => {
-      const resp = await api.get<CostSummary>('/costs/summary', undefined, signal);
+      const resp = await api.post<CostSummary>('/costs/summary', {}, signal);
       return resp.data;
     },
     staleTime: 60_000,
@@ -27,7 +27,7 @@ export function useDashboardData() {
   const dailyCostsQuery = useQuery<DailyCost[]>({
     queryKey: ['costs', 'daily', 14],
     queryFn: async ({ signal }) => {
-      const resp = await api.get<DailyCost[]>('/costs/daily?days=14', undefined, signal);
+      const resp = await api.post<DailyCost[]>('/costs/daily', { days: 14 }, signal);
       return resp.data || [];
     },
     staleTime: 60_000,

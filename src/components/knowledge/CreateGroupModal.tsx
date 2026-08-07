@@ -47,8 +47,7 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
   const { message } = App.useApp();
 
   const mutation = useApiMutation<KnowledgeGroupCreateRequest>({
-    method: 'post',
-    endpoint: '/knowledge-groups/',
+    endpoint: '/knowledge-groups/create',
     invalidateKeys: [['knowledge-groups']],
   });
 

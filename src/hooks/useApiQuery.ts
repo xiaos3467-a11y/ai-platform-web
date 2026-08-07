@@ -7,10 +7,10 @@
  * Usage:
  *   const { data, isLoading, error, refetch } = useApiQuery<User[]>({
  *     queryKey: ['users'],
- *     endpoint: '/users/',
+ *     endpoint: '/users/list',
  *   });
  *
- *   // With params
+ *   // With body params
  *   const { data } = useApiQuery<CostSummary>({
  *     queryKey: ['costs', 'summary'],
  *     endpoint: '/costs/summary',
@@ -39,7 +39,7 @@ export function useApiListQuery<T>(opts: UseApiQueryOptions<{ items: T[]; total:
   return useQuery<{ items: T[]; total: number }, Error, { items: T[]; total: number }, QueryKey>({
     queryKey: opts.queryKey,
     queryFn: async ({ signal }) => {
-      const resp = await api.get<{ items: T[]; total: number }>(opts.endpoint, opts.params, signal);
+      const resp = await api.post<{ items: T[]; total: number }>(opts.endpoint, opts.params || {}, signal);
       return resp.data ?? { items: [], total: 0 };
     },
     enabled: opts.enabled,
@@ -49,13 +49,13 @@ export function useApiListQuery<T>(opts: UseApiQueryOptions<{ items: T[]; total:
 }
 
 /**
- * Generic API query — wraps `api.get<T>(endpoint)` into React Query.
+ * Generic API query — wraps `api.post<T>(endpoint)` into React Query.
  */
 export function useApiQuery<T>(opts: UseApiQueryOptions<T>) {
   return useQuery<T, Error, T, QueryKey>({
     queryKey: opts.queryKey,
     queryFn: async ({ signal }) => {
-      const resp: ApiResponse<T> = await api.get<T>(opts.endpoint, opts.params, signal);
+      const resp: ApiResponse<T> = await api.post<T>(opts.endpoint, opts.params || {}, signal);
       return resp.data as T;
     },
     enabled: opts.enabled,
@@ -67,14 +67,15 @@ export function useApiQuery<T>(opts: UseApiQueryOptions<T>) {
 }
 
 /**
- * Raw API query — wraps `api.getRaw<T>(endpoint)` for endpoints that
+ * Raw API query — wraps `api.post<T>(endpoint)` for endpoints that
  * don't wrap responses in `{ code, data, message }`.
  */
 export function useApiRawQuery<T>(opts: UseApiQueryOptions<T>) {
   return useQuery<T, Error, T, QueryKey>({
     queryKey: opts.queryKey,
     queryFn: async ({ signal }) => {
-      return api.getRaw<T>(opts.endpoint, opts.params, signal);
+      const resp = await api.post<T>(opts.endpoint, opts.params || {}, signal);
+      return resp.data as T;
     },
     enabled: opts.enabled,
     refetchInterval: opts.refetchInterval,

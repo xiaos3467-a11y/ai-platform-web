@@ -74,7 +74,7 @@ const Conversations: React.FC = () => {
 
   const handleDelete = async (id: string) => {
     try {
-      await api.delete(`/conversations/${id}`);
+      await api.post('/conversations/delete', { id });
       message.success('对话已删除');
       if (selectedConv?.id === id) {
         setSelectedConv(null);

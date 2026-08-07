@@ -18,12 +18,11 @@ const TenantSettingsPage: React.FC = () => {
 
   const { data: settings, isLoading } = useApiQuery<TenantSettings>({
     queryKey: ['tenant', 'settings'],
-    endpoint: '/tenant/self',
+    endpoint: '/tenant/self/get',
   });
 
   const updateMutation = useApiMutation<TenantSettings, TenantSettingsUpdateRequest>({
-    method: 'put',
-    endpoint: '/tenant/self',
+    endpoint: '/tenant/self/update',
     invalidateKeys: [['tenant', 'settings']],
     onSuccess: () => {
       message.success('设置已保存');

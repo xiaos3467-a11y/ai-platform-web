@@ -110,8 +110,8 @@ const Agents: React.FC = () => {
     setLoading(true);
     try {
       const [agentResp, toolResp] = await Promise.allSettled([
-        api.get<{ items: Agent[] }>('/agents/', undefined, signal),
-        api.get<Tool[]>('/agents/tools', undefined, signal),
+        api.post<{ items: Agent[] }>('/agents/list', {}, signal),
+        api.post<Tool[]>('/agents/tools/list', {}, signal),
       ]);
       if (agentResp.status === 'fulfilled') setAgents(agentResp.value.data?.items || []);
       if (toolResp.status === 'fulfilled') setTools(toolResp.value.data || []);
@@ -136,7 +136,7 @@ const Agents: React.FC = () => {
 
   const handleCreate = async (values: AgentCreateRequest) => {
     try {
-      await api.post('/agents/', values);
+      await api.post('/agents/create', values);
       message.success('Agent 创建成功');
       setCreateOpen(false);
       form.resetFields();
@@ -154,7 +154,7 @@ const Agents: React.FC = () => {
       okButtonProps: { danger: true },
       cancelText: '取消',
       onOk: async () => {
-        await api.delete(`/agents/${id}`);
+        await api.post('/agents/delete', { id });
         message.success('已删除');
         fetchAgents();
       },
@@ -168,7 +168,8 @@ const Agents: React.FC = () => {
     setChatInput('');
     setChatLoading(true);
     try {
-      const resp = await api.post<{ answer: string }>(`/agents/${selectedAgent.id}/run`, {
+      const resp = await api.post<{ answer: string }>(`/agents/run`, {
+        id: selectedAgent.id,
         input: chatInput,
         stream: false,
       });

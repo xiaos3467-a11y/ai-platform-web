@@ -324,13 +324,12 @@ const ModelProviders: React.FC = () => {
   // ─── Data fetching ─────────────────────────────────────────────
   const { data: providers = [], isLoading } = useApiQuery<Provider[]>({
     queryKey: PROVIDERS_KEY,
-    endpoint: '/models/providers',
+    endpoint: '/models/providers/list',
   });
 
   // ─── Mutations ─────────────────────────────────────────────────
   const createMutation = useApiMutation<Provider, ProviderCreateRequest>({
-    method: 'post',
-    endpoint: '/models/providers',
+    endpoint: '/models/providers/create',
     invalidateKeys: [PROVIDERS_KEY],
   });
 
@@ -345,20 +344,17 @@ const ModelProviders: React.FC = () => {
       priority?: number;
     }
   >({
-    method: 'put',
-    endpoint: (v) => `/models/providers/${v.id}`,
+    endpoint: '/models/providers/update',
     invalidateKeys: [PROVIDERS_KEY],
   });
 
   const toggleMutation = useApiMutation<Provider, { id: string; enabled: boolean }>({
-    method: 'put',
-    endpoint: ({ id, enabled }) => `/models/providers/${id}/toggle?enabled=${enabled}`,
+    endpoint: '/models/providers/toggle',
     invalidateKeys: [PROVIDERS_KEY],
   });
 
   const deleteMutation = useApiMutation<Provider, string>({
-    method: 'delete',
-    endpoint: (id) => `/models/providers/${id}`,
+    endpoint: '/models/providers/delete',
     invalidateKeys: [PROVIDERS_KEY],
   });
 
@@ -367,15 +363,12 @@ const ModelProviders: React.FC = () => {
     unknown,
     { providerId: string; modelName: string; enabled: boolean }
   >({
-    method: 'post',
-    endpoint: ({ providerId, modelName }) =>
-      `/models/providers/${providerId}/models/${modelName}/toggle`,
+    endpoint: '/models/providers/models/toggle',
     invalidateKeys: [PROVIDERS_KEY],
   });
 
   const connectivityTestMutation = useApiMutation<ConnectivityTestResult, { id: string }>({
-    method: 'post',
-    endpoint: ({ id }) => `/models/providers/${id}/test`,
+    endpoint: '/models/providers/test',
   });
 
   // ─── Handlers ──────────────────────────────────────────────────

@@ -26,8 +26,8 @@ const Settings: React.FC = () => {
   const fetchHealth = async (signal?: AbortSignal) => {
     setLoading(true);
     try {
-      const health = await api.getRaw<HealthStatus>('../../health', undefined, signal);
-      setHealth(health);
+      const health = await api.post<HealthStatus>('/health', {}, signal);
+      setHealth(health.data);
     } catch (e: unknown) {
       if (
         e &&

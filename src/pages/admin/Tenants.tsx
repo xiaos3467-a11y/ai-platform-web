@@ -78,7 +78,7 @@ const AdminTenants: React.FC = () => {
 
   const { data: tenantsData, isLoading } = useApiListQuery<Tenant>({
     queryKey: ['admin', 'tenants', page, statusFilter, planFilter],
-    endpoint: '/tenants',
+    endpoint: '/tenants/list',
     params: {
       page,
       page_size: pageSize,
@@ -89,20 +89,21 @@ const AdminTenants: React.FC = () => {
 
   const { data: tenantDetail } = useApiQuery<Tenant>({
     queryKey: ['admin', 'tenants', editTenant?.id],
-    endpoint: `/tenants/${editTenant?.id}`,
+    endpoint: '/tenants/get',
+    params: { id: editTenant?.id },
     enabled: !!editTenant,
   });
 
   const { data: membersData, isLoading: membersLoading } = useApiListQuery<TenantMember>({
     queryKey: ['admin', 'tenants', membersTenant?.id, 'members'],
-    endpoint: `/tenants/${membersTenant?.id}/members`,
+    endpoint: '/tenants/members/list',
+    params: { tenant_id: membersTenant?.id },
     enabled: !!membersTenant,
   });
 
   // Mutations
   const createMutation = useApiMutation<Tenant, Record<string, unknown>>({
-    method: 'post',
-    endpoint: '/tenants',
+    endpoint: '/tenants/create',
     invalidateKeys: [['admin', 'tenants']],
     onSuccess: () => {
       message.success('租户创建成功');
@@ -112,8 +113,7 @@ const AdminTenants: React.FC = () => {
   });
 
   const updateMutation = useApiMutation<Tenant, Record<string, unknown>>({
-    method: 'put',
-    endpoint: (vars) => `/tenants/${vars.id as string}`,
+    endpoint: '/tenants/update',
     invalidateKeys: [['admin', 'tenants']],
     onSuccess: () => {
       message.success('租户更新成功');
@@ -123,8 +123,7 @@ const AdminTenants: React.FC = () => {
   });
 
   const enableMutation = useApiMutation<Tenant, { id: string }>({
-    method: 'post',
-    endpoint: (vars) => `/tenants/${vars.id}/enable`,
+    endpoint: '/tenants/enable',
     invalidateKeys: [['admin', 'tenants']],
     onSuccess: () => {
       message.success('租户已启用');
@@ -132,8 +131,7 @@ const AdminTenants: React.FC = () => {
   });
 
   const disableMutation = useApiMutation<Tenant, { id: string }>({
-    method: 'post',
-    endpoint: (vars) => `/tenants/${vars.id}/disable`,
+    endpoint: '/tenants/disable',
     invalidateKeys: [['admin', 'tenants']],
     onSuccess: () => {
       message.success('租户已禁用');
@@ -141,8 +139,7 @@ const AdminTenants: React.FC = () => {
   });
 
   const inviteMemberMutation = useApiMutation<TenantMember, Record<string, unknown>>({
-    method: 'post',
-    endpoint: (vars) => `/tenants/${vars.tenantId as string}/members`,
+    endpoint: '/tenants/members/create',
     invalidateKeys: [['admin', 'tenants', membersTenant?.id, 'members']],
     onSuccess: () => {
       message.success('邀请已发送');
@@ -152,8 +149,7 @@ const AdminTenants: React.FC = () => {
   });
 
   const removeMemberMutation = useApiMutation<void, { tenantId: string; userId: string }>({
-    method: 'delete',
-    endpoint: (vars) => `/tenants/${vars.tenantId}/members/${vars.userId}`,
+    endpoint: '/tenants/members/delete',
     invalidateKeys: [['admin', 'tenants', membersTenant?.id, 'members']],
     onSuccess: () => {
       message.success('成员已移除');
@@ -164,8 +160,7 @@ const AdminTenants: React.FC = () => {
     TenantMember,
     { tenantId: string; userId: string; role: TenantMemberRole }
   >({
-    method: 'put',
-    endpoint: (vars) => `/tenants/${vars.tenantId}/members/${vars.userId}/role`,
+    endpoint: '/tenants/members/update-role',
     invalidateKeys: [['admin', 'tenants', membersTenant?.id, 'members']],
     onSuccess: () => {
       message.success('角色已更新');

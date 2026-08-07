@@ -247,26 +247,23 @@ describe('ApiClient', () => {
   });
 
   describe('generic methods', () => {
-    it('get() unwraps response.data', async () => {
-      mockAxiosInstance.get.mockResolvedValue({
+    it('post() unwraps response.data', async () => {
+      mockAxiosInstance.post.mockResolvedValue({
         data: { code: 0, data: { id: 1 }, message: 'ok' },
       });
       const { api } = await loadClient();
-      const result = await api.get('/test');
+      const result = await api.post('/test');
       expect(result).toEqual({ code: 0, data: { id: 1 }, message: 'ok' });
-      expect(mockAxiosInstance.get).toHaveBeenCalledWith('/test', {
-        params: undefined,
-        signal: undefined,
-      });
+      expect(mockAxiosInstance.post).toHaveBeenCalledWith('/test', undefined, { signal: undefined });
     });
 
-    it('getRaw() returns raw response.data', async () => {
-      mockAxiosInstance.get.mockResolvedValue({
-        data: { status: 'ok', version: '1.0' },
+    it('post() returns raw response.data shape', async () => {
+      mockAxiosInstance.post.mockResolvedValue({
+        data: { code: 0, data: { status: 'ok', version: '1.0' }, message: 'ok' },
       });
       const { api } = await loadClient();
-      const result = await api.getRaw('/health');
-      expect(result).toEqual({ status: 'ok', version: '1.0' });
+      const result = await api.post('/health');
+      expect(result).toEqual({ code: 0, data: { status: 'ok', version: '1.0' }, message: 'ok' });
     });
 
     it('post() passes body', async () => {
@@ -275,21 +272,21 @@ describe('ApiClient', () => {
       });
       const { api } = await loadClient();
       await api.post('/items', { name: 'x' });
-      expect(mockAxiosInstance.post).toHaveBeenCalledWith('/items', { name: 'x' });
+      expect(mockAxiosInstance.post).toHaveBeenCalledWith('/items', { name: 'x' }, { signal: undefined });
     });
 
-    it('put() passes body', async () => {
-      mockAxiosInstance.put.mockResolvedValue({ data: { code: 0, data: null, message: '' } });
+    it('post() updates a resource', async () => {
+      mockAxiosInstance.post.mockResolvedValue({ data: { code: 0, data: null, message: '' } });
       const { api } = await loadClient();
-      await api.put('/items/1', { name: 'y' });
-      expect(mockAxiosInstance.put).toHaveBeenCalledWith('/items/1', { name: 'y' });
+      await api.post('/items/1', { name: 'y' });
+      expect(mockAxiosInstance.post).toHaveBeenCalledWith('/items/1', { name: 'y' }, { signal: undefined });
     });
 
-    it('delete() calls axios.delete', async () => {
-      mockAxiosInstance.delete.mockResolvedValue({ data: { code: 0, data: null, message: '' } });
+    it('post() deletes a resource', async () => {
+      mockAxiosInstance.post.mockResolvedValue({ data: { code: 0, data: null, message: '' } });
       const { api } = await loadClient();
-      await api.delete('/items/1');
-      expect(mockAxiosInstance.delete).toHaveBeenCalledWith('/items/1');
+      await api.post('/items/1');
+      expect(mockAxiosInstance.post).toHaveBeenCalledWith('/items/1', undefined, { signal: undefined });
     });
 
     it('upload() sends FormData with multipart header', async () => {

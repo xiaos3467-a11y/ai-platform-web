@@ -1,7 +1,7 @@
 /** Tenant member management */
 
 import React, { useState, useCallback } from 'react';
-import { Table, Button, Modal, Form, Input, Select, Typography, App, Tag, Switch } from 'antd';
+import { Table, Button, Modal, Form, Input, Select, Typography, App, Tag } from 'antd';
 import { PlusOutlined, DeleteOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { useApiListQuery } from '@/hooks/useApiQuery';
@@ -28,12 +28,11 @@ const TenantMembers: React.FC = () => {
 
   const { data: membersData, isLoading } = useApiListQuery<TenantMember>({
     queryKey: ['tenant', 'members'],
-    endpoint: '/tenant/self/members',
+    endpoint: '/tenant/self/members/list',
   });
 
   const inviteMutation = useApiMutation<TenantMember, Record<string, unknown>>({
-    method: 'post',
-    endpoint: '/tenant/self/members',
+    endpoint: '/tenant/self/members/invite',
     invalidateKeys: [['tenant', 'members']],
     onSuccess: () => {
       message.success('邀请已发送');
@@ -43,8 +42,7 @@ const TenantMembers: React.FC = () => {
   });
 
   const removeMutation = useApiMutation<void, { userId: string }>({
-    method: 'delete',
-    endpoint: (vars) => `/tenant/self/members/${vars.userId}`,
+    endpoint: '/tenant/self/members/remove',
     invalidateKeys: [['tenant', 'members']],
     onSuccess: () => {
       message.success('成员已移除');
@@ -55,8 +53,7 @@ const TenantMembers: React.FC = () => {
     TenantMember,
     { userId: string; role: TenantMemberRole }
   >({
-    method: 'put',
-    endpoint: (vars) => `/tenant/self/members/${vars.userId}/role`,
+    endpoint: '/tenant/self/members/update-role',
     invalidateKeys: [['tenant', 'members']],
     onSuccess: () => {
       message.success('角色已更新');
@@ -65,7 +62,14 @@ const TenantMembers: React.FC = () => {
 
   const handleInvite = useCallback(() => {
     inviteForm.validateFields().then((values) => {
-      inviteMutation.mutate(values);
+      const payload = {
+        username: values.username,
+        email: values.email,
+        password: values.password,
+        display_name: values.display_name ?? undefined,
+        role_ids: values.role ? [values.role] : [],
+      };
+      inviteMutation.mutate(payload);
     });
   }, [inviteForm, inviteMutation]);
 
@@ -220,14 +224,39 @@ const TenantMembers: React.FC = () => {
       >
         <Form form={inviteForm} layout="vertical" style={{ marginTop: 16 }}>
           <Form.Item
+            name="username"
+            label="用户名"
+            rules={[
+              { required: true, message: '请输入用户名' },
+              { min: 2, message: '用户名至少 2 个字符' },
+              { max: 64, message: '用户名最多 64 个字符' },
+            ]}
+          >
+            <Input placeholder="如：zhang_san" />
+          </Form.Item>
+          <Form.Item
             name="email"
             label="邮箱"
             rules={[
               { required: true, message: '请输入邮箱' },
               { type: 'email', message: '请输入有效邮箱' },
+              { max: 128, message: '邮箱最多 128 个字符' },
             ]}
           >
             <Input placeholder="user@example.com" />
+          </Form.Item>
+          <Form.Item
+            name="password"
+            label="初始密码"
+            rules={[
+              { required: true, message: '请输入初始密码' },
+              { min: 6, message: '密码至少 6 个字符' },
+            ]}
+          >
+            <Input.Password placeholder="至少 6 个字符" />
+          </Form.Item>
+          <Form.Item name="display_name" label="显示名称">
+            <Input placeholder="可选，如：张三" />
           </Form.Item>
           <Form.Item
             name="role"
@@ -236,14 +265,6 @@ const TenantMembers: React.FC = () => {
             rules={[{ required: true }]}
           >
             <Select options={ROLE_OPTIONS.map((r) => ({ value: r.value, label: r.label }))} />
-          </Form.Item>
-          <Form.Item
-            name="send_email"
-            label="发送邀请邮件"
-            valuePropName="checked"
-            initialValue={true}
-          >
-            <Switch />
           </Form.Item>
         </Form>
       </Modal>

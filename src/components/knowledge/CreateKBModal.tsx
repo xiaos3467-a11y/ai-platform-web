@@ -58,8 +58,7 @@ const CreateKBModal: React.FC<CreateKBModalProps> = ({
   const { message } = App.useApp();
 
   const mutation = useApiMutation<KnowledgeBase, KBCreateValues>({
-    method: 'post',
-    endpoint: '/knowledge-bases/',
+    endpoint: '/knowledge-bases/create',
     invalidateKeys: [['knowledge-bases']],
   });
 

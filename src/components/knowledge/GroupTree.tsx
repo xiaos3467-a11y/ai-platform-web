@@ -64,7 +64,7 @@ const GroupTree: React.FC<GroupTreeProps> = ({ selectedGroupId, onSelect }) => {
   // Fetch the group tree
   const { data, refetch } = useApiQuery<KnowledgeGroup[]>({
     queryKey: ['knowledge-groups'],
-    endpoint: '/knowledge-groups/',
+    endpoint: '/knowledge-groups/list',
   });
 
   const groups = data ?? EMPTY_GROUPS;
@@ -87,9 +87,8 @@ const GroupTree: React.FC<GroupTreeProps> = ({ selectedGroupId, onSelect }) => {
   }, [groups]);
 
   // Delete mutation
-  const deleteMutation = useApiMutation<unknown, string>({
-    method: 'delete',
-    endpoint: (id) => `/knowledge-groups/${id}`,
+  const deleteMutation = useApiMutation<unknown, { id: string }>({
+    endpoint: '/knowledge-groups/delete',
     invalidateKeys: [['knowledge-groups']],
   });
 
@@ -101,7 +100,7 @@ const GroupTree: React.FC<GroupTreeProps> = ({ selectedGroupId, onSelect }) => {
       okButtonProps: { danger: true },
       cancelText: '取消',
       onOk: async () => {
-        deleteMutation.mutate(id, {
+        deleteMutation.mutate({ id }, {
           onSuccess: () => {
             message.success('分组已删除');
             if (selectedGroupId === id) onSelect(null);
