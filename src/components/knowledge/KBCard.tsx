@@ -4,11 +4,20 @@
  * Displays name, truncated description, doc/chunk counts, embedding
  * model, and a status pill.  Clicking the card selects it (parent
  * manages the selection highlight).
+ *
+ * Hover actions: edit / delete buttons appear in the top-right corner.
  */
 
-import React from 'react';
-import { Typography } from 'antd';
-import { BookOutlined, FileTextOutlined, AppstoreOutlined } from '@ant-design/icons';
+import React, { useState } from 'react';
+import { Typography, Dropdown } from 'antd';
+import {
+  BookOutlined,
+  FileTextOutlined,
+  AppstoreOutlined,
+  MoreOutlined,
+  EditOutlined,
+  DeleteOutlined,
+} from '@ant-design/icons';
 import type { KnowledgeBase } from '@/types';
 import { GlassCard, StatusPill } from '@/components';
 import { radius } from '@/styles/themeTokens';
@@ -19,9 +28,18 @@ export interface KBCardProps {
   kb: KnowledgeBase;
   onClick: (kb: KnowledgeBase) => void;
   selected?: boolean;
+  onEdit?: (kb: KnowledgeBase) => void;
+  onDelete?: (kb: KnowledgeBase) => void;
 }
 
-const KBCard: React.FC<KBCardProps> = ({ kb, onClick, selected = false }) => {
+const KBCard: React.FC<KBCardProps> = ({ kb, onClick, selected = false, onEdit, onDelete }) => {
+  const [hovered, setHovered] = useState(false);
+
+  const actionItems = [
+    { key: 'edit', label: '编辑', icon: <EditOutlined /> },
+    { key: 'delete', label: '删除', icon: <DeleteOutlined />, danger: true },
+  ];
+
   return (
     <div
       role="button"
@@ -30,7 +48,9 @@ const KBCard: React.FC<KBCardProps> = ({ kb, onClick, selected = false }) => {
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') onClick(kb);
       }}
-      style={{ cursor: 'pointer', outline: 'none' }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{ cursor: 'pointer', outline: 'none', position: 'relative' }}
     >
       <GlassCard
         hoverable
@@ -66,7 +86,49 @@ const KBCard: React.FC<KBCardProps> = ({ kb, onClick, selected = false }) => {
           >
             <BookOutlined />
           </div>
-          <StatusPill status={kb.status} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <StatusPill status={kb.status} />
+            {/* Action menu — visible on hover */}
+            {hovered && (onEdit || onDelete) && (
+              <Dropdown
+                menu={{
+                  items: actionItems,
+                  onClick: ({ key, domEvent }) => {
+                    domEvent.stopPropagation();
+                    if (key === 'edit') onEdit?.(kb);
+                    if (key === 'delete') onDelete?.(kb);
+                  },
+                }}
+                trigger={['click']}
+              >
+                <div
+                  role="button"
+                  onClick={(e) => e.stopPropagation()}
+                  style={{
+                    width: 24,
+                    height: 24,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    borderRadius: radius.sm,
+                    cursor: 'pointer',
+                    color: 'var(--text-muted)',
+                    transition: 'all 0.15s',
+                  }}
+                  onMouseEnter={(e) => {
+                    (e.currentTarget as HTMLElement).style.background = 'var(--bg-hover)';
+                    (e.currentTarget as HTMLElement).style.color = 'var(--text-primary)';
+                  }}
+                  onMouseLeave={(e) => {
+                    (e.currentTarget as HTMLElement).style.background = 'transparent';
+                    (e.currentTarget as HTMLElement).style.color = 'var(--text-muted)';
+                  }}
+                >
+                  <MoreOutlined style={{ fontSize: 14 }} />
+                </div>
+              </Dropdown>
+            )}
+          </div>
         </div>
 
         {/* Name */}

@@ -14,10 +14,11 @@
  *   └─────────────────────────────────────────────────────────┘
  */
 
-import React, { useState, useMemo } from 'react';
-import { Button, Typography, Row, Col } from 'antd';
+import React, { useState, useMemo, useCallback } from 'react';
+import { Button, Typography, Row, Col, App } from 'antd';
 import { PlusOutlined, BookOutlined, MenuOutlined } from '@ant-design/icons';
 import { useApiListQuery, useApiQuery } from '@/hooks/useApiQuery';
+import { useApiMutation } from '@/hooks';
 import type { KnowledgeBase, KnowledgeGroup } from '@/types';
 import { EmptyState, TableSkeleton } from '@/components';
 import { radius } from '@/styles/themeTokens';
@@ -26,6 +27,7 @@ import KBCard from '@/components/knowledge/KBCard';
 import DocumentList from '@/components/knowledge/DocumentList';
 import QueryPanel from '@/components/knowledge/QueryPanel';
 import CreateKBModal from '@/components/knowledge/CreateKBModal';
+import EditKBModal from '@/components/knowledge/EditKBModal';
 
 const { Title, Text } = Typography;
 
@@ -37,7 +39,10 @@ const KnowledgeBases: React.FC = () => {
   const [selectedKb, setSelectedKb] = useState<KnowledgeBase | null>(null);
   const [showQuery, setShowQuery] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [editingKb, setEditingKb] = useState<KnowledgeBase | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const { message, modal } = App.useApp();
 
   // Fetch groups for the tree (used by CreateKBModal's group Select too)
   const { data: groups = [] } = useApiQuery<KnowledgeGroup[]>({
@@ -79,6 +84,41 @@ const KnowledgeBases: React.FC = () => {
       setShowQuery(false);
     }
   };
+
+  const handleEditKb = (kb: KnowledgeBase) => {
+    setEditingKb(kb);
+    setEditOpen(true);
+  };
+
+  const deleteMutation = useApiMutation<void, string>({
+    method: 'delete',
+    endpoint: (kbId) => `/knowledge-bases/${kbId}`,
+    invalidateKeys: [['knowledge-bases']],
+  });
+
+  const handleDeleteKb = useCallback(
+    (kb: KnowledgeBase) => {
+      modal.confirm({
+        title: `删除知识库 "${kb.name}"？`,
+        content: '删除后所有文档和向量数据将无法恢复。',
+        okText: '删除',
+        okButtonProps: { danger: true },
+        cancelText: '取消',
+        onOk: async () => {
+          deleteMutation.mutate(kb.id, {
+            onSuccess: () => {
+              message.success('知识库已删除');
+              if (selectedKb?.id === kb.id) {
+                setSelectedKb(null);
+                setShowQuery(false);
+              }
+            },
+          });
+        },
+      });
+    },
+    [modal, message, selectedKb, deleteMutation],
+  );
 
   return (
     <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start' }}>
@@ -173,7 +213,13 @@ const KnowledgeBases: React.FC = () => {
           <Row gutter={[16, 16]}>
             {kbs.map((kb) => (
               <Col key={kb.id} xs={24} sm={12} lg={8} xl={6}>
-                <KBCard kb={kb} onClick={handleSelectKb} selected={selectedKb?.id === kb.id} />
+                <KBCard
+                  kb={kb}
+                  onClick={handleSelectKb}
+                  selected={selectedKb?.id === kb.id}
+                  onEdit={handleEditKb}
+                  onDelete={handleDeleteKb}
+                />
               </Col>
             ))}
           </Row>
@@ -209,6 +255,24 @@ const KnowledgeBases: React.FC = () => {
         onCancel={() => setCreateOpen(false)}
         groups={groups}
         defaultGroupId={selectedGroupId}
+      />
+
+      {/* Edit KB modal */}
+      <EditKBModal
+        open={editOpen}
+        kb={editingKb}
+        groups={groups}
+        onCancel={() => {
+          setEditOpen(false);
+          setEditingKb(null);
+        }}
+        onUpdated={() => {
+          refetchKbs();
+          if (editingKb && selectedKb?.id === editingKb.id) {
+            // Refresh selected KB data
+            refetchKbs();
+          }
+        }}
       />
 
       {/* Responsive CSS — hide sidebar on small screens, show toggle */}
